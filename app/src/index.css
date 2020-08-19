@@ -38,9 +38,25 @@
     margin:20px;
 }
 
+.downarrow {
+    background-image: url(./images/downarrow.png);
+    background-size:     cover;
+    background-repeat:   no-repeat;
+    background-position: center center;
+    /*opacity: .4;      */
+}
+
+.uparrow {
+    background-image: url(./images/uparrow.png);
+    background-size:     cover;
+    background-repeat:   no-repeat;
+    background-position: center center;
+    /*opacity: .4;      */
+}
+
 .masterExtension {
     height: 0px;
-    transition: height 2s;
+    transition: height 500ms;
     overflow: hidden;
     display:flex;
     width: 100%;

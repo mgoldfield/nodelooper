@@ -2,12 +2,27 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-
 class Looper extends React.Component {
+    constructor(props){
+        super(props);
+        this.loops = []
+    }
+
+    renderLoops(){
+        // toDo: make this smarter
+        let toReturn = []
+        for (const e of this.loops){
+            toReturn.push(<Loop />)
+        }
+
+        return toReturn;
+    }
+
     render() {
         return (
             <div className="looper">
                 <MasterLoop />
+
             </div>
         );
     }
@@ -17,7 +32,6 @@ class MasterLoop extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            "extensionVisible":false,
             "expanded": false,
         }
     }
@@ -42,18 +56,13 @@ class MasterLoop extends React.Component {
 
             me.setState({
                 "expanded": !me.state.expanded,
-                "extensionVisible": !me.state.extensionVisible,
             });
-
-            // me.setState({
-            //     
-            // });
         };
     }
 
     getExtensionClasses(){
         let classes = "masterExtension ";
-        if (this.state.extensionVisible){
+        if (this.state.expanded){
             classes +=  "visibleExtension";
         }
 
@@ -67,7 +76,10 @@ class MasterLoop extends React.Component {
                     <Button name="stop" onClick={this.handleStop} />
                     <Button name="play" onClick={this.handlePlay} />
                     <Button name="rec" onClick={this.handleRec} />
-                    <Button name="expand" onClick={this.handleExpand()} />
+                    <Button 
+                        name={(this.state.expanded) ? "collapse" : "expand"}
+                        onClick={this.handleExpand()} 
+                    />
                 </div>
                 <div className={this.getExtensionClasses()}>
                     <Button name="click" onClick={this.handleClick} />
@@ -97,12 +109,34 @@ class Loop extends React.Component {
     }
 }
 
-function Button(props) {
-    return (
-        <div className="button" onClick={props.onClick}>
-            {props.name}
-        </div>
-    );
+class Button extends React.Component {
+
+    classes(name){
+        let extraClasses = {
+            "expand": ["downarrow"],
+            "collapse": ["uparrow"],
+        }
+
+        let classList = ["button"].concat(extraClasses[name] || []);
+        return classList.join(' ');
+    }
+
+    hideText(name){
+        let hide = {
+            "expand": true,
+            "collapse": true,
+        }
+
+        return hide[name] || false;
+    }
+
+    render() {
+        return (
+            <div className={this.classes(this.props.name)} onClick={this.props.onClick}>
+                {(this.hideText(this.props.name)) ? "" : this.props.name}
+            </div>
+        );
+    }
 }
 
 class Slider extends React.Component {
