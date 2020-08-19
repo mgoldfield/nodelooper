@@ -8,3 +8,48 @@
     display:flex;
     flex-direction: column; 
 }
+
+.masterLoop {
+    display: flex;
+    flex-direction: column; 
+    justify-content: center;
+    align-items: center;
+}
+
+.mainMasterLoop {
+    height: 80px;
+    width: 100%;
+    background-color: orange;
+    display: flex;
+    flex-direction: row; 
+    justify-content: center;
+    align-items: center;
+}
+
+.button {
+    height: 60px;
+    width: 60px;
+    font-family: "Courier New", Courier, monospace;
+    display: inline-flex;
+    overflow: hidden;
+    border: 2px solid black;
+    justify-content: center;
+    align-items: center;
+    margin:20px;
+}
+
+.masterExtension {
+    height: 0px;
+    transition: height 2s;
+    overflow: hidden;
+    display:flex;
+    width: 100%;
+    background-color: orange;
+    flex-direction: row; 
+    justify-content: center;
+    align-items: flex-start;  
+}
+
+.visibleExtension{
+    height: 100px;
+}
