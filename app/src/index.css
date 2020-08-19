@@ -1,0 +1,10 @@
+.looper {
+    margin: auto;
+    margin-top: 50px;
+    border-radius: 25px;
+    width: 800px;
+    background-color: yellow;
+    overflow: auto;
+    display:flex;
+    flex-direction: column; 
+}
