@@ -5,6 +5,10 @@ import './index.css';
 class Looper extends React.Component {
     constructor(props){
         super(props);
+        this.state = {
+            "recording": false,
+            "playing": false,
+        }
         this.loops = []
     }
 
@@ -21,7 +25,11 @@ class Looper extends React.Component {
     render() {
         return (
             <div className="looper">
-                <MasterLoop />
+                <MasterLoop 
+                    recording = {this.state.recording}
+                    playing = {this.state.playing}
+                    updateLooperState = {(u) => {this.setState(u)}}
+                />
                 {this.renderLoops()}
 
             </div>
@@ -49,25 +57,16 @@ class MasterLoop extends React.Component {
         return;
     }
 
-    handleExpand(){
-        let me = this;
-
-        return () => {
-            console.log("Expand was pressed");
-
-            me.setState({
-                "expanded": !me.state.expanded,
-            });
-        };
+    handleSlider(){
+        return;
     }
 
-    getExtensionClasses(){
-        let classes = "masterExtension ";
-        if (this.state.expanded){
-            classes +=  "visibleExtension";
-        }
-
-        return classes;
+    handleExpand(){
+        return () => {
+            this.setState({
+                "expanded": !this.state.expanded,
+            });
+        };
     }
 
     render() {
@@ -82,8 +81,9 @@ class MasterLoop extends React.Component {
                         onClick={this.handleExpand()} 
                     />
                 </div>
-                <div className={this.getExtensionClasses()}>
-                    <Button name="click" onClick={this.handleClick} />
+                <div className={"masterExtension ".concat((this.state.expanded) ? "visibleExtension" : "")}>
+                    <Button name="turn click on" onClick={this.handleClick} />
+                    <Slider name="tempo" min="30" max="200" value="60" onChange={this.handleSlider} />
                 </div>
             </div>
         );
@@ -143,11 +143,7 @@ class Button extends React.Component {
 class Slider extends React.Component {
     constructor(props){
         super(props);
-        this.state = {"value":null};
-    }
-
-    onInput(event){
-        this.setState({value:event.target.value})
+        this.state = {"value":this.props.value};
     }
 
     onChange(event){
@@ -157,15 +153,17 @@ class Slider extends React.Component {
     render() {
         return (
             <div className="slider">
+                <div className="sliderTitle">{this.props.name}</div>
                 <input 
+                    className="sliderInput"
                     type="range" 
                     min={this.props.min} 
                     max={this.props.max}
-                    value={this.props.value}
+                    value={this.state.value}
                     onChange={this.props.onChange}
-                    onInput={this.onInput}
+                    onInput={(e) => {this.setState({"value":e.target.value})}}
                 />
-                <span name="sliderValBox">
+                <span className="sliderValBox">
                     {this.state.value}
                 </span>
             </div>
