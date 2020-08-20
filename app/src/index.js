@@ -28,7 +28,7 @@ class Looper extends React.Component {
                 <MasterLoop 
                     recording = {this.state.recording}
                     playing = {this.state.playing}
-                    updateLooperState = {(u) => {this.setState(u)}}
+                    updateLooperState = {(u) => this.setState(u)}
                 />
                 {this.renderLoops()}
 
@@ -42,31 +42,23 @@ class MasterLoop extends React.Component {
         super(props);
         this.state = {
             "expanded": false,
+            "recording": false,
+            "playing": false,
+            "clicking": false,
+            "tempo": 60,
+        }
+
+        this.handleStop = () => null;
+        this.handlePlay = () => {
+            this.setState({'playing': !this.state.playing});
+        }
+        this.handleRec = () => {
+            this.setState({'recording': !this.state.recording});
         }
     }
 
-    handleStop(){
-        return;
-    }
-
     handlePlay(){
-        return;
-    }
 
-    handleRec(){
-        return;
-    }
-
-    handleSlider(){
-        return;
-    }
-
-    handleExpand(){
-        return () => {
-            this.setState({
-                "expanded": !this.state.expanded,
-            });
-        };
     }
 
     render() {
@@ -74,16 +66,20 @@ class MasterLoop extends React.Component {
             <div className="masterLoop">
                 <div className="mainMasterLoop"> 
                     <Button name="stop" onClick={this.handleStop} />
-                    <Button name="play" onClick={this.handlePlay} />
-                    <Button name="rec" onClick={this.handleRec} />
+                    <Button name="play" onClick={this.handlePlay} toggled={this.state.playing} />
+                    <Button name="rec" onClick={this.handleRec} toggled={this.state.recording} />
                     <Button 
                         name={(this.state.expanded) ? "collapse" : "expand"}
-                        onClick={this.handleExpand()} 
+                        onClick={() => this.setState({"expanded": !this.state.expanded})} 
                     />
                 </div>
                 <div className={"masterExtension ".concat((this.state.expanded) ? "visibleExtension" : "")}>
-                    <Button name="turn click on" onClick={this.handleClick} />
-                    <Slider name="tempo" min="30" max="200" value="60" onChange={this.handleSlider} />
+                    <Button name="turn click on" onClick={this.handleClick} toggled={this.state.clicking} />
+                    <Slider 
+                        name="tempo" min="30" max="200" 
+                        value={this.state.tempo} 
+                        onChange={(e) => this.setState({"tempo": e.target.value})}
+                    />
                 </div>
             </div>
         );
@@ -92,19 +88,23 @@ class MasterLoop extends React.Component {
 
 
 class Loop extends React.Component {
-    handlePlay(){
-        return;
+    constructor(props){
+        super(props);
+        this.state = {
+            "name": "loop name",
+            "muted": false,
+        }
     }
 
-    handleStop(){
+    handleClick(){
         return;
     }
 
     render() {
         return (
             <div className="loop"> 
-                <Button name="stop" onClick={this.handleStop} />
-                <Button name="play" onClick={this.handlePlay} />
+                <input type="text" value={this.state.name} />
+                <Button name="mute" onClick={this.handleMute()} toggled={this.state.muted}/>
             </div>
         );
     }
@@ -112,13 +112,15 @@ class Loop extends React.Component {
 
 class Button extends React.Component {
 
-    classes(name){
+    classes(){
         let extraClasses = {
             "expand": ["downarrow"],
             "collapse": ["uparrow"],
         }
 
-        let classList = ["button"].concat(extraClasses[name] || []);
+        let classList = ["button"].concat(extraClasses[this.props.name] || []);
+        if (this.props.toggled) classList.push("toggled");
+
         return classList.join(' ');
     }
 
@@ -133,7 +135,7 @@ class Button extends React.Component {
 
     render() {
         return (
-            <div className={this.classes(this.props.name)} onClick={this.props.onClick}>
+            <div className={this.classes()} onClick={this.props.onClick}>
                 {(this.hideText(this.props.name)) ? "" : this.props.name}
             </div>
         );
@@ -161,7 +163,7 @@ class Slider extends React.Component {
                     max={this.props.max}
                     value={this.state.value}
                     onChange={this.props.onChange}
-                    onInput={(e) => {this.setState({"value":e.target.value})}}
+                    onInput={(e) => this.setState({"value":e.target.value})}
                 />
                 <span className="sliderValBox">
                     {this.state.value}

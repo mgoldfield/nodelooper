@@ -39,6 +39,10 @@
     margin:20px;
 }
 
+.toggled {
+    background-color: brown;
+}
+
 .slider {
     height: 40px;
     display: inline-flex;
