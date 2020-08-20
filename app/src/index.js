@@ -22,6 +22,7 @@ class Looper extends React.Component {
         return (
             <div className="looper">
                 <MasterLoop />
+                {this.renderLoops()}
 
             </div>
         );
