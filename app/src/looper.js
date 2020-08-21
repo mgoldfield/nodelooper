@@ -43,6 +43,10 @@ class Looper extends React.Component {
         this.setState({'recording': !this.state.recording});
     } 
 
+    handleQuant = () => {
+        this.setState({'quantized': !this.state.quantized});
+    }
+
     render() {
         return (
             <div className='looper'>
@@ -55,6 +59,7 @@ class Looper extends React.Component {
                             name={(this.state.expanded) ? 'collapse' : 'expand'}
                             onClick={() => this.setState({'expanded': !this.state.expanded})} 
                         />
+                        <Button name='quant' onClick={this.handleQuant} toggled={this.state.quantized} />
                     </div>
                     <div className={'masterExtension '.concat((this.state.expanded) ? 'visibleExtension' : '')}>
                         <Button name='click on' onClick={this.handleClick} toggled={this.state.clicking} />
@@ -82,10 +87,13 @@ class Loop extends React.Component {
             'name': props.name,
             'muted': false,
             'gain': 1,
+            'looping':false,
         }
     }
 
-    handleMute = () => this.setState({'muted': !this.state.muted})    
+    handleMute = () => this.setState({'muted': !this.state.muted})
+
+    handleLoop = () => this.setState({'looping': !this.state.looping})
 
     render() {
         return (
@@ -93,6 +101,7 @@ class Loop extends React.Component {
                 <div className={(this.props.recording) ? 'recordingDot' : 'dot'} />
                 <input type='text' value={this.state.name} onChange={this.props.onChange}/>
                 <Button name='mute' onClick={this.handleMute} toggled={this.state.muted}/>
+                <Button name='loop' onClick={this.handleLoop} toggled={this.state.looping}/>
                 <Slider 
                     name='gain' min='0' max='2' 
                     value={this.state.gain} 
