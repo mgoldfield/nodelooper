@@ -19,6 +19,10 @@ class Looper extends React.Component {
     handleStop = () => null;
 
     handlePlay = () => {
+        if (this.state.recording){
+
+        }
+
         this.setState({'playing': !this.state.playing});
     }
 
@@ -26,6 +30,7 @@ class Looper extends React.Component {
         if (this.state.recording){
             if (this.state.playing) this.pressStop(); else this.loops.pop();
         }else{
+            // toDo: check recording lock when it exists
             let name = "Loop " + this.loops.length.toString();
             this.loops.push(<Loop 
                 key={name}
@@ -60,7 +65,9 @@ class Looper extends React.Component {
                         />
                     </div>
                 </div>
-                <div class="fade-in">
+
+
+                <div className="fade-in">
                     <ul className='loopList'>{this.loops}</ul>
                 </div>
             </div>
@@ -74,17 +81,17 @@ class Loop extends React.Component {
         this.state = {
             'name': props.name,
             'muted': false,
-            'recording': this.props.recording,
             'gain': 1,
         }
     }
-    
+
     handleMute = () => this.setState({'muted': !this.state.muted})    
 
     render() {
         return (
             <li class="loopItem">
-            <div className='loop'> 
+            <div className={'loop'}> 
+                <div className={(this.props.recording) ? 'recordingDot' : 'dot'} />
                 <input type='text' value={this.state.name} onChange={this.props.onChange}/>
                 <Button name='mute' onClick={this.handleMute} toggled={this.state.muted}/>
                 <Slider 
@@ -92,7 +99,7 @@ class Loop extends React.Component {
                     value={this.state.gain} 
                     onChange={(e) => this.setState({'gain': e.target.value})}
                     step="0.01"
-                />                
+                />              
             </div>
             </li>
         );
