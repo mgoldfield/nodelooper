@@ -6,17 +6,34 @@ class Looper extends React.Component {
     constructor(props){
         super(props);
         this.state = {
+            'expanded': false,
             'recording': false,
             'playing': false,
+            'clicking': false,
+            'tempo': 60,
         }
         this.loops = []
+
+
+        this.handleStop = () => null;
+        this.handlePlay = () => {
+            this.setState({'playing': !this.state.playing});
+        }
+        this.handleRec = () => {
+            this.setState({'recording': !this.state.recording});
+        }        
     }
 
     renderLoops(){
-        // toDo: make this smarter
         let toReturn = []
+
+
+        if (this.state.recording){
+            toReturn.push(<Loop recording={true} />)
+        }
+
         for (const e of this.loops){
-            toReturn.push(<Loop />)
+            toReturn.push(<Loop recording={false}/>)
         }
 
         return toReturn;
@@ -25,11 +42,25 @@ class Looper extends React.Component {
     render() {
         return (
             <div className='looper'>
-                <MasterLoop 
-                    recording = {this.state.recording}
-                    playing = {this.state.playing}
-                    setLooperState = {(u) => this.setState(u)}
-                />
+                <div className='masterLoop'>
+                    <div className='mainMasterLoop'> 
+                        <Button name='stop' onClick={this.handleStop} />
+                        <Button name='play' onClick={this.handlePlay} toggled={this.state.playing} />
+                        <Button name='rec' onClick={this.handleRec} toggled={this.state.recording} />
+                        <Button 
+                            name={(this.state.expanded) ? 'collapse' : 'expand'}
+                            onClick={() => this.setState({'expanded': !this.state.expanded})} 
+                        />
+                    </div>
+                    <div className={'masterExtension '.concat((this.state.expanded) ? 'visibleExtension' : '')}>
+                        <Button name='turn click on' onClick={this.handleClick} toggled={this.state.clicking} />
+                        <Slider 
+                            name='tempo' min='30' max='200' 
+                            value={this.state.tempo} 
+                            onChange={(e) => this.setState({'tempo': e.target.value})}
+                        />
+                    </div>
+                </div>
                 {this.renderLoops()}
 
             </div>
@@ -37,66 +68,13 @@ class Looper extends React.Component {
     }
 }
 
-class MasterLoop extends React.Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            'expanded': false,
-            'recording': false,
-            'playing': false,
-            'clicking': false,
-            'tempo': 60,
-        }
-
-        this.handleStop = () => null;
-        this.handlePlay = () => {
-            let u = {'playing': !this.state.playing}
-            this.setState(u);
-            this.props.setLooperState(u)
-        }
-        this.handleRec = () => {
-            let u = {'recording': !this.state.recording};
-            this.setState(u);
-            this.props.setLooperState(u);
-        }
-    }
-
-    handlePlay(){
-
-    }
-
-    render() {
-        return (
-            <div className='masterLoop'>
-                <div className='mainMasterLoop'> 
-                    <Button name='stop' onClick={this.handleStop} />
-                    <Button name='play' onClick={this.handlePlay} toggled={this.state.playing} />
-                    <Button name='rec' onClick={this.handleRec} toggled={this.state.recording} />
-                    <Button 
-                        name={(this.state.expanded) ? 'collapse' : 'expand'}
-                        onClick={() => this.setState({'expanded': !this.state.expanded})} 
-                    />
-                </div>
-                <div className={'masterExtension '.concat((this.state.expanded) ? 'visibleExtension' : '')}>
-                    <Button name='turn click on' onClick={this.handleClick} toggled={this.state.clicking} />
-                    <Slider 
-                        name='tempo' min='30' max='200' 
-                        value={this.state.tempo} 
-                        onChange={(e) => this.setState({'tempo': e.target.value})}
-                    />
-                </div>
-            </div>
-        );
-    }
-}
-
-
 class Loop extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            'name': 'loop name',
+            'name': props.name,
             'muted': false,
+            'recording': this.props.recording,
         }
 
         this.handleMute = () => this.setState({'muted': !this.state.muted})
