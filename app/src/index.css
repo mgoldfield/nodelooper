@@ -43,6 +43,24 @@
     background-color: brown;
 }
 
+.loopList {
+    list-style-type: none;
+    margin: 0px;  
+}
+
+.loopItem {
+    max-height: 0;
+    opacity: 0;
+    animation: grow 500ms ease-in-out forwards;
+}
+
+@keyframes grow {
+    to {
+        max-height: 100px;
+        opacity: 1;
+    }
+}
+
 .slider {
     height: 40px;
     display: inline-flex;
