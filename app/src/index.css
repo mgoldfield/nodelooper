@@ -1,10 +1,8 @@
 .looper {
     margin: auto;
     margin-top: 50px;
-    border-radius: 25px;
     width: 800px;
     background-color: yellow;
-    overflow: auto;
     display:flex;
     flex-direction: column; 
 }
@@ -31,17 +29,29 @@
 .loopList {
     list-style-type: none;
     margin: 0px;  
+    display: flex;
+    padding-left: 0;
+    justify-content: center;
+    align-items: center;       
+}
+
+.loop {
+
 }
 
 .loopItem {
     max-height: 0;
     opacity: 0;
     animation: grow 500ms ease-in-out forwards;
+    justify-content: center;
+    align-items: center;   
+    overflow: hidden;
+    display:flex;
 }
 
 @keyframes grow {
     to {
-        max-height: 100px;
+        max-height: 80px;
         opacity: 1;
     }
 }
@@ -73,8 +83,8 @@
 } 
 
 .button {
-    height: 60px;
-    width: 60px;
+    height: 50px;
+    width: 50px;
     font-family: "Courier New", Courier, monospace;
     display: inline-flex;
     flex-wrap: wrap;
@@ -130,5 +140,5 @@
 }
 
 .visibleExtension{
-    height: 100px;
+    height: 80px;
 }

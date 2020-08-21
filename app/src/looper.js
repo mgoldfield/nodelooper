@@ -57,7 +57,7 @@ class Looper extends React.Component {
                         />
                     </div>
                     <div className={'masterExtension '.concat((this.state.expanded) ? 'visibleExtension' : '')}>
-                        <Button name='turn click on' onClick={this.handleClick} toggled={this.state.clicking} />
+                        <Button name='click on' onClick={this.handleClick} toggled={this.state.clicking} />
                         <Slider 
                             name='tempo' min='30' max='200' 
                             value={this.state.tempo} 
@@ -89,8 +89,7 @@ class Loop extends React.Component {
 
     render() {
         return (
-            <li class="loopItem">
-            <div className={'loop'}> 
+            <li className="loopItem">
                 <div className={(this.props.recording) ? 'recordingDot' : 'dot'} />
                 <input type='text' value={this.state.name} onChange={this.props.onChange}/>
                 <Button name='mute' onClick={this.handleMute} toggled={this.state.muted}/>
@@ -100,7 +99,6 @@ class Loop extends React.Component {
                     onChange={(e) => this.setState({'gain': e.target.value})}
                     step="0.01"
                 />              
-            </div>
             </li>
         );
     }
