@@ -1,7 +1,6 @@
 import React from 'react';
 
 class Button extends React.Component {
-
     classes(){
         let extraClasses = {
             'expand': ['downarrow'],
@@ -31,6 +30,7 @@ class Button extends React.Component {
         );
     }
 }
+
 
 class Slider extends React.Component {
     constructor(props){

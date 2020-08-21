@@ -13,29 +13,30 @@ class Looper extends React.Component {
             'clicking': false,
             'tempo': 60,
         }
-        this.loops = []
-
-
-        this.handleStop = () => null;
-        this.handlePlay = () => {
-            this.setState({'playing': !this.state.playing});
-        }
-        this.handleRec = () => {
-            if (this.state.recording){
-                if (this.state.playing) this.pressStop(); else this.loops.pop();
-            }else{
-                let name = "Loop " + this.loops.length.toString();
-                this.loops.push(<Loop 
-                    key={name}
-                    name={name}
-                    recording={true}
-                    onChange={() => 2}
-                />);
-            }
-
-            this.setState({'recording': !this.state.recording});
-        }        
+        this.loops = []  
     }
+
+    handleStop = () => null;
+
+    handlePlay = () => {
+        this.setState({'playing': !this.state.playing});
+    }
+
+    handleRec = () => {
+        if (this.state.recording){
+            if (this.state.playing) this.pressStop(); else this.loops.pop();
+        }else{
+            let name = "Loop " + this.loops.length.toString();
+            this.loops.push(<Loop 
+                key={name}
+                name={name}
+                recording={true}
+                onChange={() => 2}
+            />);
+        }
+
+        this.setState({'recording': !this.state.recording});
+    } 
 
     render() {
         return (
@@ -76,9 +77,9 @@ class Loop extends React.Component {
             'recording': this.props.recording,
             'gain': 1,
         }
-
-        this.handleMute = () => this.setState({'muted': !this.state.muted})
     }
+    
+    handleMute = () => this.setState({'muted': !this.state.muted})    
 
     render() {
         return (
