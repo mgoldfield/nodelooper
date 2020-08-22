@@ -65,12 +65,12 @@ class Looper extends React.Component {
     }
 
     handleClick = () => {
-        this.state.clicking = !this.state.clicking;
+        this.setState({'clicking': !this.state.clicking});
         this.AudioLoopBunch.clickTrack.clicking = this.state.clicking;
     }
 
     handleCountIn = () => {
-        this.state.countIn = !this.state.countIn;
+        this.setState({'countIn': !this.state.countIn});
         this.AudioLoopBunch.clickTrack.countIn = this.state.countIn;
     }
 

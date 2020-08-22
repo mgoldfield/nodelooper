@@ -23,7 +23,7 @@ class AudioLoopBunch{
             this._audioContext.resume();
         }
         return this._audioContext;
-    }
+    };
 
     prepareToRecord(id){
         this.recordingLoop = new AudioLoop(id, this.getAudioContext);
@@ -47,6 +47,10 @@ class AudioLoopBunch{
         );
     }
 
+    handleChunk = (chunk) => {
+        return;
+    };
+
     stop(){
         if (this.recording){
             this.recordingLoop.stop();
@@ -63,7 +67,8 @@ class AudioLoopBunch{
 
     refreshMergeNode(){
         if (this.mergeOutOfDate){
-            this.mergeNode = this.getAudioContext().createChannelMerger(this.audioLoops.length);
+            // number of loops + click track 
+            this.mergeNode = this.getAudioContext().createChannelMerger(this.audioLoops.length + 1);
             for (let i = 0; i < this.audioLoops.length; i++){
                 this.audioLoops[i].disconnect();
                 this.audioLoops[i].connect(this.mergeNode, i);
@@ -78,7 +83,7 @@ class AudioLoopBunch{
     playLoops(){
         // assumes 500 ms is an acceptable and adaquate wait time
         let waitTime = .5;
-        let clickStartTime = this.getAudioContext.currentTime + waitTime
+        let clickStartTime = this.getAudioContext.currentTime + waitTime;
         let playTime = clickStartTime + this.clickTrack.countInTime;
 
         this.refreshMergeNode();
@@ -127,6 +132,8 @@ class AudioLoop {
     stop(){
         if (this.recording) this.mediaRecorder.stop();
         if (this.playing) this.source.stop();
+        this.recording = false;
+        this.playing = false;
     }
 
     toggleMute(){
@@ -177,7 +184,15 @@ class AudioLoop {
         let returnBuffer = this.audioContext.createBuffer(1, trimmedAudio.length, buffer.sampleRate);
         returnBuffer.copyToChannel(trimmedAudio, 0, 0);        
         return returnBuffer;
-    }    
+    }
+
+    handleChunks = async function(audioChunks, trimFromStart){
+        const blob = new Blob(audioChunks);
+        let buffer = await this.getAudioContext().decodeAudioData(await blob.arrayBuffer());
+        //toDo: determine if buffer needs baseLatency trimmed from the end
+        //toDo: round buffer to multiple of initial loop
+        this.initBuffer(this.trimAudio(buffer, trimFromStart, 'begin'));
+    };
 
     recordBuffer(playBunch, stopBunch, loopTimeUnit, handleChunk){
         if (this.recording) throw Error("already recording"); else this.recording = true;
@@ -199,11 +214,7 @@ class AudioLoop {
 
             this.mediaRecorder.addEventListener("stop", async () => {
                 stopBunch();
-                const blob = new Blob(audioChunks);
-                let buffer = await this.getAudioContext.decodeAudioData(await blob.arrayBuffer());
-                //toDo: determine if buffer needs baseLatency trimmed from the end
-                //toDo: round buffer to multiple of initial loop
-                this.initBuffer(this.trimAudio(buffer, playTime - startTime, 'begin'));
+                this.handleChunks(audioChunks, playTime - startTime)  
             });
 
             this.mediaRecorder.addEventListener("start", () => {
@@ -233,7 +244,7 @@ class ClickTrack{
     }
 
     get countInTime(){
-
+        return 0;
     }
 
     start(time){
