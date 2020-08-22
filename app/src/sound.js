@@ -6,7 +6,7 @@ class AudioLoopBunch{
         this.loopTimeUnit = null;
 
         this.playing = false;
-        this.clicking = false;
+        this.clickTrack = new ClickTrack();
 
         this.mergeOutOfDate = true;
         this.mergeNode = null;
@@ -25,8 +25,8 @@ class AudioLoopBunch{
         return this._audioContext;
     }
 
-    prepareToRecord(){
-        this.recordingLoop = new AudioLoop(this.getAudioContext);
+    prepareToRecord(id){
+        this.recordingLoop = new AudioLoop(id, this.getAudioContext);
         return this.recordingLoop;
     }
 
@@ -61,13 +61,11 @@ class AudioLoopBunch{
         this.playing = false;
     }
 
-    playLoops(){
-        // assumes 500 ms is an acceptable and adaquate wait time
-        let waitTime = .5;
-
+    refreshMergeNode(){
         if (this.mergeOutOfDate){
             this.mergeNode = this.getAudioContext().createChannelMerger(this.audioLoops.length);
             for (let i = 0; i < this.audioLoops.length; i++){
+                this.audioLoops[i].disconnect();
                 this.audioLoops[i].connect(this.mergeNode, i);
             }
             this.gainNode = this.getAudioContext().createGain();
@@ -75,9 +73,16 @@ class AudioLoopBunch{
             this.gainNode.connect(this.getAudioContext().destination)
             this.mergeOutOfDate = false;
         }
+    }
 
-        let playTime = this.getAudioContext.currentTime + waitTime;
+    playLoops(){
+        // assumes 500 ms is an acceptable and adaquate wait time
+        let waitTime = .5;
+        let clickStartTime = this.getAudioContext.currentTime + waitTime
+        let playTime = clickStartTime + this.clickTrack.countInTime;
 
+        this.refreshMergeNode();
+        this.clickTrack.start(clickStartTime)
         for (const l of this.audioLoops)
             l.play(playTime);
 
@@ -85,17 +90,20 @@ class AudioLoopBunch{
     }
 
     stopLoops(){
+        this.clickTrack.stop();
 
+        for (const l of this.audioLoops)
+            l.stop()
     }
 
-    setGain(){
-
+    setGain(g){
+        this.gainNode.setValueAtTime(g, this.getAudioContext().currentTime);
     }
 }
 
 
 class AudioLoop {
-    constructor(getAudioContext, chunkSize=5000){
+    constructor(id, getAudioContext, chunkSize=5000){
         this.source = null;
         this.mediaRecorder = null;
         this.getAudioContext = getAudioContext;
@@ -118,11 +126,17 @@ class AudioLoop {
 
     stop(){
         if (this.recording) this.mediaRecorder.stop();
-        if (this.playing) this.buffer.stop();
+        if (this.playing) this.source.stop();
     }
 
-    mute(){
-        return;
+    toggleMute(){
+        if (this.muted){
+            this.setGain(this.formerGain);
+        }else{
+            this.formerGain = this.gainNode.gain;
+            this.setGain(0);
+        }
+        this.muted = !this.muted;
     }
 
     toggleLoop(){
@@ -131,7 +145,7 @@ class AudioLoop {
     }
 
     setGain(g){
-        return;
+        this.gainNode.setValueAtTime(g, this.getAudioContext().currentTime)
     }
 
     initBuffer(buffer){
@@ -143,6 +157,10 @@ class AudioLoop {
 
     connect(dest, index){
         this.gainNode.connect(dest, 0, index);
+    }
+
+    disconnect(){
+        this.gainNode.disconnect();
     }
 
     trimAudio(buffer, lengthToTrim, side){
@@ -197,17 +215,28 @@ class AudioLoop {
     }
 }
 
-class clickTrack{
+class ClickTrack{
     constructor(tempo, getAudioContext){
         this.getAudioContext = getAudioContext;
         this.setTempo(tempo);
+        this.bpm = 4;
+        this.countIn = false;
+        this.clicking = false;
     }
 
     setTempo(tempo){
         this.tempo = tempo;
     }
 
-    start(){
+    setBpm(bpm){
+        this.bpm = bpm;
+    }
+
+    get countInTime(){
+
+    }
+
+    start(time){
         return;
     }
 

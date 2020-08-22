@@ -11,6 +11,7 @@ class Looper extends React.Component {
             'recording': false,
             'playing': false,
             'clicking': false,
+            'countIn': false,
             'tempo': 60,
         }
         this.counter = 0;
@@ -53,8 +54,7 @@ class Looper extends React.Component {
                 id={id}
                 name={'loop '.concat(id)}
                 recording={true}
-                onChange={() => 2}
-                audioLoop={this.loopBunch.prepareToRecord()}
+                audioLoop={this.loopBunch.prepareToRecord(id)}
             />);
         }
         this.setState({'recording': !this.state.recording});
@@ -62,6 +62,16 @@ class Looper extends React.Component {
 
     handleQuant = () => {
         this.setState({'quantized': !this.state.quantized});
+    }
+
+    handleClick = () => {
+        this.state.clicking = !this.state.clicking;
+        this.AudioLoopBunch.clickTrack.clicking = this.state.clicking;
+    }
+
+    handleCountIn = () => {
+        this.state.countIn = !this.state.countIn;
+        this.AudioLoopBunch.clickTrack.countIn = this.state.countIn;
     }
 
     render() {
@@ -81,6 +91,11 @@ class Looper extends React.Component {
                     <div className={'masterExtension '.concat((this.state.expanded) ? 'visibleExtension' : '')}>
                         <div className='extensionControls'>
                             <Button name='click' onClick={this.handleClick} toggled={this.state.clicking} />
+                            <Button name='count-in' onClick={this.handleCountIn} toggled={this.state.countIn} />
+                            <span className='bpm'>
+                                bpm
+                                <input type='text' value='4' size='2' maxsize='2' onChange={()=>null}/>
+                            </span>
                             <Slider 
                                 name='tempo' min='30' max='200' 
                                 value={this.state.tempo} 
@@ -116,11 +131,18 @@ class Loop extends React.Component {
             'gain': 1,
             'looping':false,
         }
-        this.audioLoop = props.audioLoop;    }
+        this.audioLoop = props.audioLoop;
+    }
 
-    handleMute = () => this.setState({'muted': !this.state.muted});
+    handleMute = () => {
+        this.setState({'muted': !this.state.muted});
+        this.audioLoop.toggleMute();
+    }
 
-    handleLoop = () => this.setState({'looping': !this.state.looping});
+    handleLoop = () => {
+        this.setState({'looping': !this.state.looping});
+        this.audioLoop.toggleLoop();
+    }
 
     render() {
         return (
