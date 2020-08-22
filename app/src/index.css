@@ -1,8 +1,13 @@
+
+body {
+    background-color: gainsboro;
+}
+
 .looper {
     margin: auto;
     margin-top: 50px;
     width: 800px;
-    background-color: yellow;
+    background-color: goldenrod;
     display:flex;
     flex-direction: column; 
 }
@@ -17,7 +22,7 @@
 .mainMasterLoop {
     height: 80px;
     width: 100%;
-    background-color: orange;
+    background-color: darkslategray;
     display: flex;
     flex-direction: row; 
     justify-content: center;
@@ -87,12 +92,14 @@
     width: 50px;
     font-family: "Courier New", Courier, monospace;
     display: inline-flex;
+    flex-direction: column;
     flex-wrap: wrap;
     overflow: hidden;
     border: 2px solid black;
     justify-content: center;
     align-items: center;
     margin:20px;
+    border-radius: 25px;
 }
 
 .toggled {
@@ -133,12 +140,31 @@
     overflow: hidden;
     display:flex;
     width: 100%;
-    background-color: orange;
-    flex-direction: row; 
+    background-color: slategray;
+    flex-direction: column; 
     justify-content: center;
     align-items: center;  
 }
 
 .visibleExtension{
-    height: 80px;
+    height: 110px;
 }
+
+.extensionControls {
+    width:100%;
+    height: 80px;
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.progressBar {
+    width: 100%;
+    display: flex;
+    height: 30px;
+    justify-content: center;
+    align-items: center; 
+}
+
+

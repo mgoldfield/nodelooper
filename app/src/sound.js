@@ -8,8 +8,9 @@ class AudioLoopBunch{
         this.playing = false;
         this.clicking = false;
 
-        this.mergeOutOfDate = false;
+        this.mergeOutOfDate = true;
         this.mergeNode = null;
+        this.gainNode = false;
     }
 
     getAudioContext = () => {
@@ -25,7 +26,7 @@ class AudioLoopBunch{
     }
 
     prepareToRecord(){
-        this.recordingLoop = new AudioLoop(this.getAudioContext;
+        this.recordingLoop = new AudioLoop(this.getAudioContext);
         return this.recordingLoop;
     }
 
@@ -37,10 +38,12 @@ class AudioLoopBunch{
         if (!this.recordingLoop) 
             throw Error("Record has not been prepped...something is wrong");
 
+        //(playBunch, stopBunch, loopTimeUnit, handleChunk)
         this.recordingLoop.recordBuffer(
             (() => this.playLoops()),
             (() => this.stop()),
-            this.loopTimeUnit
+            this.loopTimeUnit,
+            this.handleChunk,
         );
     }
 
@@ -62,8 +65,15 @@ class AudioLoopBunch{
         // assumes 500 ms is an acceptable and adaquate wait time
         let waitTime = .5;
 
-        if (this.mergeNode && !this.mergeOutOfDate){
-            // build new merge node
+        if (this.mergeOutOfDate){
+            this.mergeNode = this.getAudioContext().createChannelMerger(this.audioLoops.length);
+            for (let i = 0; i < this.audioLoops.length; i++){
+                this.audioLoops[i].connect(this.mergeNode, i);
+            }
+            this.gainNode = this.getAudioContext().createGain();
+            this.mergeNode.connect(this.gainNode);
+            this.gainNode.connect(this.getAudioContext().destination)
+            this.mergeOutOfDate = false;
         }
 
         let playTime = this.getAudioContext.currentTime + waitTime;
@@ -77,12 +87,16 @@ class AudioLoopBunch{
     stopLoops(){
 
     }
+
+    setGain(){
+
+    }
 }
 
 
 class AudioLoop {
     constructor(getAudioContext, chunkSize=5000){
-        this.buffer = null;
+        this.source = null;
         this.mediaRecorder = null;
         this.getAudioContext = getAudioContext;
         this.chunkSize = chunkSize;        
@@ -95,11 +109,11 @@ class AudioLoop {
     }
 
     get length(){
-        return this.buffer.length;
+        return this.source.buffer.length;
     }
 
     play(contextTime){
-        this.buffer.start(contextTime);
+        this.source.start(contextTime);
     }
 
     stop(){
@@ -111,12 +125,18 @@ class AudioLoop {
         return;
     }
 
+    toggleLoop(){
+        if (!this.source) throw Error("No buffer recorded yet...");
+        this.source.loop = !this.source.loop;
+    }
+
     setGain(g){
         return;
     }
 
     initBuffer(buffer){
-        this.buffer = buffer;
+        this.source = this.getAudioContext().createBufferSource();
+        this.source.buffer = buffer;
         this.gainNode = this.getAudioContext().createGain();
         this.buffer.connect(this.gainNode, 0);
     }
@@ -178,7 +198,8 @@ class AudioLoop {
 }
 
 class clickTrack{
-    constructor(tempo){
+    constructor(tempo, getAudioContext){
+        this.getAudioContext = getAudioContext;
         this.setTempo(tempo);
     }
 
@@ -196,7 +217,7 @@ class clickTrack{
 }
 
 
-export {AudioLoopBunch, AudioLoop};
+export default AudioLoopBunch;
 
 
 

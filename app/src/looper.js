@@ -1,6 +1,6 @@
 import React from 'react';
 import {Button, Slider} from './controls.js';
-import {AudioLoopBunch} from './sound.js';
+import AudioLoopBunch from './sound.js';
 
 
 class Looper extends React.Component {
@@ -20,6 +20,10 @@ class Looper extends React.Component {
 
     handleStop = () => {
         this.loopBunch.stop();
+        if (this.state.recording && !this.state.playing){
+            this.loopBunch.unprepareToRecord();
+            this.loops.pop();            
+        }
         this.setState({
             'playing': false,
             'recording': false,
@@ -46,7 +50,8 @@ class Looper extends React.Component {
             let id = this.counter++;
             this.loops.push(<Loop
                 key={id}
-                name={id}
+                id={id}
+                name={'loop '.concat(id)}
                 recording={true}
                 onChange={() => 2}
                 audioLoop={this.loopBunch.prepareToRecord()}
@@ -74,12 +79,22 @@ class Looper extends React.Component {
                         />
                     </div>
                     <div className={'masterExtension '.concat((this.state.expanded) ? 'visibleExtension' : '')}>
-                        <Button name='click on' onClick={this.handleClick} toggled={this.state.clicking} />
-                        <Slider 
-                            name='tempo' min='30' max='200' 
-                            value={this.state.tempo} 
-                            onChange={(e) => this.setState({'tempo': e.target.value})}
-                        />
+                        <div className='extensionControls'>
+                            <Button name='click' onClick={this.handleClick} toggled={this.state.clicking} />
+                            <Slider 
+                                name='tempo' min='30' max='200' 
+                                value={this.state.tempo} 
+                                onChange={(e) => this.setState({'tempo': e.target.value})}
+                            />
+                            <Slider 
+                                name='master' min='0' max='2' 
+                                value='1' step='0.01'
+                                onChange={(e) => this.setState({'tempo': e.target.value})}
+                            />
+                        </div>
+                        <div className='progressBar'>
+                            progressBar                       
+                        </div>                        
                     </div>
                 </div>
 
@@ -101,8 +116,7 @@ class Loop extends React.Component {
             'gain': 1,
             'looping':false,
         }
-        this.audioLoop = props.audioLoop;
-    }
+        this.audioLoop = props.audioLoop;    }
 
     handleMute = () => this.setState({'muted': !this.state.muted});
 
@@ -113,14 +127,14 @@ class Loop extends React.Component {
             <li className="loopItem">
                 <div className={(this.props.recording) ? 'recordingDot' : 'dot'} />
                 <input type='text' value={this.state.name} onChange={this.props.onChange}/>
-                <Button name='mute' onClick={this.handleMute} toggled={this.state.muted}/>
-                <Button name='loop' onClick={this.handleLoop} toggled={this.state.looping}/>
                 <Slider 
                     name='gain' min='0' max='2' 
                     value={this.state.gain} 
                     onChange={(e) => this.setState({'gain': e.target.value})}
                     step="0.01"
-                />              
+                />  
+                <Button name='mute' onClick={this.handleMute} toggled={this.state.muted}/>
+                <Button name='loop' onClick={this.handleLoop} toggled={this.state.looping}/>                            
             </li>
         );
     }
