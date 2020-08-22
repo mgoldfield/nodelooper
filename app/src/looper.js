@@ -1,6 +1,6 @@
 import React from 'react';
 import {Button, Slider} from './controls.js';
-import {AudioLoopBunch, AudioLoop} from './sound.js';
+import {AudioLoopBunch} from './sound.js';
 
 
 class Looper extends React.Component {
