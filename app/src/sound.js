@@ -1,9 +1,6 @@
 
-
-class LoopBunch{
-
-    constructor(chunkSize=5000){
-        this.chunkSize = chunkSize; // milliseconds
+class AudioLoopBunch{
+    constructor(){
         this.audioLoops=[];
         this.recordingLoop = null;
         this.loopTimeUnit = null;
@@ -21,24 +18,36 @@ class LoopBunch{
         return this._audioContext;
     }
 
-    record(){
+    prepareToRecord(){
         this.recordingLoop = new AudioLoop(this.audioContext);
+        return this.recordingLoop;
+    }
+
+    unprepareToRecord(){
+        this.recordingLoop = null;
+    }
+
+    record(){
+        if (!this.recordingLoop) 
+            throw "Record has not been prepped...something is wrong";
+
         this.recordingLoop.recordBuffer(
-            () => this.playLoops();,
-            () => this.stop();,
+            (() => this.playLoops()),
+            (() => this.stop()),
             this.loopTimeUnit
         );
     }
 
     stop(){
         if (this.recording){
+            this.recordingLoop.stop();
             if (!this.audioLoops.length) 
                 this.loopTimeUnit = this.recordingLoop.length;
             this.audioLoops.push(this.recordingLoop);
             this.recordingLoop = null;
             this.recording = false;
         }
-        stopLoops();
+        this.stopLoops();
     }
 
     playLoops(){
@@ -52,16 +61,44 @@ class LoopBunch{
 
 
 class AudioLoop {
-    constructor(getAudioContext){
+    constructor(getAudioContext, chunkSize=5000){
         this.buffer = null;
+        this.mediaRecorder = null;
         this.getAudioContext = getAudioContext;
+        this.chunkSize = chunkSize;        
+
         this.recording = false;
         this.playing = false;
-        this.mediaRecorder = null;
+        this.muted = false;
+
+        this.gainNode = null
     }
 
     get length(){
         return this.buffer.length;
+    }
+
+    play(contextTime){
+        this.buffer.start(contextTime);
+    }
+
+    stop(){
+        if (this.recording) this.mediaRecorder.stop();
+        if (this.playing) this.buffer.stop();
+    }
+
+    mute(){
+        return;
+    }
+
+    initBuffer(buffer){
+        this.buffer = buffer;
+        this.gainNode = this.getAudioContext().createGain();
+        this.buffer.connect(this.gainNode, 0);
+    }
+
+    connect(dest, index){
+        this.gainNode.connect(dest, 0, index);
     }
 
     trimAudio(buffer, lengthToTrim, side){
@@ -75,51 +112,48 @@ class AudioLoop {
            trimmedAudio = trimmedAudio.slice(0, buffer.length - samplesToTrim); 
         }
 
-        returnBuffer = this.audioContext.createBuffer(1, trimmedAudio.length, buffer.sampleRate);
+        let returnBuffer = this.audioContext.createBuffer(1, trimmedAudio.length, buffer.sampleRate);
         returnBuffer.copyToChannel(trimmedAudio, 0, 0);        
         return returnBuffer;
     }    
 
-    recordBuffer(playBunch, stopBunch, loopTimeUnit){
-        if (this.recording){
-            throw "already recording";
-        }else{
-            this.recording = true;
-        }
+    recordBuffer(playBunch, stopBunch, loopTimeUnit, handleChunk){
+        if (this.recording) throw "already recording"; else this.recording = true;
 
-        let stream = await navigator.mediaDevices.getUserMedia({
+        navigator.mediaDevices.getUserMedia({
             video: false,
             audio: {echoCancellation: false, noiseSuppression: false, autoGainControl: false} 
-        });
-        
-        this.mediaRecorder = new MediaRecorder(stream);
-        let startTime = null; // audiocontext time at recording start
-        let playTime = null; // audiocontext time when playing starts
+        })
+        .then((stream) => {
+            this.mediaRecorder = new MediaRecorder(stream);
+            let startTime = null; // audiocontext time at recording start
+            let playTime = null; // audiocontext time when playing starts
 
-        let audioChunks = [];
-        this.mediaRecorder.addEventListener("dataavailable", event => {
-            audioChunks.push(event.data);
-            handleChunk(event.data);
-        });
+            let audioChunks = [];
+            this.mediaRecorder.addEventListener("dataavailable", event => {
+                audioChunks.push(event.data);
+                handleChunk(event.data);
+            });
 
-        this.mediaRecorder.addEventListener("stop", async () => {
-            stopBunch();
-            const blob = new Blob(audioChunks);
-            let buffer = await this.audioContext.decodeAudioData(await blob.arrayBuffer());
-            //toDo: determine if buffer needs baseLatency trimmed from the end
-            //toDo: round buffer to multiple of initial loop
-            this.buffer = this.trimAudio(buffer, playTime - startTime, 'begin');
-        });
+            this.mediaRecorder.addEventListener("stop", async () => {
+                stopBunch();
+                const blob = new Blob(audioChunks);
+                let buffer = await this.audioContext.decodeAudioData(await blob.arrayBuffer());
+                //toDo: determine if buffer needs baseLatency trimmed from the end
+                //toDo: round buffer to multiple of initial loop
+                this.initBuffer(this.trimAudio(buffer, playTime - startTime, 'begin'));
+            });
 
-        this.mediaRecorder.addEventListener("start", () = {
-            startTime = this.audioContext.currentTime;
-            playTime = playBunch();  
+            this.mediaRecorder.addEventListener("start", () => {
+                startTime = this.audioContext.currentTime;
+                playTime = playBunch();
+            });
+            this.mediaRecorder.start(this.chunkSize);
         });
-        this.mediaRecorder.start(this.audioContext.currentTime, length)                 
     }
 }
 
-class clickTrack(){
+class clickTrack{
     constructor(tempo){
         this.setTempo(tempo);
     }

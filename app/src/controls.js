@@ -31,7 +31,6 @@ class Button extends React.Component {
     }
 }
 
-
 class Slider extends React.Component {
     constructor(props){
         super(props);

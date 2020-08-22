@@ -1,6 +1,6 @@
 import React from 'react';
-
 import {Button, Slider} from './controls.js';
+import {AudioLoopBunch, AudioLoop} from './sound.js';
 
 
 class Looper extends React.Component {
@@ -13,33 +13,45 @@ class Looper extends React.Component {
             'clicking': false,
             'tempo': 60,
         }
-        this.loops = []  
+        this.counter = 0;
+        this.loops = [];
+        this.loopBunch = new AudioLoopBunch();
     }
 
-    handleStop = () => null;
+    handleStop = () => {
+        this.loopBunch.stop();
+        this.setState({
+            'playing': false,
+            'recording': false,
+        });
+    }
 
     handlePlay = () => {
-        if (this.state.recording){
-
-        }
-
         this.setState({'playing': !this.state.playing});
+        if (this.state.recording){
+            this.loopBunch.record();
+        }
     }
 
     handleRec = () => {
         if (this.state.recording){
-            if (this.state.playing) this.pressStop(); else this.loops.pop();
+            if (this.state.playing) 
+                this.pressStop(); 
+            else{
+                this.loopBunch.unprepareToRecord();
+                this.loops.pop();
+            }
         }else{
             // toDo: check recording lock when it exists
-            let name = "Loop " + this.loops.length.toString();
-            this.loops.push(<Loop 
-                key={name}
-                name={name}
+            let id = this.counter++;
+            this.loops.push(<Loop
+                key={id}
+                name={id}
                 recording={true}
                 onChange={() => 2}
+                audioLoop={this.loopBunch.prepareToRecord()}
             />);
         }
-
         this.setState({'recording': !this.state.recording});
     } 
 
@@ -55,11 +67,11 @@ class Looper extends React.Component {
                         <Button name='stop' onClick={this.handleStop} />
                         <Button name='play' onClick={this.handlePlay} toggled={this.state.playing} />
                         <Button name='rec' onClick={this.handleRec} toggled={this.state.recording} />
+                        <Button name='quant' onClick={this.handleQuant} toggled={this.state.quantized} />
                         <Button 
                             name={(this.state.expanded) ? 'collapse' : 'expand'}
                             onClick={() => this.setState({'expanded': !this.state.expanded})} 
                         />
-                        <Button name='quant' onClick={this.handleQuant} toggled={this.state.quantized} />
                     </div>
                     <div className={'masterExtension '.concat((this.state.expanded) ? 'visibleExtension' : '')}>
                         <Button name='click on' onClick={this.handleClick} toggled={this.state.clicking} />
@@ -89,11 +101,12 @@ class Loop extends React.Component {
             'gain': 1,
             'looping':false,
         }
+        this.audioLoop = props.audioLoop;
     }
 
-    handleMute = () => this.setState({'muted': !this.state.muted})
+    handleMute = () => this.setState({'muted': !this.state.muted});
 
-    handleLoop = () => this.setState({'looping': !this.state.looping})
+    handleLoop = () => this.setState({'looping': !this.state.looping});
 
     render() {
         return (
@@ -112,6 +125,7 @@ class Loop extends React.Component {
         );
     }
 }
+
 
 export default Looper;
 
