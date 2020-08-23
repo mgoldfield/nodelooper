@@ -13,6 +13,7 @@ class Looper extends React.Component {
             'clicking': false,
             'countIn': false,
             'tempo': 60,
+            'loopRecStatus': [],
         }
         this.counter = 0;
         this.loops = [];
@@ -21,9 +22,13 @@ class Looper extends React.Component {
 
     handleStop = () => {
         this.loopBunch.stop();
-        if (this.state.recording && !this.state.playing){
-            this.loopBunch.unprepareToRecord();
-            this.loops.pop();            
+        if (this.state.recording){
+            if (this.state.playing){
+                this.finishRecording();
+            }else{
+                this.loopBunch.unprepareToRecord();
+                this.loops.pop();
+            }          
         }
         this.setState({
             'playing': false,
@@ -45,6 +50,7 @@ class Looper extends React.Component {
             else{
                 this.loopBunch.unprepareToRecord();
                 this.loops.pop();
+                this.finishRecording = null;
             }
         }else{
             // toDo: check recording lock when it exists
@@ -55,6 +61,7 @@ class Looper extends React.Component {
                 name={'loop '.concat(id)}
                 recording={true}
                 audioLoop={this.loopBunch.prepareToRecord(id)}
+                handleToggleRecording={(f) => this.finishRecording = f}
             />);
         }
         this.setState({'recording': !this.state.recording});
@@ -130,25 +137,30 @@ class Loop extends React.Component {
             'muted': false,
             'gain': 1,
             'looping':false,
+            'recording': props.recording,
         }
         this.audioLoop = props.audioLoop;
+        this.props.handleToggleRecording(() => this.setState({'recording': false}));
     }
 
     handleMute = () => {
         this.setState({'muted': !this.state.muted});
         this.audioLoop.toggleMute();
-    }
+    };
 
     handleLoop = () => {
         this.setState({'looping': !this.state.looping});
         this.audioLoop.toggleLoop();
-    }
+    };
 
     render() {
         return (
             <li className="loopItem">
-                <div className={(this.props.recording) ? 'recordingDot' : 'dot'} />
-                <input type='text' value={this.state.name} onChange={this.props.onChange}/>
+                <div className={(this.state.recording) ? 'recordingDot' : 'dot'} />
+                <input type='text' 
+                    value={this.state.name} 
+                    onChange={(e) => this.setState({'name': e.target.value})}
+                />
                 <Slider 
                     name='gain' min='0' max='2' 
                     value={this.state.gain} 

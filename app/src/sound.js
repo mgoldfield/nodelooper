@@ -54,7 +54,7 @@ class AudioLoopBunch{
     stop(){
         if (this.recording){
             this.recordingLoop.stop();
-            if (!this.audioLoops.length) 
+            if (!this.loopTimeUnit) 
                 this.loopTimeUnit = this.recordingLoop.length;
             this.audioLoops.push(this.recordingLoop);
             this.recordingLoop = null;
@@ -130,9 +130,11 @@ class AudioLoop {
     }
 
     stop(){
-        if (this.recording) this.mediaRecorder.stop();
+        if (this.recording) {
+            this.mediaRecorder.stop();
+            this.recording = false;
+        }
         if (this.playing) this.source.stop();
-        this.recording = false;
         this.playing = false;
     }
 
