@@ -37,9 +37,15 @@ class Looper extends React.Component {
     }
 
     handlePlay = () => {
-        this.setState({'playing': !this.state.playing});
-        if (this.state.recording){
-            this.loopBunch.record();
+        if (this.state.playing){
+            this.handleStop();
+        }else{
+            this.setState({'playing': !this.state.playing});
+            if (this.state.recording){
+                this.loopBunch.record();
+            }else{
+                this.loopBunch.playLoops();
+            }
         }
     }
 
@@ -121,7 +127,7 @@ class Looper extends React.Component {
                 </div>
 
 
-                <div className="fade-in">
+                <div className='loops'>
                     <ul className='loopList'>{this.loops}</ul>
                 </div>
             </div>
