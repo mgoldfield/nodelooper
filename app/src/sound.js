@@ -83,6 +83,7 @@ class AudioLoopBunch{
 
     playLoops(){
         // assumes 500 ms is an acceptable and adaquate wait time
+        // toDo: only count in when recording
         let waitTime = 0.5;
         let clickStartTime = this.getAudioContext().currentTime + waitTime;
         let playTime = clickStartTime + this.clickTrack.countInTime;
@@ -90,6 +91,8 @@ class AudioLoopBunch{
         console.log("countin time %s", this.clickTrack.countInTime);
         console.log("clicktime %s", clickStartTime);
         console.log("playtime %s", playTime);
+        console.log("baseLatency %s", this.getAudioContext().baseLatency);
+        console.log("outputLatency %s", this.getAudioContext().outputLatency);
 
         this.refreshMergeNode();
         this.clickTrack.start(clickStartTime);
@@ -139,6 +142,7 @@ class AudioLoop {
         this.source.connect(this.gainNode, 0);
         this.source.loop = this.looping;
         this.source.start(contextTime);
+        console.log("calling start at %s, contextTime %s", this.getAudioContext().currentTime, contextTime);
     }
 
     stop(){
@@ -231,6 +235,7 @@ class AudioLoop {
 
             this.mediaRecorder.addEventListener("start", () => {
                 startTime = this.getAudioContext().currentTime;
+                console.log("recording start: %s", startTime);
                 playTime = playBunch();
             });
             this.mediaRecorder.start(this.chunkSize);
