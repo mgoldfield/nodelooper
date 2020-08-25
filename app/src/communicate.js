@@ -1,5 +1,7 @@
 
 class Communication {
 
-    handleChunk(id, chunk);
+    handleChunk(id, chunk) {
+        return;
+    }
 }

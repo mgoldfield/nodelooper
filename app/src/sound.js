@@ -6,7 +6,7 @@ class AudioLoopBunch{
         this.loopTimeUnit = null;
 
         this.playing = false;
-        this.clickTrack = new ClickTrack();
+        this.clickTrack = new ClickTrack(this.getAudioContext);
 
         this.mergeOutOfDate = true;
         this.mergeNode = null;
@@ -166,7 +166,7 @@ class AudioLoop {
     }
 
     setGain(g){
-        this.gainNode.setValueAtTime(g, this.getAudioContext().currentTime)
+        this.gainNode.setValueAtTime(g, this.getAudioContext().currentTime);
     }
 
     connect(dest, index){
@@ -235,16 +235,46 @@ class AudioLoop {
 }
 
 class ClickTrack{
-    constructor(tempo, getAudioContext){
+    // metronome inspired by https://blog.paul.cx/post/metronome/
+
+    constructor(getAudioContext){
         this.getAudioContext = getAudioContext;
-        this.setTempo(tempo);
+        this.tempo = 60;
         this.bpm = 4;
         this.countIn = false;
         this.clicking = false;
+
+        this.initBuf();
     }
+
+    initBuff(){
+        this.buffer = this.getAudioContext().createBuffer(1, this.getAudioContext().sampleRate * 2, this.getAudioContext().sampleRate);
+
+        let channel = this.buffer.getChannelData(0);
+        let phase = 0;
+        let amp = 1;
+        let duration_frames = this.getAudioContext().sampleRate / 50;
+
+        const f = 330;
+
+        for (var i = 0; i < duration_frames; i++) {
+            channel[i] = Math.sin(phase) * amp;
+            phase += 2 * Math.PI * f / this.getAudioContext().sampleRate;
+            if (phase > 2 * Math.PI) {
+                phase -= 2 * Math.PI;
+            }
+            amp -= 1 / duration_frames;
+        }   
+    }    
 
     setTempo(tempo){
         this.tempo = tempo;
+        if (this.clicking)
+            this.source.loopEnd = this.secondsPerBeat;
+    }
+
+    get secondsPerBeat(){
+        return 1 / (this.tempo / 60);
     }
 
     setBpm(bpm){
@@ -252,15 +282,27 @@ class ClickTrack{
     }
 
     get countInTime(){
-        return 0;
+        if (this.countIn)
+            return this.bpm * this.secondsPerBeat;
+        else 
+            return 0;
     }
 
     start(time){
-        return;
-    }
+        if (this.clicking) 
+            throw Error("Already clicking...");
+
+        this.source = this.getAudioContext().createBufferSource();
+        this.source.buffer = this.buffer;
+        this.source.loop = true;
+        this.source.loopEnd = this.secondsPerBeat;
+        this.source.connect(this.getAudioContext().destination);
+        this.source.start(time); 
+    }           
 
     stop(){
-        return;
+        this.source.stop();
+        this.source.disconnect();
     }
 }
 

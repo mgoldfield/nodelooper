@@ -14,6 +14,7 @@ class Looper extends React.Component {
             'countIn': false,
             'tempo': 60,
             'loopRecStatus': [],
+            'gain': 1,
         }
         this.counter = 0;
         this.loops = [];
@@ -34,7 +35,7 @@ class Looper extends React.Component {
             'playing': false,
             'recording': false,
         });
-    }
+    };
 
     handlePlay = () => {
         if (this.state.playing){
@@ -47,7 +48,7 @@ class Looper extends React.Component {
                 this.loopBunch.playLoops();
             }
         }
-    }
+    };
 
     handleRec = () => {
         if (this.state.recording){
@@ -71,21 +72,31 @@ class Looper extends React.Component {
             />);
         }
         this.setState({'recording': !this.state.recording});
-    } 
+    };
 
     handleQuant = () => {
         this.setState({'quantized': !this.state.quantized});
-    }
+    };
 
     handleClick = () => {
         this.setState({'clicking': !this.state.clicking});
         this.AudioLoopBunch.clickTrack.clicking = this.state.clicking;
-    }
+    };
 
     handleCountIn = () => {
         this.setState({'countIn': !this.state.countIn});
         this.AudioLoopBunch.clickTrack.countIn = this.state.countIn;
-    }
+    };
+
+    handleTempo = (e) => {
+        this.setState({'tempo': e.target.value});
+        this.AudioLoopBunch.clickTrack.setTempo(this.state.tempo);
+    };
+
+    handleMaster = (e) => {
+        this.setState({'gain': e.target.value});
+        this.gainNode.setValueAtTime(this.state.gain, this.getAudioContext().currentTime);
+    };
 
     render() {
         return (
@@ -112,12 +123,12 @@ class Looper extends React.Component {
                             <Slider 
                                 name='tempo' min='30' max='200' 
                                 value={this.state.tempo} 
-                                onChange={(e) => this.setState({'tempo': e.target.value})}
+                                onChange={this.handleTempo}
                             />
                             <Slider 
                                 name='master' min='0' max='2' 
                                 value='1' step='0.01'
-                                onChange={(e) => this.setState({'tempo': e.target.value})}
+                                onChange={this.handleMaster}
                             />
                         </div>
                         <div className='progressBar'>
