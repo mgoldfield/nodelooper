@@ -77,6 +77,7 @@ class Looper extends React.Component {
                 audioLoop={this.loopBunch.prepareToRecord(id)}
                 handleToggleRecording={(f) => this.finishRecording = f}
             />);
+
         }
         this.setState({'recording': !this.state.recording});
     };
@@ -174,7 +175,7 @@ class Loop extends React.Component {
             // toDo: what to do with names
             'name': props.name,
             'muted': this.audioLoop.muted,
-            'gain': this.audioLoop.gainNode.gain,
+            'gain': this.audioLoop.gainNode.gain.value,
             'looping': this.audioLoop.looping,
             'recording': props.recording,
         }
@@ -186,7 +187,7 @@ class Loop extends React.Component {
         this.audioLoop.toggleMute();
         this.setState({
             'muted': this.audioLoop.muted,
-            'gain': this.audioLoop.gainNode.gain,
+            'gain': this.audioLoop.gainNode.gain.value,
         });
         
     };
