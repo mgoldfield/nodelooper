@@ -19,8 +19,7 @@ class Looper extends React.Component {
             'gain': 1,
         }
         this.counter = 0;
-        this.loops = [];
-        
+        this.loops = [];  
     }
 
     handleStop = () => {
@@ -86,18 +85,19 @@ class Looper extends React.Component {
     };
 
     handleCountIn = () => {
+        // toDo: don't allow countIn if click isnt selected
         this.setState({'countIn': !this.loopBunch.clickTrack.countIn});
         this.loopBunch.clickTrack.countIn = !this.loopBunch.clickTrack.countIn;
     };
 
     handleTempo = (e) => {
         this.setState({'tempo': e.target.value});
-        this.loopBunch.clickTrack.setTempo(this.state.tempo);
+        this.loopBunch.clickTrack.setTempo(e.target.value);
     };
 
     handleMaster = (e) => {
         this.setState({'gain': e.target.value});
-        this.loopBunch.gainNode.setValueAtTime(this.state.gain, this.loopBunch.getAudioContext().currentTime);
+        this.loopBunch.gainNode.gain.setValueAtTime(e.target.value, this.loopBunch.getAudioContext().currentTime);
     };
 
     handleBpm = (e) => {

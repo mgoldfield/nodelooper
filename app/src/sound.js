@@ -38,7 +38,7 @@ class AudioLoopBunch{
 
         this.recording = true;
 
-        //(playBunch, stopBunch, loopTimeUnit, handleChunk)
+        //(playBunch, stopBunch, handleChunk, clickTrack)
         this.recordingLoop.recordBuffer(
             (() => this.playLoops()),
             (() => {
@@ -46,8 +46,8 @@ class AudioLoopBunch{
                 if (!this.loopTimeUnit) 
                     this.loopTimeUnit = this.recordingLoop.length;
             }),
-            this.loopTimeUnit,
             this.handleChunk,
+            this.clickTrack,
         );
     }
 
@@ -141,8 +141,8 @@ class AudioLoop {
         this.source.buffer = this.buffer;
         this.source.connect(this.gainNode, 0);
         this.source.loop = this.looping;
-        this.source.start(contextTime);
-        console.log("calling start at %s, contextTime %s", this.getAudioContext().currentTime, contextTime);
+        this.source.start(contextTime - this.getAudioContext().outputLatency);
+        console.log("play: calling start at %s, contextTime %s", this.getAudioContext().currentTime, contextTime);
     }
 
     stop(){
@@ -174,7 +174,7 @@ class AudioLoop {
     }
 
     setGain(g){
-        this.gainNode.setValueAtTime(g, this.getAudioContext().currentTime);
+        this.gainNode.gain.setValueAtTime(g, this.getAudioContext().currentTime);
     }
 
     connect(dest, index){
@@ -185,8 +185,9 @@ class AudioLoop {
         this.gainNode.disconnect();
     }
 
-    trimAudio(buffer, lengthToTrim, side){
-        let samplesToTrim = lengthToTrim * buffer.sampleRate;
+    trimAudio(buffer, targetLength, side){
+        let samplesToTrim = buffer.length - (targetLength * buffer.sampleRate);
+        console.log("trimming %s from buffer of length %s", samplesToTrim / buffer.sampleRate, buffer.length / buffer.sampleRate);
         let trimmedAudio = new Float32Array(buffer.length);
         buffer.copyFromChannel(trimmedAudio, 0, 0);
 
@@ -201,15 +202,16 @@ class AudioLoop {
         return returnBuffer;
     }
 
-    handleChunks = async function(audioChunks, trimFromStart){
+    handleChunks = async function(audioChunks, targetLength){
         const blob = new Blob(audioChunks);
         let buffer = await this.getAudioContext().decodeAudioData(await blob.arrayBuffer());
+        console.log("full recorded length %s", buffer.length / buffer.sampleRate);
         //toDo: determine if buffer needs baseLatency trimmed from the end
         //toDo: round buffer to multiple of initial loop
-        this.buffer = this.trimAudio(buffer, trimFromStart, 'begin');
+        this.buffer = this.trimAudio(buffer, targetLength, 'begin');
     };
 
-    recordBuffer(playBunch, stopBunch, loopTimeUnit, handleChunk){
+    recordBuffer(playBunch, stopBunch, handleChunk, clickTrack){
         if (this.recording) throw Error("already recording"); else this.recording = true;
 
         navigator.mediaDevices.getUserMedia({
@@ -228,7 +230,9 @@ class AudioLoop {
             });
 
             this.mediaRecorder.addEventListener("stop", async () => {
-                await this.handleChunks(audioChunks, playTime - startTime);
+                console.log("recording stop: %s", this.getAudioContext().currentTime);
+                let stopTime = this.getAudioContext().currentTime;
+                await this.handleChunks(audioChunks, stopTime - playTime);
                 stopBunch();
                  
             });
@@ -287,7 +291,6 @@ class ClickTrack{
     }
 
     get countInTime(){
-        console.log("here... %s", this.secondsPerBeat);
         console.log("countin %s", this.countIn)
         if (this.countIn)
             return this.bpm * this.secondsPerBeat;
@@ -304,7 +307,7 @@ class ClickTrack{
         this.source.loop = true;
         this.source.loopEnd = this.secondsPerBeat;
         this.source.connect(this.getAudioContext().destination);
-        this.source.start(time); 
+        this.source.start(time - this.getAudioContext().outputLatency); 
     }           
 
     stop(){
