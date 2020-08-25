@@ -147,11 +147,14 @@ class AudioLoop {
     }
 
     play(contextTime){
+        if (this.playing) return;
+
         this.playing = true;
         this.source = this.getAudioContext().createBufferSource();
         this.source.buffer = this.buffer;
         this.source.connect(this.gainNode, 0);
         this.source.loop = this.looping;
+        //toDo: is this the right thing to do with outputLatency?
         this.source.start(contextTime - this.getAudioContext().outputLatency);
     }
 
@@ -205,8 +208,6 @@ class AudioLoop {
         trimmedAudio = trimmedAudio.slice(samplesToTrim);
 
         if (quantized && (quantUnit > 0)){
-            console.log("targetLength %s", targetLength);
-            console.log("quantUnit %s", quantUnit);
             let remainder = targetLength % quantUnit;
 
             // threshold of over 3/10 of a measure, assume user is intentonally 
@@ -214,16 +215,15 @@ class AudioLoop {
             if ((remainder / quantUnit) > .3){ 
                 let toAdd = Math.round((quantUnit - remainder) * buffer.sampleRate);
                 let quantizedAudio = new Float32Array(trimmedAudio.length + toAdd);
-                console.log("adding %s samples for quantization to %s", toAdd, trimmedAudio.length);
                 quantizedAudio.set(trimmedAudio);
                 trimmedAudio = quantizedAudio;
             }else{
                 let toTrim = Math.round(remainder * buffer.sampleRate);
-                console.log("trimming %s samples from quantization to %s", toTrim, trimmedAudio.length);                
                 trimmedAudio = trimmedAudio.slice(0, trimmedAudio.length - toTrim);
             }           
         }
 
+        // allow for a 0 lenghth / dead buffer
         let returnBuffer = this.getAudioContext().createBuffer(1, trimmedAudio.length, buffer.sampleRate);
         returnBuffer.copyToChannel(trimmedAudio, 0, 0);        
         return returnBuffer;
@@ -254,6 +254,8 @@ class AudioLoop {
                 handleChunk(event.data);
             });
 
+
+            // toDo: examine assumptions about outputLatency
             this.mediaRecorder.addEventListener("stop", async () => {
                 let stopTime = this.getAudioContext().currentTime;
                 await this.handleChunks(audioChunks, 
@@ -279,7 +281,7 @@ class ClickTrack{
         this.getAudioContext = getAudioContext;
         this.tempo = 60;
         this.bpm = 4;
-        this.countIn = false;
+        this.countIn = true;
         this.clicking = true;
 
         this.initBuff();

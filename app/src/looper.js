@@ -19,8 +19,6 @@ class Looper extends React.Component {
             'loopRecStatus': [],
             'gain': 1,
         }
-        console.log(this.state);
-        console.log(this.loopBunch);
         this.counter = 0;
         this.loops = [];
 
@@ -171,26 +169,31 @@ class Looper extends React.Component {
 class Loop extends React.Component {
     constructor(props){
         super(props);
+        this.audioLoop = props.audioLoop;
         this.state = {
             // toDo: what to do with names
             'name': props.name,
-            'muted': false,
-            'gain': 1,
-            'looping':false,
+            'muted': this.audioLoop.muted,
+            'gain': this.audioLoop.gainNode.gain,
+            'looping': this.audioLoop.looping,
             'recording': props.recording,
         }
-        this.audioLoop = props.audioLoop;
+        
         this.props.handleToggleRecording(() => this.setState({'recording': false}));
     }
 
     handleMute = () => {
-        this.setState({'muted': !this.state.muted});
         this.audioLoop.toggleMute();
+        this.setState({
+            'muted': this.audioLoop.muted,
+            'gain': this.audioLoop.gainNode.gain,
+        });
+        
     };
 
     handleLoop = () => {
-        this.setState({'looping': !this.state.looping});
         this.audioLoop.toggleLoop();
+        this.setState({'looping': this.audioLoop.looping});
     };
 
     handleGain = (e) => {
