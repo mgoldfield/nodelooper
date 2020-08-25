@@ -10,6 +10,7 @@ body {
     background-color: goldenrod;
     display:flex;
     flex-direction: column; 
+    font-family: "Courier New", Courier, monospace;
 }
 
 .masterLoop {
@@ -89,7 +90,6 @@ body {
 .button {
     height: 50px;
     width: 50px;
-    font-family: "Courier New", Courier, monospace;
     display: inline-flex;
     flex-direction: column;
     flex-wrap: wrap;

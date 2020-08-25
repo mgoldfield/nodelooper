@@ -5,7 +5,7 @@ class AudioLoopBunch{
         this.recordingLoop = null;
 
         this.clickTrack = new ClickTrack(this.getAudioContext);
-        this.quantized = false;
+        this.quantized = true;
 
         this.recording = false;
         this.playing = false;
@@ -67,6 +67,7 @@ class AudioLoopBunch{
         }
         this.stopLoops();
         this.playing = false;
+        this.updateProgressBar(0);
     }
 
     refreshMergeNode(){
@@ -203,7 +204,9 @@ class AudioLoop {
         buffer.copyFromChannel(trimmedAudio, 0, 0);
         trimmedAudio = trimmedAudio.slice(samplesToTrim);
 
-        if (quantized){
+        if (quantized && (quantUnit > 0)){
+            console.log("targetLength %s", targetLength);
+            console.log("quantUnit %s", quantUnit);
             let remainder = targetLength % quantUnit;
 
             // threshold of over 3/10 of a measure, assume user is intentonally 
@@ -211,10 +214,12 @@ class AudioLoop {
             if ((remainder / quantUnit) > .3){ 
                 let toAdd = Math.round((quantUnit - remainder) * buffer.sampleRate);
                 let quantizedAudio = new Float32Array(trimmedAudio.length + toAdd);
+                console.log("adding %s samples for quantization to %s", toAdd, trimmedAudio.length);
                 quantizedAudio.set(trimmedAudio);
                 trimmedAudio = quantizedAudio;
             }else{
                 let toTrim = Math.round(remainder * buffer.sampleRate);
+                console.log("trimming %s samples from quantization to %s", toTrim, trimmedAudio.length);                
                 trimmedAudio = trimmedAudio.slice(0, trimmedAudio.length - toTrim);
             }           
         }
@@ -275,7 +280,7 @@ class ClickTrack{
         this.tempo = 60;
         this.bpm = 4;
         this.countIn = false;
-        this.clicking = false;
+        this.clicking = true;
 
         this.initBuff();
     }

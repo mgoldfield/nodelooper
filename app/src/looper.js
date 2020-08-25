@@ -8,16 +8,19 @@ class Looper extends React.Component {
         super(props);
         this.loopBunch = new AudioLoopBunch();
         this.state = {
-            'expanded': false,
-            'recording': false,
-            'playing': false,
-            'clicking': false,
-            'countIn': false,
+            'expanded': true,
+            'recording': this.loopBunch.recording,
+            'playing': this.loopBunch.playing,
+            'clicking': this.loopBunch.clickTrack.clicking,
+            'countIn': this.loopBunch.clickTrack.countIn,
+            'quantized': this.loopBunch.quantized,
             'tempo': this.loopBunch.clickTrack.tempo,
             'bpm': this.loopBunch.clickTrack.bpm,
             'loopRecStatus': [],
             'gain': 1,
         }
+        console.log(this.state);
+        console.log(this.loopBunch);
         this.counter = 0;
         this.loops = [];
 
@@ -98,6 +101,7 @@ class Looper extends React.Component {
     };
 
     handleTempo = (e) => {
+        // don't allow tempo change during play if quantized
         this.setState({'tempo': e.target.value});
         this.loopBunch.clickTrack.setTempo(e.target.value);
     };
@@ -140,7 +144,7 @@ class Looper extends React.Component {
                                 onChange={this.handleTempo}
                             />
                             <Slider 
-                                name='master' min='0' max='5' 
+                                name='master' min='0' max='10' 
                                 value='1' step='0.01'
                                 onChange={this.handleMaster}
                             />
@@ -203,7 +207,7 @@ class Loop extends React.Component {
                     onChange={(e) => this.setState({'name': e.target.value})}
                 />
                 <Slider 
-                    name='gain' min='0' max='5' 
+                    name='gain' min='0' max='10' 
                     value={this.state.gain} 
                     onChange={this.handleGain}
                     step="0.01"
