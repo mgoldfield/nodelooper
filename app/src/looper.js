@@ -52,6 +52,7 @@ class Looper extends React.Component {
     };
 
     handleRec = () => {
+        // toDo: don't allow record if progress bar isn't at the beginning
         if (this.state.recording){
             if (this.state.playing) 
                 this.pressStop(); 
@@ -76,16 +77,18 @@ class Looper extends React.Component {
     };
 
     handleQuant = () => {
-        this.setState({'quantized': !this.state.quantized});
+        this.setState({'quantized': !this.loopBunch.quantized});
+        this.loopBunch.quantized = !this.loopBunch.quantized;
     };
 
     handleClick = () => {
+        // toDo: don't allow uncheck clicking while playing        
         this.setState({'clicking': !this.loopBunch.clickTrack.clicking});
         this.loopBunch.clickTrack.clicking = !this.loopBunch.clickTrack.clicking;
     };
 
     handleCountIn = () => {
-        // toDo: don't allow countIn if click isnt selected
+        // toDo: don't allow countIn if click isnt selected, grey out button
         this.setState({'countIn': !this.loopBunch.clickTrack.countIn});
         this.loopBunch.clickTrack.countIn = !this.loopBunch.clickTrack.countIn;
     };
