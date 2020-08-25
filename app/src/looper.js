@@ -6,19 +6,21 @@ import AudioLoopBunch from './sound.js';
 class Looper extends React.Component {
     constructor(props){
         super(props);
+        this.loopBunch = new AudioLoopBunch();
         this.state = {
             'expanded': false,
             'recording': false,
             'playing': false,
             'clicking': false,
             'countIn': false,
-            'tempo': 60,
+            'tempo': this.loopBunch.clickTrack.tempo,
+            'bpm': this.loopBunch.clickTrack.bpm,
             'loopRecStatus': [],
             'gain': 1,
         }
         this.counter = 0;
         this.loops = [];
-        this.loopBunch = new AudioLoopBunch();
+        
     }
 
     handleStop = () => {
@@ -79,23 +81,28 @@ class Looper extends React.Component {
     };
 
     handleClick = () => {
-        this.setState({'clicking': !this.state.clicking});
-        this.AudioLoopBunch.clickTrack.clicking = this.state.clicking;
+        this.setState({'clicking': !this.loopBunch.clickTrack.clicking});
+        this.loopBunch.clickTrack.clicking = !this.loopBunch.clickTrack.clicking;
     };
 
     handleCountIn = () => {
-        this.setState({'countIn': !this.state.countIn});
-        this.AudioLoopBunch.clickTrack.countIn = this.state.countIn;
+        this.setState({'countIn': !this.loopBunch.clickTrack.countIn});
+        this.loopBunch.clickTrack.countIn = !this.loopBunch.clickTrack.countIn;
     };
 
     handleTempo = (e) => {
         this.setState({'tempo': e.target.value});
-        this.AudioLoopBunch.clickTrack.setTempo(this.state.tempo);
+        this.loopBunch.clickTrack.setTempo(this.state.tempo);
     };
 
     handleMaster = (e) => {
         this.setState({'gain': e.target.value});
-        this.gainNode.setValueAtTime(this.state.gain, this.getAudioContext().currentTime);
+        this.loopBunch.gainNode.setValueAtTime(this.state.gain, this.loopBunch.getAudioContext().currentTime);
+    };
+
+    handleBpm = (e) => {
+        this.setState({'bpm': e.target.value});
+        this.loopBunch.clickTrack.bpm = this.state.bpm;
     };
 
     render() {
@@ -118,7 +125,7 @@ class Looper extends React.Component {
                             <Button name='count-in' onClick={this.handleCountIn} toggled={this.state.countIn} />
                             <span className='bpm'>
                                 bpm
-                                <input type='text' value='4' size='2' maxsize='2' onChange={()=>null}/>
+                                <input type='text' value='4' size='2' maxsize='2' onChange={this.handleBpm}/>
                             </span>
                             <Slider 
                                 name='tempo' min='30' max='200' 

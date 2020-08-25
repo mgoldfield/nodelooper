@@ -10,7 +10,7 @@ class AudioLoopBunch{
 
         this.mergeOutOfDate = true;
         this.mergeNode = null;
-        this.gainNode = false;
+        this.gainNode = null;
     }
 
     getAudioContext = () => {
@@ -86,6 +86,10 @@ class AudioLoopBunch{
         let waitTime = 0.5;
         let clickStartTime = this.getAudioContext().currentTime + waitTime;
         let playTime = clickStartTime + this.clickTrack.countInTime;
+
+        console.log("countin time %s", this.clickTrack.countInTime);
+        console.log("clicktime %s", clickStartTime);
+        console.log("playtime %s", playTime);
 
         this.refreshMergeNode();
         this.clickTrack.start(clickStartTime);
@@ -244,7 +248,7 @@ class ClickTrack{
         this.countIn = false;
         this.clicking = false;
 
-        this.initBuf();
+        this.initBuff();
     }
 
     initBuff(){
@@ -277,11 +281,9 @@ class ClickTrack{
         return 1 / (this.tempo / 60);
     }
 
-    setBpm(bpm){
-        this.bpm = bpm;
-    }
-
     get countInTime(){
+        console.log("here... %s", this.secondsPerBeat);
+        console.log("countin %s", this.countIn)
         if (this.countIn)
             return this.bpm * this.secondsPerBeat;
         else 
@@ -289,8 +291,8 @@ class ClickTrack{
     }
 
     start(time){
-        if (this.clicking) 
-            throw Error("Already clicking...");
+        if (!this.clicking)
+            return;
 
         this.source = this.getAudioContext().createBufferSource();
         this.source.buffer = this.buffer;
@@ -301,6 +303,9 @@ class ClickTrack{
     }           
 
     stop(){
+        // toDo: don't allow uncheck clicking while playing
+        if (!this.clicking)
+            return;
         this.source.stop();
         this.source.disconnect();
     }
