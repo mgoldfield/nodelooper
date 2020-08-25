@@ -3,15 +3,20 @@ class AudioLoopBunch{
     constructor(){
         this.audioLoops=[];
         this.recordingLoop = null;
-        this.loopTimeUnit = null;
 
-        this.playing = false;
         this.clickTrack = new ClickTrack(this.getAudioContext);
         this.quantized = false;
 
+        this.recording = false;
+        this.playing = false;
+
         this.mergeOutOfDate = true;
         this.mergeNode = null;
-        this.gainNode = null;
+        this.gainNode = this.getAudioContext().createGain();
+        this.gainNode.connect(this.getAudioContext().destination);
+
+        // set by looper 
+        this.updateProgressBar = null;
     }
 
     getAudioContext = () => {
@@ -42,11 +47,7 @@ class AudioLoopBunch{
         //(playBunch, stopBunch, handleChunk, clickTrack)
         this.recordingLoop.recordBuffer(
             (() => this.playLoops()),
-            (() => {
-                this.stop()
-                if (!this.loopTimeUnit) 
-                    this.loopTimeUnit = this.recordingLoop.length;
-            }),
+            (() => this.stop()),
             this.handleChunk,
             this.clickTrack,
             this.quantized,
@@ -71,21 +72,24 @@ class AudioLoopBunch{
     refreshMergeNode(){
         if (this.mergeOutOfDate){
             // number of loops + click track 
+            if (this.mergeNode)
+                this.mergeNode.disconnect();
+
             this.mergeNode = this.getAudioContext().createChannelMerger(this.audioLoops.length + 1);
             for (let i = 0; i < this.audioLoops.length; i++){
                 this.audioLoops[i].disconnect();
                 this.audioLoops[i].connect(this.mergeNode, i);
             }
-            this.gainNode = this.getAudioContext().createGain();
             this.mergeNode.connect(this.gainNode);
-            this.gainNode.connect(this.getAudioContext().destination)
             this.mergeOutOfDate = false;
         }
     }
 
+
     playLoops(){
         // assumes 500 ms is an acceptable and adaquate wait time
         // toDo: only count in when recording
+        this.playing = true;
         let waitTime = 0.5;
         let clickStartTime = this.getAudioContext().currentTime + waitTime;
         let playTime = clickStartTime + this.clickTrack.oneMeasureInSeconds;
@@ -94,6 +98,16 @@ class AudioLoopBunch{
         this.clickTrack.start(clickStartTime);
         for (const l of this.audioLoops)
             l.play(playTime);
+
+        let me = this; // boo to this hack
+        function pbUpdate() {
+            if (me.playing){
+                let totalTime = me.getAudioContext().currentTime - playTime;
+                me.updateProgressBar(totalTime);                
+                setTimeout(pbUpdate, 1000);
+            }
+        }
+        setTimeout(pbUpdate, (playTime - me.getAudioContext().currentTime + 1) * 1000);
 
         return playTime;
     }
@@ -128,7 +142,7 @@ class AudioLoop {
     }
 
     get length(){
-        return this.buffer.length;
+        return this.buffer.length / this.buffer.sampleRate;
     }
 
     play(contextTime){
@@ -181,16 +195,19 @@ class AudioLoop {
     }
 
     trimAndQuantizeAudio(buffer, targetLength, quantized, quantUnit){
+        // first we trim to target length from the beginning
+        // then we add or trim from the end to quantize if qantized is set to true
+
         let samplesToTrim = buffer.length - Math.round(targetLength * buffer.sampleRate);
         let trimmedAudio = new Float32Array(buffer.length);
         buffer.copyFromChannel(trimmedAudio, 0, 0);
         trimmedAudio = trimmedAudio.slice(samplesToTrim);
 
         if (quantized){
-            // toDo: instead of adding, delete samples if it is a small enough amount
             let remainder = targetLength % quantUnit;
 
-            // threshold of 3/10 of a measure to be intentonally creating a new measure
+            // threshold of over 3/10 of a measure, assume user is intentonally 
+            // creating a new measure
             if ((remainder / quantUnit) > .3){ 
                 let toAdd = Math.round((quantUnit - remainder) * buffer.sampleRate);
                 let quantizedAudio = new Float32Array(trimmedAudio.length + toAdd);
@@ -224,7 +241,6 @@ class AudioLoop {
         })
         .then((stream) => {
             this.mediaRecorder = new MediaRecorder(stream);
-            let startTime = null; // audiocontext time at recording start
             let playTime = null; // audiocontext time when playing starts
 
             let audioChunks = [];
@@ -244,7 +260,6 @@ class AudioLoop {
             });
 
             this.mediaRecorder.addEventListener("start", () => {
-                startTime = this.getAudioContext().currentTime;
                 playTime = playBunch();
             });
             this.mediaRecorder.start(this.chunkSize);
@@ -275,6 +290,7 @@ class ClickTrack{
 
         const f = 330;
 
+        //make a boop
         for (var i = 0; i < duration_frames; i++) {
             channel[i] = Math.sin(phase) * amp;
             phase += 2 * Math.PI * f / this.getAudioContext().sampleRate;

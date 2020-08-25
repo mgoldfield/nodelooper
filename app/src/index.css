@@ -41,10 +41,6 @@ body {
     align-items: center;       
 }
 
-.loop {
-
-}
-
 .loopItem {
     max-height: 0;
     opacity: 0;
@@ -105,20 +101,26 @@ body {
     border-radius: 25px;
 }
 
+.smallFont{
+    font-size: 14px;
+    text-align: center;
+}
+
 .toggled {
     background-color: brown;
 }
 
 .slider {
-    height: 40px;
+    margin: 10px;
+    padding: 5px;
     display: inline-flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;    
 }
 
 .sliderValBox {
     display: inline-flex;
-    margin: 10px;
 }
 
 .downarrow {
@@ -165,9 +167,32 @@ body {
 .progressBar {
     width: 100%;
     display: flex;
+    flex-direction: row;
     height: 30px;
     justify-content: center;
     align-items: center; 
+}
+
+.progressBarSlider {
+    width: 80%;
+}
+
+.progressBarVal {
+    display: inline-flex;
+    font-size: 12px;
+    margin: 5px;
+}
+
+.bpm {
+    margin:10px;
+    padding: 10px;
+    border-radius: 25%;
+    border: 2px solid black;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
 }
 
 

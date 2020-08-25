@@ -9,6 +9,7 @@ class Button extends React.Component {
 
         let classList = ['button'].concat(extraClasses[this.props.name] || []);
         if (this.props.toggled) classList.push('toggled');
+        if (this.props.name.length > 5) classList.push('smallFont');
 
         return classList.join(' ');
     }
@@ -64,5 +65,47 @@ class Slider extends React.Component {
     }
 }
 
+class ProgressBar extends React.Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            'value': 0,
+            'max': this.props.max,
+        };
+        // make the bar as long as 4x the longest loop
+        this.props.updater((v) => this.setState({'value':v, 'max':Math.max(this.state.max, v * 4)}));
+    }
 
-export {Button, Slider};
+    onChange(event){
+        return;
+    }
+
+    toMinutes(t){
+        let m = Math.floor(t / 60);
+        return m.toString() + ":" + Math.floor(t - (m * 60)).toString().padStart(2, '0');
+    }
+
+    render() {
+        return (
+            <div className='progressBar'>
+                <input 
+                    className='progressBarSlider'
+                    type='range' 
+                    min='0' 
+                    max={this.state.max}
+                    value={this.state.value}
+                    step='.01'
+                    onChange={this.props.onChange}
+                    onInput={(e) => this.setState({'value':e.target.value})}
+                />
+                <span className='progressBarVal'>
+                    {this.toMinutes(this.state.value) + '/' + this.toMinutes(this.state.max)}
+                </span>
+            </div>
+
+        );
+    }
+}
+
+
+export {Button, Slider, ProgressBar};
