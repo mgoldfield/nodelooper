@@ -232,7 +232,7 @@ class AudioLoop {
             this.mediaRecorder.addEventListener("stop", async () => {
                 console.log("recording stop: %s", this.getAudioContext().currentTime);
                 let stopTime = this.getAudioContext().currentTime;
-                await this.handleChunks(audioChunks, stopTime - playTime);
+                await this.handleChunks(audioChunks, stopTime - playTime - this.getAudioContext().outputLatency);
                 stopBunch();
                  
             });
