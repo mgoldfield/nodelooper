@@ -88,9 +88,11 @@ class Looper extends React.Component {
     };
 
     handleClick = () => {
-        // toDo: don't allow uncheck clicking while playing        
-        this.setState({'clicking': !this.loopBunch.clickTrack.clicking});
-        this.loopBunch.clickTrack.clicking = !this.loopBunch.clickTrack.clicking;
+        //toDo: make this work
+        if (!this.playing){
+            this.setState({'clicking': !this.loopBunch.clickTrack.clicking});
+            this.loopBunch.clickTrack.clicking = !this.loopBunch.clickTrack.clicking;
+        }
     };
 
     handleCountIn = () => {

@@ -73,7 +73,7 @@ class ProgressBar extends React.Component {
             'max': this.props.max,
         };
         // make the bar as long as 4x the longest loop
-        this.props.updater((v) => this.setState({'value':v, 'max':Math.max(this.state.max, v * 4)}));
+        this.props.updater((v) => this.setState({'value':v, 'max':Math.max(this.state.max, v)}));
     }
 
     onChange(event){

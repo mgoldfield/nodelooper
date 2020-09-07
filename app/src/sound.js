@@ -19,6 +19,7 @@ class AudioLoopBunch{
         this.updateProgressBar = null;
     }
 
+    // toDo: figure out when to suspend and resume audioContext
     getAudioContext = () => {
         if (!this._audioContext){
             this._audioContext = new AudioContext({
@@ -93,7 +94,9 @@ class AudioLoopBunch{
         this.playing = true;
         let waitTime = 0.5;
         let clickStartTime = this.getAudioContext().currentTime + waitTime;
-        let playTime = clickStartTime + this.clickTrack.oneMeasureInSeconds;
+        let playTime = clickStartTime;
+        if (this.clickTrack.countIn)
+            playTime += this.clickTrack.oneMeasureInSeconds;
 
         this.refreshMergeNode();
         this.clickTrack.start(clickStartTime);
@@ -202,6 +205,8 @@ class AudioLoop {
         // first we trim to target length from the beginning
         // then we add or trim from the end to quantize if qantized is set to true
 
+
+        // toDo: when there's no count-in, this trims too much (I think, could be too little)
         let samplesToTrim = buffer.length - Math.round(targetLength * buffer.sampleRate);
         let trimmedAudio = new Float32Array(buffer.length);
         buffer.copyFromChannel(trimmedAudio, 0, 0);
@@ -210,6 +215,8 @@ class AudioLoop {
         if (quantized && (quantUnit > 0)){
             let remainder = targetLength % quantUnit;
 
+
+            // toDo: maybe move quantize into record? probably not, but could allow for recording more sound instead of adding just silence
             // threshold of over 3/10 of a measure, assume user is intentonally 
             // creating a new measure
             if ((remainder / quantUnit) > .3){ 
@@ -256,6 +263,7 @@ class AudioLoop {
 
 
             // toDo: examine assumptions about outputLatency
+            // toDo: what's wrong with latency when no count-in click
             this.mediaRecorder.addEventListener("stop", async () => {
                 let stopTime = this.getAudioContext().currentTime;
                 await this.handleChunks(audioChunks, 
@@ -289,15 +297,13 @@ class ClickTrack{
 
     initBuff(){
         this.buffer = this.getAudioContext().createBuffer(1, this.getAudioContext().sampleRate * 2, this.getAudioContext().sampleRate);
-
         let channel = this.buffer.getChannelData(0);
-        let phase = 0;
-        let amp = 1;
-        let duration_frames = this.getAudioContext().sampleRate / 50;
-
-        const f = 330;
 
         //make a boop
+        let phase = 0;
+        let amp = 1;
+        let duration_frames = this.getAudioContext().sampleRate / 50;        
+        const f = 330;
         for (var i = 0; i < duration_frames; i++) {
             channel[i] = Math.sin(phase) * amp;
             phase += 2 * Math.PI * f / this.getAudioContext().sampleRate;
@@ -308,21 +314,18 @@ class ClickTrack{
         }   
     }    
 
-    setTempo(tempo){
+    setTempo(tempo){ // set in bpm
         this.tempo = tempo;
-        if (this.clicking)
+        if (this.clicking && this.source)
             this.source.loopEnd = this.secondsPerBeat;
     }
 
     get secondsPerBeat(){
-        return 1 / (this.tempo / 60);
+        return 60 / this.tempo;
     }
 
     get oneMeasureInSeconds(){
-        if (this.countIn)
-            return this.bpm * this.secondsPerBeat;
-        else 
-            return 0;
+        return this.bpm * this.secondsPerBeat;
     }
 
     start(time){
@@ -334,11 +337,14 @@ class ClickTrack{
         this.source.loop = true;
         this.source.loopEnd = this.secondsPerBeat;
         this.source.connect(this.getAudioContext().destination);
-        this.source.start(time - this.getAudioContext().outputLatency); 
+
+        // toDo: is this right - ?
+        //this.source.start(time - this.getAudioContext().outputLatency);
+        this.source.start(time); 
     }           
 
     stop(){
-        if (!this.clicking)
+        if (!this.clicking || !this.source)
             return;
         this.source.stop();
         this.source.disconnect();
