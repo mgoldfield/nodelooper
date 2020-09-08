@@ -205,8 +205,6 @@ class AudioLoop {
         // first we trim to target length from the beginning
         // then we add or trim from the end to quantize if qantized is set to true
 
-
-        // toDo: when there's no count-in, this trims too much (I think, could be too little)
         let samplesToTrim = buffer.length - Math.round(targetLength * buffer.sampleRate);
         let trimmedAudio = new Float32Array(buffer.length);
         buffer.copyFromChannel(trimmedAudio, 0, 0);
@@ -214,7 +212,6 @@ class AudioLoop {
 
         if (quantized && (quantUnit > 0)){
             let remainder = targetLength % quantUnit;
-
 
             // toDo: maybe move quantize into record? probably not, but could allow for recording more sound instead of adding just silence
             // threshold of over 3/10 of a measure, assume user is intentonally 
@@ -267,7 +264,7 @@ class AudioLoop {
             this.mediaRecorder.addEventListener("stop", async () => {
                 let stopTime = this.getAudioContext().currentTime;
                 await this.handleChunks(audioChunks, 
-                    stopTime - playTime - this.getAudioContext().outputLatency,
+                    stopTime - playTime - (2 * this.getAudioContext().outputLatency),
                     quantized,
                     clickTrack.oneMeasureInSeconds);
                 stopBunch();
@@ -282,9 +279,8 @@ class AudioLoop {
     }
 }
 
-class ClickTrack{
-    // metronome inspired by https://blog.paul.cx/post/metronome/
 
+class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
     constructor(getAudioContext){
         this.getAudioContext = getAudioContext;
         this.tempo = 60;
@@ -295,7 +291,7 @@ class ClickTrack{
         this.initBuff();
     }
 
-    initBuff(){
+    initBuff(){ //toDo: make a higher pitched click for the count-in
         this.buffer = this.getAudioContext().createBuffer(1, this.getAudioContext().sampleRate * 2, this.getAudioContext().sampleRate);
         let channel = this.buffer.getChannelData(0);
 
