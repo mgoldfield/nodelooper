@@ -27,6 +27,7 @@ class Looper extends React.Component {
     }
 
     handleStop = () => {
+        // toDo: handle stop correctly if stopped within countIn 
         this.loopBunch.stop();
         if (this.state.recording){
             if (this.state.playing){
