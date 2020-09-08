@@ -89,19 +89,26 @@ class AudioLoopBunch{
 
 
     playLoops(){
-        // assumes 500 ms is an acceptable and adaquate wait time
         // toDo: only count in when recording
+        this.refreshMergeNode();
         this.playing = true;
-        let waitTime = 0.5;
+
+        // toDo: determine what waitTime should actually be
+        let waitTime = 0.0001;
         let clickStartTime = this.getAudioContext().currentTime + waitTime;
         let playTime = clickStartTime;
         if (this.clickTrack.countIn)
             playTime += this.clickTrack.oneMeasureInSeconds;
 
-        this.refreshMergeNode();
         this.clickTrack.start(clickStartTime);
         for (const l of this.audioLoops)
             l.play(playTime);
+
+        // toDo: delete this or make it a log before you're done
+        if (this.getAudioContext().currentTime > clickStartTime)
+            throw Error("Yikes - wait time is too short");
+        else
+            console.log('had %s leftover from waitTime', clickStartTime - this.getAudioContext().currentTime);
 
         let me = this; // boo to this hack
         function pbUpdate() {

@@ -18,7 +18,9 @@ class Looper extends React.Component {
             'bpm': this.loopBunch.clickTrack.bpm,
             'loopRecStatus': [],
             'gain': 1,
+            'inputMonitoring': false,
         }
+        console.log(this.state);
         this.counter = 0;
         this.loops = [];
 
@@ -89,8 +91,8 @@ class Looper extends React.Component {
     };
 
     handleClick = () => {
-        //toDo: make this work
-        if (!this.playing){
+        if (!this.state.playing){
+            //toDo: gray out click when playing
             this.setState({'clicking': !this.loopBunch.clickTrack.clicking});
             this.loopBunch.clickTrack.clicking = !this.loopBunch.clickTrack.clicking;
         }
@@ -118,6 +120,10 @@ class Looper extends React.Component {
         this.loopBunch.clickTrack.bpm = this.state.bpm;
     };
 
+    handleInputMonit = () => {
+        return;
+    }
+
     render() {
         return (
             <div className='looper'>
@@ -127,6 +133,7 @@ class Looper extends React.Component {
                         <Button name='play' onClick={this.handlePlay} toggled={this.state.playing} />
                         <Button name='rec' onClick={this.handleRec} toggled={this.state.recording} />
                         <Button name='quant' onClick={this.handleQuant} toggled={this.state.quantized} />
+                        <Button name='input mon' onClick={this.handleInputMonit} toggled={this.state.inputMonitoring} />
                         <Button 
                             name={(this.state.expanded) ? 'collapse' : 'expand'}
                             onClick={() => this.setState({'expanded': !this.state.expanded})} 
@@ -220,7 +227,7 @@ class Loop extends React.Component {
                     step="0.01"
                 />  
                 <Button name='mute' onClick={this.handleMute} toggled={this.state.muted}/>
-                <Button name='loop' onClick={this.handleLoop} toggled={this.state.looping}/>                            
+                <Button name='loop' onClick={this.handleLoop} toggled={this.state.looping}/>
             </li>
         );
     }
