@@ -213,6 +213,7 @@ class Loop extends React.Component {
     }
 
     render() {
+        // toDo: make font on loop name the same as rest of app
         return (
             <li className="loopItem">
                 <div className={(this.state.recording) ? 'recordingDot' : 'dot'} />
