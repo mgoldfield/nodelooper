@@ -129,20 +129,29 @@ class Looper extends React.Component {
             <div className='looper'>
                 <div className='masterLoop'>
                     <div className='mainMasterLoop'> 
-                        <Button name='stop' onClick={this.handleStop} />
-                        <Button name='play' onClick={this.handlePlay} toggled={this.state.playing} />
-                        <Button name='rec' onClick={this.handleRec} toggled={this.state.recording} />
-                        <Button name='quant' onClick={this.handleQuant} toggled={this.state.quantized} />
-                        <Button name='input mon' onClick={this.handleInputMonit} toggled={this.state.inputMonitoring} />
+                        <Button name='stop' onClick={this.handleStop} avail={true}/>
+                        <Button name='play' onClick={this.handlePlay} 
+                            toggled={this.state.playing} 
+                            flashing={this.state.recording && !this.state.playing}
+                            avail={true}/>
+                        <Button name='rec' onClick={this.handleRec} 
+                            toggled={this.state.recording} avail={true}/>
+                        <Button name='quant' onClick={this.handleQuant} 
+                            toggled={this.state.quantized} avail={!this.state.playing}/>
+                        <Button name='input mon' onClick={this.handleInputMonit} 
+                            toggled={this.state.inputMonitoring} avail={!this.state.playing}/>
                         <Button 
                             name={(this.state.expanded) ? 'collapse' : 'expand'}
                             onClick={() => this.setState({'expanded': !this.state.expanded})} 
+                            avail={true}
                         />
                     </div>
                     <div className={'masterExtension '.concat((this.state.expanded) ? 'visibleExtension' : '')}>
                         <div className='extensionControls'>
-                            <Button name='click' onClick={this.handleClick} toggled={this.state.clicking} />
-                            <Button name='count in' onClick={this.handleCountIn} toggled={this.state.countIn} />
+                            <Button name='click' onClick={this.handleClick} 
+                            toggled={this.state.clicking} avail={!this.state.playing} />
+                            <Button name='count in' onClick={this.handleCountIn} 
+                                toggled={this.state.countIn} avail={!this.state.playing}/>
                             <span className='bpm'>
                                 bpm
                                 <input type='text' value='4' size='2' maxsize='2' onChange={this.handleBpm}/>
@@ -187,6 +196,7 @@ class Loop extends React.Component {
             'muted': this.audioLoop.muted,
             'gain': this.audioLoop.gainNode.gain.value,
             'looping': this.audioLoop.looping,
+            'playing': this.audioLoop.playing,
             'recording': props.recording,
         }
         
@@ -227,8 +237,10 @@ class Loop extends React.Component {
                     onChange={this.handleGain}
                     step="0.01"
                 />  
-                <Button name='mute' onClick={this.handleMute} toggled={this.state.muted}/>
-                <Button name='loop' onClick={this.handleLoop} toggled={this.state.looping}/>
+                <Button name='mute' onClick={this.handleMute} 
+                    toggled={this.state.muted} avail={true}/>
+                <Button name='loop' onClick={this.handleLoop} 
+                    toggled={this.state.looping} avail={!this.state.playing}/>
             </li>
         );
     }

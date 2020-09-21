@@ -193,6 +193,11 @@ class AudioLoop {
     }
 
     toggleLoop(){
+        if (this.playing){
+            if (this.looping){
+                this.stop();
+            }
+        }
         this.looping = !this.looping;
     }
 

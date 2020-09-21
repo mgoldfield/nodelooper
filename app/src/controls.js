@@ -9,6 +9,8 @@ class Button extends React.Component {
 
         let classList = ['button'].concat(extraClasses[this.props.name] || []);
         if (this.props.toggled) classList.push('toggled');
+        if (!this.props.avail) classList.push('unavail');
+        if (this.props.flashing) classList.push('flashing');
         if (this.props.name.length > 5) classList.push('smallFont');
 
         return classList.join(' ');

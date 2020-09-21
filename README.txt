@@ -6,6 +6,8 @@ To Do:
 - download mixed loops and individal loops
 - input picker
 - allow loops to be uploaded
+- play button flashes when record is toggled
+- show loops being recording - maybe thin flashing bars with name of recorder ?
 
 
 v2: 
