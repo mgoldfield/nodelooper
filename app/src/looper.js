@@ -20,7 +20,6 @@ class Looper extends React.Component {
             'gain': 1,
             'inputMonitoring': false,
         }
-        console.log(this.state);
         this.counter = 0;
         this.loops = [];
 
@@ -28,11 +27,11 @@ class Looper extends React.Component {
         this.finishRecording = () => null;  
     }
 
-    handleStop = () => {
+    handleStop = (err) => {
         // toDo: handle stop correctly if stopped within countIn 
         this.loopBunch.stop();
         if (this.state.recording){
-            if (this.state.playing){
+            if (this.state.playing && !err){
                 this.finishRecording();
             }else{
                 this.loopBunch.unprepareToRecord();
@@ -46,15 +45,19 @@ class Looper extends React.Component {
     };
 
     handlePlay = () => {
-        // toDo: don't allow play if no loops have been recorded
         if (this.state.playing){
             this.handleStop();
         }else{
             this.setState({'playing': !this.state.playing});
             if (this.state.recording){
-                this.loopBunch.record();
+                this.loopBunch.record(() => { // onEarlyStop
+                    this.handleStop(true);
+                });
             }else{
-                this.loopBunch.playLoops();
+                if (this.loops.length > 0)
+                    this.loopBunch.playLoops();
+                else
+                    this.handleStop();
             }
         }
     };

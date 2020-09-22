@@ -37,21 +37,28 @@ class AudioLoopBunch{
 
     unprepareToRecord(){
         this.recordingLoop = null;
+
+        // if we started recording but pressed stop...
+        this.recording = false;
     }
 
-    record(){
+    record(onEarlyStop){
         if (!this.recordingLoop) 
             throw Error("Record has not been prepped...something is wrong");
 
         this.recording = true;
 
-        //(playBunch, stopBunch, handleChunk, clickTrack)
+        // playBunch, stopBunch, handleChunk, clickTrack, quantized, onEarlyStop
         this.recordingLoop.recordBuffer(
             (() => this.playLoops()),
             (() => this.stop()),
             this.handleChunk,
             this.clickTrack,
             this.quantized,
+            () => {
+                onEarlyStop();
+                this.unprepareToRecord();
+            }
         );
     }
 
@@ -239,6 +246,10 @@ class AudioLoop {
             }           
         }
 
+        if (trimmedAudio.length === 0){
+            throw Error("No audio received")
+        }
+
         // allow for a 0 lenghth / dead buffer
         let returnBuffer = this.getAudioContext().createBuffer(1, trimmedAudio.length, buffer.sampleRate);
         returnBuffer.copyToChannel(trimmedAudio, 0, 0);        
@@ -253,7 +264,7 @@ class AudioLoop {
         this.buffer = this.trimAndQuantizeAudio(buffer, targetLength, quantized, quantUnit);
     };
 
-    recordBuffer(playBunch, stopBunch, handleChunk, clickTrack, quantized){
+    recordBuffer(playBunch, stopBunch, handleChunk, clickTrack, quantized, onEarlyStop){
         if (this.recording) throw Error("already recording"); else this.recording = true;
 
         navigator.mediaDevices.getUserMedia({
@@ -274,12 +285,16 @@ class AudioLoop {
             // toDo: examine assumptions about outputLatency
             // toDo: what's wrong with latency when no count-in click
             this.mediaRecorder.addEventListener("stop", async () => {
-                let stopTime = this.getAudioContext().currentTime;
-                await this.handleChunks(audioChunks, 
-                    stopTime - playTime - (2 * this.getAudioContext().outputLatency),
-                    quantized,
-                    clickTrack.oneMeasureInSeconds);
-                stopBunch();
+                try{
+                    let stopTime = this.getAudioContext().currentTime;
+                    await this.handleChunks(audioChunks, 
+                        stopTime - playTime - (2 * this.getAudioContext().outputLatency),
+                        quantized,
+                        clickTrack.oneMeasureInSeconds);
+                    stopBunch();
+                }catch(e){
+                    onEarlyStop();
+                }
                  
             });
 
