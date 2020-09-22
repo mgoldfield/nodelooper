@@ -27,16 +27,20 @@ class Looper extends React.Component {
         this.finishRecording = () => null;  
     }
 
-    handleStop = (event, err=false) => {
-        // toDo: handle stop correctly if stopped within countIn 
+    handleStop = (event=null, err=false) => {
         this.loopBunch.stop();
-        if (this.state.recording){
-            if (this.state.playing && !err){
-                this.finishRecording();
-            }else{
-                this.loopBunch.unprepareToRecord();
-                this.loops.pop();
-            }          
+        if (err === 'earlyStop'){
+            this.loopBunch.unprepareToRecord();
+            this.loops.pop();
+        }else{
+            if (this.state.recording){
+                if (this.state.playing){
+                    this.finishRecording();
+                }else{
+                    this.loopBunch.unprepareToRecord();
+                    this.loops.pop();
+                }          
+            }
         }
         this.setState({
             'playing': false,
@@ -51,7 +55,8 @@ class Looper extends React.Component {
             this.setState({'playing': !this.state.playing});
             if (this.state.recording){
                 this.loopBunch.record(() => { // onEarlyStop
-                    this.handleStop(null, true);
+                    console.log("early stop called");
+                    this.handleStop(null, "earlyStop");
                 });
             }else{
                 if (this.loops.length > 0)
@@ -93,20 +98,18 @@ class Looper extends React.Component {
 
     handleClick = () => {
         if (!this.state.playing){
-            //toDo: gray out click when playing
             this.setState({'clicking': !this.loopBunch.clickTrack.clicking});
             this.loopBunch.clickTrack.clicking = !this.loopBunch.clickTrack.clicking;
         }
     };
 
     handleCountIn = () => {
-        // toDo: don't allow countIn if click isnt selected, grey out button
         this.setState({'countIn': !this.loopBunch.clickTrack.countIn});
         this.loopBunch.clickTrack.countIn = !this.loopBunch.clickTrack.countIn;
     };
 
     handleTempo = (e) => {
-        // don't allow tempo change during play if quantized
+        // toDo: don't allow tempo change during play if quantized
         this.setState({'tempo': e.target.value});
         this.loopBunch.clickTrack.setTempo(e.target.value);
     };
@@ -155,7 +158,7 @@ class Looper extends React.Component {
                                 toggled={this.state.countIn} avail={!this.state.playing && this.state.clicking}/>
                             <span className='bpm'>
                                 bpm
-                                <input type='text' class='inputFont' value={this.loopBunch.clickTrack.bpm} size='2' maxsize='2' onChange={this.handleBpm}/>
+                                <input type='text' className='inputFont' value={this.loopBunch.clickTrack.bpm} size='2' maxsize='2' onChange={this.handleBpm}/>
                             </span>
                             <Slider 
                                 name='tempo' min='30' max='200' 
@@ -192,7 +195,6 @@ class Loop extends React.Component {
         super(props);
         this.audioLoop = props.audioLoop;
         this.state = {
-            // toDo: what to do with names
             'name': props.name,
             'muted': this.audioLoop.muted,
             'gain': this.audioLoop.gainNode.gain.value,
@@ -226,12 +228,11 @@ class Loop extends React.Component {
     }
 
     render() {
-        // toDo: make font on loop name the same as rest of app
         return (
             <li className="loopItem">
                 <div className={(this.state.recording) ? 'recordingDot' : 'dot'} />
                 <input type='text' 
-                    class='inputFont'
+                    className='inputFont'
                     value={this.state.name} 
                     onChange={(e) => {
                         this.setState({'name': e.target.value});

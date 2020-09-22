@@ -6,16 +6,11 @@ To Do:
 - download mixed loops and individal loops
 - input picker
 - allow loops to be uploaded
-- play button flashes when record is toggled
-- show loops being recording - maybe thin flashing bars with name of recorder ?
 - allow manipulation of progress bar and recording at a certain spot
+
+With api:
 - can two people record at the same time?  I think yes...
-
-
-./src/sound.js:        // toDo: delete this or make it a log before you're done
-./src/sound.js:        //toDo: is this the right thing to do with outputLatency?
-./src/sound.js:            // toDo: examine assumptions about outputLatency
-./src/sound.js:    initBuff(){ //toDo: make a higher pitched click for the count-in
+- show loops being recording - maybe thin flashing bars with name of recorder ?
 
 
 
@@ -26,6 +21,8 @@ v2:
 
 
 done:
+- play button flashes when record is toggled
+
 ./src/looper.js:            // toDo: what to do with names
 ./src/looper.js:        // toDo: handle stop correctly if stopped within countIn 
 ./src/looper.js:        // toDo: don't allow play if no loops have been recorded

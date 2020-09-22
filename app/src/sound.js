@@ -48,7 +48,7 @@ class AudioLoopBunch{
 
         this.recording = true;
 
-        // playBunch, stopBunch, handleChunk, clickTrack, quantized, onEarlyStop
+        // playBunch, stopBunch, handleChunk, clickTrack, quantized, onEarlyStop, onSuccess
         this.recordingLoop.recordBuffer(
             (() => this.playLoops()),
             (() => this.stop()),
@@ -58,6 +58,10 @@ class AudioLoopBunch{
             () => {
                 onEarlyStop();
                 this.unprepareToRecord();
+            },
+            () => {
+                this.audioLoops.push(this.recordingLoop);
+                this.mergeOutOfDate = true;
             }
         );
     }
@@ -69,9 +73,7 @@ class AudioLoopBunch{
     stop(){
         if (this.recording){
             this.recordingLoop.stop();
-            this.audioLoops.push(this.recordingLoop);
             this.recording = false;
-            this.mergeOutOfDate = true;
         }
         this.stopLoops();
         this.playing = false;
@@ -83,7 +85,7 @@ class AudioLoopBunch{
             // number of loops + click track 
             if (this.mergeNode)
                 this.mergeNode.disconnect();
-
+            console.log(this.audioLoops);
             this.mergeNode = this.getAudioContext().createChannelMerger(this.audioLoops.length + 1);
             for (let i = 0; i < this.audioLoops.length; i++){
                 this.audioLoops[i].disconnect();
@@ -165,7 +167,7 @@ class AudioLoop {
 
     setName(name){
         this.name = name;
-        //transmit this to other users
+        //toDo: transmit this to other users
     }
 
     play(contextTime){
@@ -265,7 +267,7 @@ class AudioLoop {
         this.buffer = this.trimAndQuantizeAudio(buffer, targetLength, quantized, quantUnit);
     };
 
-    recordBuffer(playBunch, stopBunch, handleChunk, clickTrack, quantized, onEarlyStop){
+    recordBuffer(playBunch, stopBunch, handleChunk, clickTrack, quantized, onEarlyStop, onSuccess){
         if (this.recording) throw Error("already recording"); else this.recording = true;
 
         navigator.mediaDevices.getUserMedia({
@@ -294,8 +296,9 @@ class AudioLoop {
                 }catch(e){
                     console.log(e);
                     onEarlyStop();
+                    return;
                 }
-                 
+                onSuccess();
             });
 
             this.mediaRecorder.addEventListener("start", () => {
