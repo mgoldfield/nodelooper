@@ -25,9 +25,15 @@ class Button extends React.Component {
         return hide[name] || false;
     }
 
+    onClick = (e) => {
+        if (this.props.avail){
+            return this.props.onClick(e);
+        }
+    }
+
     render() {
         return (
-            <div className={this.classes()} onClick={this.props.onClick}>
+            <div className={this.classes()} onClick={this.onClick}>
                 {(this.hideText(this.props.name)) ? '' : this.props.name}
             </div>
         );
