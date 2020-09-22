@@ -13,11 +13,9 @@ With api:
 - show loops being recording - maybe thin flashing bars with name of recorder ?
 
 
-
 v2: 
 - compressor
 - distortion
-
 
 
 done:
