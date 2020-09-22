@@ -27,7 +27,7 @@ class Looper extends React.Component {
         this.finishRecording = () => null;  
     }
 
-    handleStop = (err) => {
+    handleStop = (event, err=false) => {
         // toDo: handle stop correctly if stopped within countIn 
         this.loopBunch.stop();
         if (this.state.recording){
@@ -51,7 +51,7 @@ class Looper extends React.Component {
             this.setState({'playing': !this.state.playing});
             if (this.state.recording){
                 this.loopBunch.record(() => { // onEarlyStop
-                    this.handleStop(true);
+                    this.handleStop(null, true);
                 });
             }else{
                 if (this.loops.length > 0)
@@ -63,7 +63,6 @@ class Looper extends React.Component {
     };
 
     handleRec = () => {
-        // toDo: don't allow record if progress bar isn't at the beginning
         if (this.state.recording){
             if (this.state.playing) 
                 this.pressStop(); 
@@ -73,7 +72,6 @@ class Looper extends React.Component {
                 this.finishRecording = null;
             }
         }else{
-            // toDo: check recording lock when it exists
             let id = this.counter++;
             this.loops.push(<Loop
                 key={id}
@@ -138,7 +136,7 @@ class Looper extends React.Component {
                             flashing={this.state.recording && !this.state.playing}
                             avail={true}/>
                         <Button name='rec' onClick={this.handleRec} 
-                            toggled={this.state.recording} avail={true}/>
+                            toggled={this.state.recording} avail={!this.state.playing || this.state.recording}/>
                         <Button name='quant' onClick={this.handleQuant} 
                             toggled={this.state.quantized} avail={!this.state.playing}/>
                         <Button name='input mon' onClick={this.handleInputMonit} 
@@ -154,10 +152,10 @@ class Looper extends React.Component {
                             <Button name='click' onClick={this.handleClick} 
                             toggled={this.state.clicking} avail={!this.state.playing} />
                             <Button name='count in' onClick={this.handleCountIn} 
-                                toggled={this.state.countIn} avail={!this.state.playing}/>
+                                toggled={this.state.countIn} avail={!this.state.playing && this.state.clicking}/>
                             <span className='bpm'>
                                 bpm
-                                <input type='text' value='4' size='2' maxsize='2' onChange={this.handleBpm}/>
+                                <input type='text' class='inputFont' value={this.loopBunch.clickTrack.bpm} size='2' maxsize='2' onChange={this.handleBpm}/>
                             </span>
                             <Slider 
                                 name='tempo' min='30' max='200' 
@@ -202,6 +200,8 @@ class Loop extends React.Component {
             'playing': this.audioLoop.playing,
             'recording': props.recording,
         }
+
+        this.audioLoop.setName(props.name);
         
         this.props.handleToggleRecording(() => this.setState({'recording': false}));
     }
@@ -231,8 +231,12 @@ class Loop extends React.Component {
             <li className="loopItem">
                 <div className={(this.state.recording) ? 'recordingDot' : 'dot'} />
                 <input type='text' 
+                    class='inputFont'
                     value={this.state.name} 
-                    onChange={(e) => this.setState({'name': e.target.value})}
+                    onChange={(e) => {
+                        this.setState({'name': e.target.value});
+                        this.audioLoop.setName(e.target.value);
+                    }}
                 />
                 <Slider 
                     name='gain' min='0' max='10' 
