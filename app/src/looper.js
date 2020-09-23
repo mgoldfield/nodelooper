@@ -155,7 +155,8 @@ class Looper extends React.Component {
                             <Button name='click' onClick={this.handleClick} 
                             toggled={this.state.clicking} avail={!this.state.playing} />
                             <Button name='count in' onClick={this.handleCountIn} 
-                                toggled={this.state.countIn} avail={!this.state.playing && this.state.clicking}/>
+                                toggled={this.state.clicking && this.state.countIn} 
+                                avail={this.state.clicking && !this.state.playing}/>
                             <span className='bpm'>
                                 bpm
                                 <input type='text' className='inputFont' value={this.loopBunch.clickTrack.bpm} size='2' maxsize='2' onChange={this.handleBpm}/>

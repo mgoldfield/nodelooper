@@ -85,13 +85,15 @@ class AudioLoopBunch{
             // number of loops + click track 
             if (this.mergeNode)
                 this.mergeNode.disconnect();
-            console.log(this.audioLoops);
-            this.mergeNode = this.getAudioContext().createChannelMerger(this.audioLoops.length + 1);
+            if (this.audioLoops.length > 0)
+                this.mergeNode = this.getAudioContext().createChannelMerger(this.audioLoops.length * 2);
             for (let i = 0; i < this.audioLoops.length; i++){
                 this.audioLoops[i].disconnect();
-                this.audioLoops[i].connect(this.mergeNode, i);
+                this.audioLoops[i].connect(this.mergeNode, 0, 2 * i);
+                this.audioLoops[i].connect(this.mergeNode, 1, 2 * i + 1);
             }
-            this.mergeNode.connect(this.gainNode);
+            if (this.mergeNode)
+                this.mergeNode.connect(this.gainNode);
             this.mergeOutOfDate = false;
         }
     }
@@ -104,7 +106,7 @@ class AudioLoopBunch{
         let waitTime = 0.0001 + this.getAudioContext().baseLatency;
         let clickStartTime = this.getAudioContext().currentTime + waitTime;
         let playTime = clickStartTime;
-        if (this.clickTrack.countIn && this.recording)
+        if (this.clickTrack.clicking && this.clickTrack.countIn && this.recording)
             playTime += this.clickTrack.oneMeasureInSeconds;
 
         this.clickTrack.start(clickStartTime);
@@ -256,8 +258,11 @@ class AudioLoop {
             throw Error("No audio received")
         }
 
-        let returnBuffer = this.getAudioContext().createBuffer(1, trimmedAudio.length, buffer.sampleRate);
-        returnBuffer.copyToChannel(trimmedAudio, 0, 0);        
+        // make final buffer, mono -> stereo
+        let returnBuffer = this.getAudioContext().createBuffer(2, trimmedAudio.length, buffer.sampleRate);
+        returnBuffer.copyToChannel(trimmedAudio, 0, 0);
+        returnBuffer.copyToChannel(trimmedAudio, 1, 0); 
+        console.log(returnBuffer);
         return returnBuffer;
     }
 
@@ -294,7 +299,6 @@ class AudioLoop {
                         clickTrack.oneMeasureInSeconds);
                     stopBunch();
                 }catch(e){
-                    console.log(e);
                     onEarlyStop();
                     return;
                 }
