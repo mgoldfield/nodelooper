@@ -18,7 +18,7 @@ class Looper extends React.Component {
             'bpm': this.loopBunch.clickTrack.bpm,
             'loopRecStatus': [],
             'gain': 1,
-            'inputMonitoring': false,
+            'inputMonitoring': this.loopBunch.inputMonitoring,
         }
         this.counter = 0;
         this.loops = [];
@@ -125,7 +125,8 @@ class Looper extends React.Component {
     };
 
     handleInputMonit = () => {
-        return;
+        this.setState({'inputMonitoring': !this.loopBunch.inputMonitoring});
+        this.loopBunch.toggleInputMonitoring();
     }
 
     render() {

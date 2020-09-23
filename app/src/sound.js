@@ -15,6 +15,9 @@ class AudioLoopBunch{
         this.gainNode = this.getAudioContext().createGain();
         this.gainNode.connect(this.getAudioContext().destination);
 
+        this.inputMonitoring = false;
+        this.inputMontiorSource = null;
+
         // set by looper 
         this.updateProgressBar = null;
     }
@@ -29,6 +32,25 @@ class AudioLoopBunch{
         }
         return this._audioContext;
     };
+
+    toggleInputMonitoring(){
+        this.inputMonitoring = !this.inputMonitoring;
+
+        if (this.inputMonitoring){
+            navigator.mediaDevices.getUserMedia({
+                video: false,
+                audio: {echoCancellation: false, noiseSuppression: false, autoGainControl: false} 
+            })
+            .then((stream) => {
+                this.inputMontiorSource = this.getAudioContext().createMediaStreamSource(stream);
+                this.inputMontiorSource.connect(this.getAudioContext().destination);
+            });
+        }else{
+            this.inputMontiorSource.disconnect();
+            this.inputMontiorSource = null;
+        }
+    }
+
 
     prepareToRecord(id){
         this.recordingLoop = new AudioLoop(id, this.getAudioContext);
