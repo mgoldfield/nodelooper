@@ -122,15 +122,7 @@ class AudioLoopBunch{
         for (const l of this.audioLoops)
             l.play(playTime);
 
-        // toDo: delete this or make it a log before you're done
-        if (this.getAudioContext().currentTime > clickStartTime)
-            throw Error("Yikes - wait time is too short");
-        else
-            console.log('had %s leftover from waitTime', clickStartTime - this.getAudioContext().currentTime);
-
-        let me = this; // boo to this hack
         this.startUpdatingProgressBar(playTime);
-
         return playTime;
     }
 
