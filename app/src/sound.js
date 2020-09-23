@@ -201,7 +201,7 @@ class AudioLoop {
                 this.updateProgress(Math.min(currPlayTime / this.length, 1));
         }
         
-        setTimeout(() =>{this.startLoopProgressBar(startTime)}, 500);
+        setTimeout(() =>{this.startLoopProgressBar(startTime)}, 250);
     }
 
     stop(){
