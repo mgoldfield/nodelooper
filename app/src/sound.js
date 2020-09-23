@@ -99,6 +99,15 @@ class AudioLoopBunch{
     }
 
 
+    startUpdatingProgressBar(playTime){
+        if (this.playing){
+            let totalTime = this.getAudioContext().currentTime - playTime;
+            if (totalTime > 0)
+                this.updateProgressBar(totalTime);                
+            setTimeout(()=>{this.startUpdatingProgressBar(playTime)}, 500);
+        }        
+    }
+
     playLoops(){
         this.refreshMergeNode();
         this.playing = true;
@@ -120,14 +129,7 @@ class AudioLoopBunch{
             console.log('had %s leftover from waitTime', clickStartTime - this.getAudioContext().currentTime);
 
         let me = this; // boo to this hack
-        function pbUpdate() {
-            if (me.playing){
-                let totalTime = me.getAudioContext().currentTime - playTime;
-                me.updateProgressBar(totalTime);                
-                setTimeout(pbUpdate, 1000);
-            }
-        }
-        setTimeout(pbUpdate, (playTime - me.getAudioContext().currentTime + 1) * 1000);
+        this.startUpdatingProgressBar(playTime);
 
         return playTime;
     }
