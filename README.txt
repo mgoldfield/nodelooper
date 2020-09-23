@@ -1,5 +1,4 @@
 To Do:
-- playback balanced stereo with mono tracks
 - way to track progess on each loop
 - create waveform images while/after recording
 - listen-through/ input monitoring
@@ -20,6 +19,7 @@ v2:
 
 done:
 - play button flashes when record is toggled
+- playback balanced stereo with mono tracks
 
 ./src/looper.js:            // toDo: what to do with names
 ./src/looper.js:        // toDo: handle stop correctly if stopped within countIn 

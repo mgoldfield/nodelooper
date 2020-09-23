@@ -116,4 +116,25 @@ class ProgressBar extends React.Component {
 }
 
 
-export {Button, Slider, ProgressBar};
+
+class LoopProgress extends React.Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            'progress': 0, // percent
+        };
+
+        this.props.update((p) => this.setState({'progress':p}));
+    }
+
+    render() {
+        return (
+            <div className="loopProgress">
+                <span className="loopProgressBar" style={{flex:this.state.progress}} />
+            </div>
+        );
+    }
+}
+
+
+export {Button, Slider, ProgressBar, LoopProgress};

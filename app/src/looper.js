@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, Slider, ProgressBar} from './controls.js';
+import {Button, Slider, ProgressBar, LoopProgress} from './controls.js';
 import AudioLoopBunch from './sound.js';
 
 
@@ -231,6 +231,7 @@ class Loop extends React.Component {
     render() {
         return (
             <li className="loopItem">
+            <div className="loopControls">
                 <div className={(this.state.recording) ? 'recordingDot' : 'dot'} />
                 <input type='text' 
                     className='inputFont'
@@ -250,6 +251,8 @@ class Loop extends React.Component {
                     toggled={this.state.muted} avail={true}/>
                 <Button name='loop' onClick={this.handleLoop} 
                     toggled={this.state.looping} avail={!this.state.playing}/>
+            </div>
+            <LoopProgress update={(f) => this.audioLoop.updateProgress = f} />
             </li>
         );
     }

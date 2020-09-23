@@ -156,11 +156,12 @@ class AudioLoop {
         this.recording = false;
         this.playing = false;
         this.muted = false;
-        this.looping = false;
+        this.looping = true;
 
         this.name = null;
 
         this.gainNode = this.getAudioContext().createGain();
+        this.updateProgress = null; // set in looper when creating loop progress bar
     }
 
     get length(){
@@ -181,7 +182,26 @@ class AudioLoop {
         this.source.connect(this.gainNode, 0);
         this.source.loop = this.looping;
         //toDo: is this the right thing to do with outputLatency?
-        this.source.start(contextTime - this.getAudioContext().outputLatency);
+        let startTime = contextTime - this.getAudioContext().outputLatency;
+        this.source.start(startTime);
+        this.startLoopProgressBar(startTime);
+    }
+
+    startLoopProgressBar(startTime){
+        if (!this.playing){
+            this.updateProgress(0);
+            return;
+        }
+
+        let currPlayTime = this.getAudioContext().currentTime - startTime;
+        if (currPlayTime > 0){
+            if (this.looping)
+                this.updateProgress(currPlayTime % this.length / this.length);
+            else
+                this.updateProgress(Math.min(currPlayTime / this.length, 1));
+        }
+        
+        setTimeout(() =>{this.startLoopProgressBar(startTime)}, 500);
     }
 
     stop(){
