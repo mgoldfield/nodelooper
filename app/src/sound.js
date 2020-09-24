@@ -51,11 +51,17 @@ class AudioLoopBunch{
     }
 
     getUserMedia(){
+        console.log("using media %s", this.device);
+        console.log(this.availableDevices);
         return navigator.mediaDevices.getUserMedia({
-            deviceId: this.device,
             video: false,
-            audio: {echoCancellation: false, noiseSuppression: false, autoGainControl: false} 
-        })
+            audio: {
+                deviceId: this.device, 
+                echoCancellation: false, 
+                noiseSuppression: false,
+                autoGainControl: false
+            } 
+        });
     }
 
     toggleInputMonitoring(){

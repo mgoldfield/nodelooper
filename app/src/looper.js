@@ -130,7 +130,6 @@ class Looper extends React.Component {
     }
 
     handleInputChange = (e) => {
-        console.log("setting input to %s", e.target.value);
         this.loopBunch.device = e.target.value;
     }
 
@@ -158,14 +157,14 @@ class Looper extends React.Component {
                     </div>
                     <div className={'masterExtension '.concat((this.state.expanded) ? 'visibleExtension' : '')}>
                         <div className='extensionControls'>
-                            <DropDown name="input" onChange={this.handleInputChange} 
-                                options={this.loopBunch.availableDevices} 
-                                updateOptions={(f) => {this.loopBunch.ondevicechange = f; this.loopBunch.refreshAvailableDevices()}}/>
                             <Button name='click' onClick={this.handleClick} 
                             toggled={this.state.clicking} avail={!this.state.playing} />
                             <Button name='count in' onClick={this.handleCountIn} 
                                 toggled={this.state.clicking && this.state.countIn} 
                                 avail={this.state.clicking && !this.state.playing}/>
+                            <DropDown name="input" onChange={this.handleInputChange} 
+                                options={this.loopBunch.availableDevices} 
+                                updateOptions={(f) => {this.loopBunch.ondevicechange = f; this.loopBunch.refreshAvailableDevices()}}/>                                
                             <span className='bpm'>
                                 bpm
                                 <input type='text' className='inputFont' value={this.loopBunch.clickTrack.bpm} size='2' maxsize='2' onChange={this.handleBpm}/>

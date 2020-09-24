@@ -221,6 +221,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    height: 43px;
     
 }
 
@@ -234,6 +235,15 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    height:55px;
+}
+
+.dropDown{
+    appearance: none;
+    border: 1px solid black;
+    width: 75px;
+    margin: 5px;
+    background-color: cornsilk; 
 }
 
 .inputFont {
