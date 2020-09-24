@@ -224,6 +224,18 @@ body {
     
 }
 
+.dropDownDiv {
+    margin:10px;
+    padding: 5px;
+    font-size: 14px;
+    border-radius: 25%;
+    border: 2px solid black;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
 .inputFont {
     font-size: 12px;
     font-family: "Courier New", Courier, monospace;

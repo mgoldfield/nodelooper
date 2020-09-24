@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, Slider, ProgressBar, LoopProgress} from './controls.js';
+import {Button, DropDown, Slider, ProgressBar, LoopProgress} from './controls.js';
 import AudioLoopBunch from './sound.js';
 
 
@@ -129,6 +129,11 @@ class Looper extends React.Component {
         this.loopBunch.toggleInputMonitoring();
     }
 
+    handleInputChange = (e) => {
+        console.log("setting input to %s", e.target.value);
+        this.loopBunch.device = e.target.value;
+    }
+
     render() {
         return (
             <div className='looper'>
@@ -153,6 +158,9 @@ class Looper extends React.Component {
                     </div>
                     <div className={'masterExtension '.concat((this.state.expanded) ? 'visibleExtension' : '')}>
                         <div className='extensionControls'>
+                            <DropDown name="input" onChange={this.handleInputChange} 
+                                options={this.loopBunch.availableDevices} 
+                                updateOptions={(f) => {this.loopBunch.ondevicechange = f; this.loopBunch.refreshAvailableDevices()}}/>
                             <Button name='click' onClick={this.handleClick} 
                             toggled={this.state.clicking} avail={!this.state.playing} />
                             <Button name='count in' onClick={this.handleCountIn} 
@@ -168,7 +176,7 @@ class Looper extends React.Component {
                                 onChange={this.handleTempo}
                             />
                             <Slider 
-                                name='master' min='0' max='10' 
+                                name='master gain' min='0' max='10' 
                                 value='1' step='0.01'
                                 onChange={this.handleMaster}
                             />

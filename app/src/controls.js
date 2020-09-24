@@ -40,6 +40,44 @@ class Button extends React.Component {
     }
 }
 
+
+class DropDown extends React.Component {
+
+    constructor(props){
+        super(props);
+        this.state = {'options':props.options};
+        props.updateOptions((options) => {
+            console.log("updating dropdown options...");
+            this.setState({'options':options});
+        });   
+    }
+
+    listify(){
+        if (!this.state.options){
+            return [];
+        }
+        let options = [];
+        for (let i =0; i < this.state.options.length; i++ ){
+            options.push(
+            <option key={this.state.options[i].deviceId} value={this.state.options[i].deviceId}>
+                {this.state.options[i].label}
+            </option>);
+        }
+        return options;
+    }
+
+    render(){
+        return (
+            <div className="dropDownDiv">
+                {this.props.name}
+                <select className="dropDown" onChange={this.props.onChange}>
+                    {this.listify()}
+                </select>
+            </div>
+        );
+    }
+}
+
 class Slider extends React.Component {
     constructor(props){
         super(props);
@@ -137,4 +175,4 @@ class LoopProgress extends React.Component {
 }
 
 
-export {Button, Slider, ProgressBar, LoopProgress};
+export {Button, DropDown, Slider, ProgressBar, LoopProgress};

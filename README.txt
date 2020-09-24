@@ -1,22 +1,23 @@
 To Do:
-- create waveform images while/after recording
-- listen-through/ input monitoring
-- download mixed loops and individal loops
 - input picker
+- download mixed loops and individal loops
 - allow loops to be uploaded
-- allow manipulation of progress bar and recording at a certain spot
+- what happens when a device becomes unavailable mid-recording / while app is open?
 
-With api:
+With/after api:
 - can two people record at the same time?  I think yes...
 - show loops being recording - maybe thin flashing bars with name of recorder ?
+- allow manipulation of progress bar and recording at a certain spot
 
 
 v2: 
 - compressor
 - distortion
+- create waveform images while/after recording
 
 
 done:
+- listen-through/ input monitoring
 - play button flashes when record is toggled
 - playback balanced stereo with mono tracks
 - way to track progess on each loop

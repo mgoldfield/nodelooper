@@ -18,6 +18,10 @@ class AudioLoopBunch{
         this.inputMonitoring = false;
         this.inputMontiorSource = null;
 
+        this.ondevicechange = null;
+        this.refreshAvailableDevices();
+        navigator.mediaDevices.ondevicechange = this.refreshAvailableDevices;
+
         // set by looper 
         this.updateProgressBar = null;
     }
@@ -33,15 +37,33 @@ class AudioLoopBunch{
         return this._audioContext;
     };
 
+    refreshAvailableDevices = async function() {
+        let devices = await navigator.mediaDevices.enumerateDevices();
+        this.availableDevices = devices.filter((d) => d.kind === 'audioinput');
+
+        //toDo: fail gracefully here... catch in looper and display a message
+        this.device = this.availableDevices[0].deviceId;
+
+        if (this.ondevicechange){
+            this.ondevicechange(this.availableDevices);
+        }
+        console.log(this.availableDevices);
+    }
+
+    getUserMedia(){
+        return navigator.mediaDevices.getUserMedia({
+            deviceId: this.device,
+            video: false,
+            audio: {echoCancellation: false, noiseSuppression: false, autoGainControl: false} 
+        })
+    }
+
     toggleInputMonitoring(){
         this.inputMonitoring = !this.inputMonitoring;
 
         if (this.inputMonitoring){
-            navigator.mediaDevices.getUserMedia({
-                video: false,
-                audio: {echoCancellation: false, noiseSuppression: false, autoGainControl: false} 
-            })
-            .then((stream) => {
+            
+        this.getUserMedia().then((stream) => {
                 this.inputMontiorSource = this.getAudioContext().createMediaStreamSource(stream);
                 this.inputMontiorSource.connect(this.getAudioContext().destination);
             });
@@ -70,8 +92,9 @@ class AudioLoopBunch{
 
         this.recording = true;
 
-        // playBunch, stopBunch, handleChunk, clickTrack, quantized, onEarlyStop, onSuccess
+        // mediaPromise, playBunch, stopBunch, handleChunk, clickTrack, quantized, onEarlyStop, onSuccess
         this.recordingLoop.recordBuffer(
+            this.getUserMedia(),
             (() => this.playLoops()),
             (() => this.stop()),
             this.handleChunk,
@@ -308,14 +331,10 @@ class AudioLoop {
         this.buffer = this.trimAndQuantizeAudio(buffer, targetLength, quantized, quantUnit);
     };
 
-    recordBuffer(playBunch, stopBunch, handleChunk, clickTrack, quantized, onEarlyStop, onSuccess){
+    recordBuffer(mediaPromise, playBunch, stopBunch, handleChunk, clickTrack, quantized, onFailure, onSuccess){
         if (this.recording) throw Error("already recording"); else this.recording = true;
 
-        navigator.mediaDevices.getUserMedia({
-            video: false,
-            audio: {echoCancellation: false, noiseSuppression: false, autoGainControl: false} 
-        })
-        .then((stream) => {
+        mediaPromise.then((stream) => {
             this.mediaRecorder = new MediaRecorder(stream);
             let playTime = null; // audiocontext time when playing starts
 
@@ -335,7 +354,7 @@ class AudioLoop {
                         clickTrack.oneMeasureInSeconds);
                     stopBunch();
                 }catch(e){
-                    onEarlyStop();
+                    onFailure();
                     return;
                 }
                 onSuccess();
