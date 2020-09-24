@@ -47,7 +47,6 @@ class DropDown extends React.Component {
         super(props);
         this.state = {'options':props.options};
         props.updateOptions((options) => {
-            console.log("updating dropdown options...");
             this.setState({'options':options});
         });   
     }

@@ -47,13 +47,10 @@ class AudioLoopBunch{
         if (this.ondevicechange){
             this.ondevicechange(this.availableDevices);
         }
-        console.log(this.availableDevices);
     }
 
-    getUserMedia(){
-        console.log("using media %s", this.device);
-        console.log(this.availableDevices);
-        return navigator.mediaDevices.getUserMedia({
+    getUserAudio(){
+        let options = {
             video: false,
             audio: {
                 deviceId: this.device, 
@@ -61,21 +58,30 @@ class AudioLoopBunch{
                 noiseSuppression: false,
                 autoGainControl: false
             } 
-        });
+        };
+        return navigator.mediaDevices.getUserMedia(options);
     }
 
     toggleInputMonitoring(){
         this.inputMonitoring = !this.inputMonitoring;
 
         if (this.inputMonitoring){
-            
-        this.getUserMedia().then((stream) => {
-                this.inputMontiorSource = this.getAudioContext().createMediaStreamSource(stream);
-                this.inputMontiorSource.connect(this.getAudioContext().destination);
+            this.getUserAudio()
+            .then((stream) => {
+                if (this.inputMonitoring){
+                    this.inputMontiorSource = this.getAudioContext().createMediaStreamSource(stream);
+                    this.inputMontiorSource.connect(this.getAudioContext().destination);
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+                alert("Error connecting to input audio: " + error.toString());
             });
         }else{
-            this.inputMontiorSource.disconnect();
-            this.inputMontiorSource = null;
+            if (this.inputMontiorSource){
+                this.inputMontiorSource.disconnect();
+                this.inputMontiorSource = null;
+            }
         }
     }
 
@@ -100,7 +106,7 @@ class AudioLoopBunch{
 
         // mediaPromise, playBunch, stopBunch, handleChunk, clickTrack, quantized, onEarlyStop, onSuccess
         this.recordingLoop.recordBuffer(
-            this.getUserMedia(),
+            this.getUserAudio(),
             (() => this.playLoops()),
             (() => this.stop()),
             this.handleChunk,
@@ -327,12 +333,11 @@ class AudioLoop {
         let returnBuffer = this.getAudioContext().createBuffer(2, trimmedAudio.length, buffer.sampleRate);
         returnBuffer.copyToChannel(trimmedAudio, 0, 0);
         returnBuffer.copyToChannel(trimmedAudio, 1, 0); 
-        console.log(returnBuffer);
         return returnBuffer;
     }
 
     handleChunks = async function(audioChunks, targetLength, quantized, quantUnit){
-        const blob = new Blob(audioChunks);
+        const blob = new Blob(audioChunks, {'type' : 'audio/ogg; codecs=opus'});
         let buffer = await this.getAudioContext().decodeAudioData(await blob.arrayBuffer());
         this.buffer = this.trimAndQuantizeAudio(buffer, targetLength, quantized, quantUnit);
     };
@@ -341,6 +346,7 @@ class AudioLoop {
         if (this.recording) throw Error("already recording"); else this.recording = true;
 
         mediaPromise.then((stream) => {
+            stream.addEventListener('inactive', (e) => alert("lost audio stream"));
             this.mediaRecorder = new MediaRecorder(stream);
             let playTime = null; // audiocontext time when playing starts
 
@@ -348,10 +354,14 @@ class AudioLoop {
             this.mediaRecorder.addEventListener("dataavailable", event => {
                 audioChunks.push(event.data);
                 handleChunk(event.data);
+                console.log(audioChunks);
             });
 
             this.mediaRecorder.addEventListener("stop", async () => {
                 try{
+                    // console.log("stop called...");
+                    // console.log("stream active after stop: %s", stream.active);
+                    // console.log("media recorder state: %s", this.mediaRecorder.state);
                     let stopTime = this.getAudioContext().currentTime;
                     await this.handleChunks(audioChunks, 
                         // toDo: examine assumptions about outputLatency
@@ -359,7 +369,9 @@ class AudioLoop {
                         quantized,
                         clickTrack.oneMeasureInSeconds);
                     stopBunch();
+                    stream.getTracks().forEach((track) => track.stop());
                 }catch(e){
+                    console.log(e);
                     onFailure();
                     return;
                 }
@@ -370,7 +382,11 @@ class AudioLoop {
                 playTime = playBunch();
             });
             this.mediaRecorder.start(this.chunkSize);
-        });
+        })
+        .catch((error) => {
+            console.log(error);
+            alert("Error connecting to input audio: " + error.toString());
+        });;
     }
 }
 

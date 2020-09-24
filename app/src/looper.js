@@ -167,7 +167,7 @@ class Looper extends React.Component {
                                 updateOptions={(f) => {this.loopBunch.ondevicechange = f; this.loopBunch.refreshAvailableDevices()}}/>                                
                             <span className='bpm'>
                                 bpm
-                                <input type='text' className='inputFont' value={this.loopBunch.clickTrack.bpm} size='2' maxsize='2' onChange={this.handleBpm}/>
+                                <input type='text' className='bpmInput' value={this.loopBunch.clickTrack.bpm} size='2' maxsize='2' onChange={this.handleBpm}/>
                             </span>
                             <Slider 
                                 name='tempo' min='30' max='200' 
@@ -242,7 +242,7 @@ class Loop extends React.Component {
             <div className="loopControls">
                 <div className={(this.state.recording) ? 'recordingDot' : 'dot'} />
                 <input type='text' 
-                    className='inputFont'
+                    className='inputFont loopName'
                     value={this.state.name} 
                     onChange={(e) => {
                         this.setState({'name': e.target.value});

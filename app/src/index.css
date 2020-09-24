@@ -225,6 +225,10 @@ body {
     
 }
 
+.bpmInput {
+    background-color: gainsboro;
+}
+
 .dropDownDiv {
     margin:10px;
     padding: 5px;
@@ -243,7 +247,7 @@ body {
     border: 1px solid black;
     width: 75px;
     margin: 5px;
-    background-color: cornsilk; 
+    background-color: gainsboro; 
 }
 
 .inputFont {
