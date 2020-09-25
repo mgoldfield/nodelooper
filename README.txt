@@ -1,13 +1,19 @@
 To Do:
 - download mixed loops and individal loops
 - allow loops to be uploaded
-- what happens when a device becomes unavailable mid-recording / while app is open?
 
 With/after api:
+
+Infrastructure:
+- rabbitmq
+- memcached -- do I not even need a database????????
+- dockerize
+
 - can two people record at the same time?  I think yes...
 - show loops being recording - maybe thin flashing bars with name of recorder ?
 - allow manipulation of progress bar and recording at a certain spot
 - apogee element bug
+- what happens when a device becomes unavailable mid-recording / while app is open?
 
 
 v2: 

@@ -203,6 +203,7 @@ class Loop extends React.Component {
     constructor(props){
         super(props);
         this.audioLoop = props.audioLoop;
+        this.audioLoop.setRedraw((e)=>this.setState(e));
         this.state = {
             'name': props.name,
             'muted': this.audioLoop.muted,
@@ -210,6 +211,7 @@ class Loop extends React.Component {
             'looping': this.audioLoop.looping,
             'playing': this.audioLoop.playing,
             'recording': props.recording,
+            'hasBuffer': !!this.audioLoop.buffer,
         }
 
         this.audioLoop.setName(props.name);
@@ -236,6 +238,10 @@ class Loop extends React.Component {
         this.audioLoop.setGain(e.target.value);
     }
 
+    download(){
+        return;
+    }
+
     render() {
         return (
             <li className="loopItem">
@@ -256,9 +262,11 @@ class Loop extends React.Component {
                     step="0.01"
                 />  
                 <Button name='mute' onClick={this.handleMute} 
-                    toggled={this.state.muted} avail={true}/>
+                    toggled={this.state.muted} avail={this.state.hasBuffer}/>
                 <Button name='loop' onClick={this.handleLoop} 
-                    toggled={this.state.looping} avail={!this.state.playing}/>
+                    toggled={this.state.looping} avail={this.state.hasBuffer && !this.state.playing}/>
+                <Button name="down load" onClick={this.download}
+                    toggled={false} avail={this.state.hasBuffer} />
             </div>
             <LoopProgress update={(f) => this.audioLoop.updateProgress = f} />
             </li>
