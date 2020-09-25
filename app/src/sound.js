@@ -187,11 +187,40 @@ class AudioLoopBunch{
         this.clickTrack.stop();
 
         for (const l of this.audioLoops)
-            l.stop()
+            l.stop();
     }
 
     setGain(g){
         this.gainNode.setValueAtTime(g, this.getAudioContext().currentTime);
+    }
+
+    download = () => {
+        // mix down all loops
+        let maxLength = 0;
+        for (const l of this.audioLoops){
+            if (l.buffer.length > maxLength){
+                maxLength = l.buffer.length;
+            }
+        }
+        
+        //assumes everything is stereo
+        let mix = this.getAudioContext().createBuffer(2, maxLength, this.audioLoops[0].buffer.sampleRate);
+
+        for (const channel of [0, 1]){
+            let outputChannel = mix.getChannelData(channel);
+            let channelData = []
+            for (const loop of this.audioLoops){
+                channelData.push(loop.buffer.getChannelData(channel));
+            }
+            for (let sample = 0; sample < maxLength; sample++){
+                for (let l=0; l < this.audioLoops.length; l++){
+                    if (!this.audioLoops[l].muted){
+                        outputChannel[sample] += this.audioLoops[l].gain * channelData[l][sample % this.audioLoops[l].buffer.length];
+                    }
+                }
+            }
+        }
+        downloadBlob('loop_mix.wav', bufferToWav(mix));
     }
 }
 
@@ -279,11 +308,15 @@ class AudioLoop {
         this.redraw({'playing':false});
     }
 
+    get gain(){
+        return this.gainNode.gain.value;
+    }
+
     toggleMute(){
         if (this.muted){
             this.setGain(this.formerGain);
         }else{
-            this.formerGain = this.gainNode.gain.value;
+            this.formerGain = this.gain;
             this.setGain(0.0);
         }
         this.muted = !this.muted;
@@ -475,7 +508,7 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
 
 
 // Convert a audio-buffer segment to a Blob using WAVE representation
-// https://stackoverflow.com/questions/29584420/how-to-manipulate-the-contents-of-an-audio-tag-and-create-derivative-audio-tags/30045041#30045041
+// with help from https://stackoverflow.com/questions/29584420/how-to-manipulate-the-contents-of-an-audio-tag-and-create-derivative-audio-tags/30045041#30045041
 function bufferToWav(buff) {
 
     function setUint16(data) {
@@ -488,43 +521,43 @@ function bufferToWav(buff) {
         pos += 4;
     };    
 
-    let numOfChan = buff.numberOfChannels,
-      length = buff.length * 2 + 44,
-      newBuff = new ArrayBuffer(length),
-      view = new DataView(newBuff),
-      channels = [], i, sample,
-      offset = 0,
-      pos = 0;
+    let numOfChan = buff.numberOfChannels,                                          // 2 channels
+        bytesPerSample = 2,                                 
+        length = buff.length * bytesPerSample * numOfChan + 44,
+        newBuff = new ArrayBuffer(length),
+        view = new DataView(newBuff),
+        channels = [], i,
+        offset = 0,
+        pos = 0;
 
     // write WAVE header
-    setUint32(0x46464952);                         // "RIFF"
-    setUint32(length - 8);                         // file length - 8
-    setUint32(0x45564157);                         // "WAVE"
+    setUint32(0x46464952);                                                          // "RIFF"
+    setUint32(length - 8);                                                          // file length - 8
+    setUint32(0x45564157);                                                          // "WAVE"
 
-    setUint32(0x20746d66);                         // "fmt " chunk
-    setUint32(16);                                 // length = 16
-    setUint16(1);                                  // PCM (uncompressed)
+    setUint32(0x20746d66);                                                          // "fmt " chunk
+    setUint32(16);                                                                  // length = 16
+    setUint16(1);                                                                   // PCM (uncompressed)
     setUint16(numOfChan);
     setUint32(buff.sampleRate);
-    setUint32(buff.sampleRate * 2 * numOfChan); // avg. bytes/sec
-    setUint16(numOfChan * 2);                      // block-align
-    setUint16(16);                                 // 16-bit (hardcoded in this demo)
+    setUint32(buff.sampleRate * bytesPerSample * numOfChan);                        // avg. bytes/sec
+    setUint16(numOfChan * bytesPerSample);                                          // block-align
+    setUint16(8 * bytesPerSample);                                                  // 16-bit 
 
-    setUint32(0x61746164);                         // "data" - chunk
-    setUint32(length - pos - 4);                   // chunk length
+    setUint32(0x61746164);                                                          // "data" - chunk
+    setUint32(buff.length * numOfChan * bytesPerSample * 8);                        // chunk length
 
     // write interleaved data
     for(i = 0; i < buff.numberOfChannels; i++)
         channels.push(buff.getChannelData(i));
 
     while(pos < length) {
-        for(i = 0; i < numOfChan; i++) {             // interleave channels
-            sample = Math.max(-1, Math.min(1, channels[i][offset])); // clamp
-            sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767)|0; // scale to 16-bit signed int
-            view.setInt16(pos, sample, true);          // update data chunk
-            pos += 2;
+        for(i = 0; i < numOfChan; i++) {                                            // interleave channels
+            let sample = Math.max(-1, Math.min(1, channels[i][offset]));            // clamp in [-1,1]
+            sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767)|0;        // scale to 16-bit signed int
+            setUint16(sample);                                                       // update data chunk
         }
-        offset++                                     // next source sample
+        offset++                                                                    // next source sample
     }
 
     // create Blob

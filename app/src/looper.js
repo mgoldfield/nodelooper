@@ -7,6 +7,8 @@ class Looper extends React.Component {
     constructor(props){
         super(props);
         this.loopBunch = new AudioLoopBunch();
+        this.counter = 0;
+        this.loops = [];
         this.state = {
             'expanded': true,
             'recording': this.loopBunch.recording,
@@ -19,9 +21,9 @@ class Looper extends React.Component {
             'loopRecStatus': [],
             'gain': 1,
             'inputMonitoring': this.loopBunch.inputMonitoring,
+            'numLoops': this.loops.length,
         }
-        this.counter = 0;
-        this.loops = [];
+
 
         // functions passed up from children  
         this.finishRecording = () => null;  
@@ -36,6 +38,7 @@ class Looper extends React.Component {
             if (this.state.recording){
                 if (this.state.playing){
                     this.finishRecording();
+                    this.setState({'numLoops': this.loops.length});
                 }else{
                     this.loopBunch.unprepareToRecord();
                     this.loops.pop();
@@ -146,9 +149,11 @@ class Looper extends React.Component {
                         <Button name='rec' onClick={this.handleRec} 
                             toggled={this.state.recording} avail={!this.state.playing || this.state.recording}/>
                         <Button name='quant' onClick={this.handleQuant} 
-                            toggled={this.state.quantized} avail={!this.state.playing}/>
+                            toggled={this.state.quantized} avail={!this.state.playing}/>  
                         <Button name='input mon' onClick={this.handleInputMonit} 
                             toggled={this.state.inputMonitoring} avail={!this.state.playing}/>
+                        <Button name='down load' onClick={this.loopBunch.download} 
+                            toggled={false} avail={this.state.numLoops > 0}/>                              
                         <Button 
                             name={(this.state.expanded) ? 'collapse' : 'expand'}
                             onClick={() => this.setState({'expanded': !this.state.expanded})} 
@@ -242,18 +247,18 @@ class Loop extends React.Component {
         this.audioLoop.download();
     }
 
+    setName = (e) => {
+        this.setState({'name': e.target.value});
+        this.audioLoop.setName(e.target.value);
+    }
+
     render() {
         return (
             <li className="loopItem">
             <div className="loopControls">
                 <div className={(this.state.recording) ? 'recordingDot' : 'dot'} />
-                <input type='text' 
-                    className='inputFont loopName'
-                    value={this.state.name} 
-                    onChange={(e) => {
-                        this.setState({'name': e.target.value});
-                        this.audioLoop.setName(e.target.value);
-                    }}
+                <input type='text' className='inputFont loopName'
+                    value={this.state.name} onChange={this.setName}
                 />
                 <Slider 
                     name='gain' min='0' max='10' 
