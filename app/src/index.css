@@ -6,7 +6,7 @@ body {
 .looper {
     margin: auto;
     margin-top: 50px;
-    width: 800px;
+    width: 900px;
     background-color: goldenrod;
     display:flex;
     flex-direction: column; 

@@ -310,47 +310,9 @@ class AudioLoop {
         this.gainNode.disconnect();
     }
 
-    trimAndQuantizeAudio(buffer, targetLength, quantized, quantUnit){
-        // first we trim to target length from the beginning
-        // then we add or trim from the end to quantize if qantized is set to true
-
-        let samplesToTrim = buffer.length - Math.round(targetLength * buffer.sampleRate);
-        let trimmedAudio = new Float32Array(buffer.length);
-        buffer.copyFromChannel(trimmedAudio, 0, 0);
-        trimmedAudio = trimmedAudio.slice(samplesToTrim);
-
-        if (quantized && (quantUnit > 0)){
-            let remainder = targetLength % quantUnit;
-
-            // threshold of over 3/10 of a measure, assume user is intentonally 
-            // creating a new measure
-            if ((remainder / quantUnit) > .3){ 
-                let toAdd = Math.round((quantUnit - remainder) * buffer.sampleRate);
-                let quantizedAudio = new Float32Array(trimmedAudio.length + toAdd);
-                quantizedAudio.set(trimmedAudio);
-                trimmedAudio = quantizedAudio;
-            }else{
-                let toTrim = Math.round(remainder * buffer.sampleRate);
-                trimmedAudio = trimmedAudio.slice(0, trimmedAudio.length - toTrim);
-            }           
-        }
-
-        if (trimmedAudio.length === 0){
-            throw Error("No audio received")
-        }
-
-        // make final buffer, mono -> stereo
-        let returnBuffer = this.getAudioContext().createBuffer(2, trimmedAudio.length, buffer.sampleRate);
-        returnBuffer.copyToChannel(trimmedAudio, 0, 0);
-        returnBuffer.copyToChannel(trimmedAudio, 1, 0); 
-        return returnBuffer;
+    download(){
+        downloadBlob(this.name + '.wav', bufferToWav(this.buffer));
     }
-
-    handleChunks = async function(audioChunks, targetLength, quantized, quantUnit){
-        const blob = new Blob(audioChunks, {'type' : 'audio/ogg; codecs=opus'});
-        let buffer = await this.getAudioContext().decodeAudioData(await blob.arrayBuffer());
-        this.buffer = this.trimAndQuantizeAudio(buffer, targetLength, quantized, quantUnit);
-    };
 
     recordBuffer(mediaPromise, playBunch, stopBunch, handleChunk, clickTrack, quantized, onFailure, onSuccess){
         if (this.recording) 
@@ -402,6 +364,48 @@ class AudioLoop {
             alert("Error connecting to input audio: " + error.toString());
         });;
     }
+
+    handleChunks = async function(audioChunks, targetLength, quantized, quantUnit){
+        const blob = new Blob(audioChunks, {'type' : 'audio/ogg; codecs=opus'});
+        let buffer = await this.getAudioContext().decodeAudioData(await blob.arrayBuffer());
+        this.buffer = this.trimAndQuantizeAudio(buffer, targetLength, quantized, quantUnit);
+    };       
+
+    trimAndQuantizeAudio(buffer, targetLength, quantized, quantUnit){
+        // first we trim to target length from the beginning
+        // then we add or trim from the end to quantize if qantized is set to true
+
+        let samplesToTrim = buffer.length - Math.round(targetLength * buffer.sampleRate);
+        let trimmedAudio = new Float32Array(buffer.length);
+        buffer.copyFromChannel(trimmedAudio, 0, 0);
+        trimmedAudio = trimmedAudio.slice(samplesToTrim);
+
+        if (quantized && (quantUnit > 0)){
+            let remainder = targetLength % quantUnit;
+
+            // threshold of over 3/10 of a measure, assume user is intentonally 
+            // creating a new measure
+            if ((remainder / quantUnit) > .3){ 
+                let toAdd = Math.round((quantUnit - remainder) * buffer.sampleRate);
+                let quantizedAudio = new Float32Array(trimmedAudio.length + toAdd);
+                quantizedAudio.set(trimmedAudio);
+                trimmedAudio = quantizedAudio;
+            }else{
+                let toTrim = Math.round(remainder * buffer.sampleRate);
+                trimmedAudio = trimmedAudio.slice(0, trimmedAudio.length - toTrim);
+            }           
+        }
+
+        if (trimmedAudio.length === 0){
+            throw Error("No audio received")
+        }
+
+        // make final buffer, mono -> stereo
+        let returnBuffer = this.getAudioContext().createBuffer(2, trimmedAudio.length, buffer.sampleRate);
+        returnBuffer.copyToChannel(trimmedAudio, 0, 0);
+        returnBuffer.copyToChannel(trimmedAudio, 1, 0); 
+        return returnBuffer;
+    } 
 }
 
 
@@ -527,7 +531,7 @@ function bufferToWav(buff) {
     return new Blob([newBuff], {type: "audio/wav"});
 }
 
-function download(filename, blob){
+function downloadBlob(filename, blob){
     let tmp = document.createElement('a');
     tmp.style = "display: none";
     document.body.appendChild(tmp);
@@ -535,7 +539,7 @@ function download(filename, blob){
     tmp.href = url;
     tmp.download = filename;
     tmp.click();
-    document.removeChild(tmp);
+    document.body.removeChild(tmp);
     setTimeout(() => window.URL.revokeObjectURL(url), 1000);
 }
 

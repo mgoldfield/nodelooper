@@ -238,8 +238,8 @@ class Loop extends React.Component {
         this.audioLoop.setGain(e.target.value);
     }
 
-    download(){
-        return;
+    download = () => {
+        this.audioLoop.download();
     }
 
     render() {
@@ -263,7 +263,7 @@ class Loop extends React.Component {
                 />  
                 <Button name='mute' onClick={this.handleMute} 
                     toggled={this.state.muted} avail={this.state.hasBuffer}/>
-                <Button name='loop' onClick={this.handleLoop} 
+                <Button name='loop' onClick={this.download} 
                     toggled={this.state.looping} avail={this.state.hasBuffer && !this.state.playing}/>
                 <Button name="down load" onClick={this.download}
                     toggled={false} avail={this.state.hasBuffer} />
