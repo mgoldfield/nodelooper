@@ -1,6 +1,6 @@
 To Do:
-- download mixed loops and individal loops
 - allow loops to be uploaded
+- allow manipulation of progress bar and recording at a certain spot
 
 With/after api:
 
@@ -11,7 +11,6 @@ Infrastructure:
 
 - can two people record at the same time?  I think yes...
 - show loops being recording - maybe thin flashing bars with name of recorder ?
-- allow manipulation of progress bar and recording at a certain spot
 - apogee element bug
 - what happens when a device becomes unavailable mid-recording / while app is open?
 
@@ -23,6 +22,7 @@ v2:
 
 
 done:
+- download mixed loops and individal loops
 - input picker
 - listen-through/ input monitoring
 - play button flashes when record is toggled
@@ -42,4 +42,5 @@ done:
 ./src/sound.js:        //toDo: determine if buffer needs baseLatency trimmed from the end
 ./src/sound.js:        //toDo: round buffer to multiple of initial loop
 ./src/sound.js:            // toDo: what's wrong with latency when no count-in click
+
 

@@ -86,8 +86,8 @@ class AudioLoopBunch{
     }
 
 
-    prepareToRecord(id){
-        this.recordingLoop = new AudioLoop(id, this.getAudioContext);
+    prepareToRecord(){
+        this.recordingLoop = new AudioLoop(this.getAudioContext);
         return this.recordingLoop;
     }
 
@@ -96,6 +96,11 @@ class AudioLoopBunch{
 
         // if we started recording but pressed stop...
         this.recording = false;
+    }
+
+    addLoop(loop){
+        this.audioLoops.push(loop);
+        this.mergeOutOfDate = true;
     }
 
     record(onEarlyStop){
@@ -107,8 +112,8 @@ class AudioLoopBunch{
         // mediaPromise, playBunch, stopBunch, handleChunk, clickTrack, quantized, onEarlyStop, onSuccess
         this.recordingLoop.recordBuffer(
             this.getUserAudio(),
-            (() => this.playLoops()),
-            (() => this.stop()),
+            () => this.playLoops(),
+            () => this.stop(),
             this.handleChunk,
             this.clickTrack,
             this.quantized,
@@ -116,10 +121,7 @@ class AudioLoopBunch{
                 onEarlyStop();
                 this.unprepareToRecord();
             },
-            () => {
-                this.audioLoops.push(this.recordingLoop);
-                this.mergeOutOfDate = true;
-            }
+            () => this.addLoop(this.recordingLoop)
         );
     }
 
@@ -202,10 +204,8 @@ class AudioLoopBunch{
                 maxLength = l.buffer.length;
             }
         }
-        
         //assumes everything is stereo
         let mix = this.getAudioContext().createBuffer(2, maxLength, this.audioLoops[0].buffer.sampleRate);
-
         for (const channel of [0, 1]){
             let outputChannel = mix.getChannelData(channel);
             let channelData = []
@@ -222,11 +222,30 @@ class AudioLoopBunch{
         }
         downloadBlob('loop_mix.wav', bufferToWav(mix));
     }
+
+    loadLoop = (f, audioloop_cb) => {
+        let reader = new FileReader();
+        reader.onload = (event) => {
+            let buff;
+            try {
+                buff = wavToPCM(event.target.result);
+            }catch (e){
+                alert(e.toString());
+                return;
+            }
+            let loop = new AudioLoop(this.getAudioContext);
+            loop.buffer = buff;
+            // toDo: mod loop in any way needed
+            this.addLoop(loop);
+            audioloop_cb(loop);
+        }
+        reader.readAsArrayBuffer(f);
+    }
 }
 
 
 class AudioLoop {
-    constructor(id, getAudioContext, chunkSize=5000){
+    constructor(getAudioContext, chunkSize=5000){
         this.buffer = null;
         this.source = null;
         this.mediaRecorder = null;
@@ -507,6 +526,51 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
 }
 
 
+//// helper methods ///// 
+function wavToPCM(arraybuff, ac){
+    let view = new DataView(arraybuff),
+        length = view.getUint32(4) + 8,
+        numChannels = view.getUint16(22),
+        bytesPerSample = view.getUint16(36) / 8,
+        sampleRate = view.getUint32(24),
+        totalSamples = (length - 44) / bytesPerSample,
+        samplesPerChannel = totalSamples / numChannels;
+
+    if (numChannels > 2) throw Error("Audio must be mono or stereo, " + numChannels.toString() + " channels detected...");
+    if (![1,2,4].includes(bytesPerSample)) throw Error("unexpected byte rate");
+
+    let getters = {
+        1: view.getUint8,
+        2: view.getUint16,
+        4: view.getUint32
+    };
+    
+    let getSample = getters[bytesPerSample],
+        pos = 44,
+        channels = [],
+        counter = 0,
+        normalizeBy = Math.pow(2, bytesPerSample * 8);
+
+    for (let i=0; i < numChannels; i++)
+        channels.push(Float32Array(samplesPerChannel));
+
+    while (pos < length){
+        for (let i=0; i < numChannels; i++){
+            channels[i][counter] = getSample(pos) / normalizeBy;
+            pos += bytesPerSample;
+        }
+        counter++;
+    }
+
+    let newBuff = ac.createBuffer(numChannels, totalSamples, sampleRate);
+    for (let i=0; i < numChannels; i++){
+        newBuff.copyToChannel(channels[i], i, 0);
+    }
+    return newBuff;
+
+}
+
+
 // Convert a audio-buffer segment to a Blob using WAVE representation
 // with help from https://stackoverflow.com/questions/29584420/how-to-manipulate-the-contents-of-an-audio-tag-and-create-derivative-audio-tags/30045041#30045041
 function bufferToWav(buff) {
@@ -572,8 +636,8 @@ function downloadBlob(filename, blob){
     tmp.href = url;
     tmp.download = filename;
     tmp.click();
-    document.body.removeChild(tmp);
-    setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+    //document.body.removeChild(tmp);
+    //setTimeout(() => window.URL.revokeObjectURL(url), 1000);
 }
 
 

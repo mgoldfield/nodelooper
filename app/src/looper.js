@@ -22,6 +22,7 @@ class Looper extends React.Component {
             'gain': 1,
             'inputMonitoring': this.loopBunch.inputMonitoring,
             'numLoops': this.loops.length,
+            'processing': false,
         }
 
 
@@ -86,7 +87,7 @@ class Looper extends React.Component {
                 id={id}
                 name={'loop '.concat(id)}
                 recording={true}
-                audioLoop={this.loopBunch.prepareToRecord(id)}
+                audioLoop={this.loopBunch.prepareToRecord()}
                 handleToggleRecording={(f) => this.finishRecording = f}
             />);
 
@@ -130,11 +131,37 @@ class Looper extends React.Component {
     handleInputMonit = () => {
         this.setState({'inputMonitoring': !this.loopBunch.inputMonitoring});
         this.loopBunch.toggleInputMonitoring();
-    }
+    };
 
     handleInputChange = (e) => {
         this.loopBunch.device = e.target.value;
-    }
+    };
+
+    loadLoop = () => {
+        this.setState({'processing': true});
+        let uploader = document.createElement('input');
+        uploader.type = 'file';
+        uploader.style = 'display:none';
+        uploader.accept = "audio/wav";
+
+        document.body.appendChild(uploader);
+        uploader.addEventListener('change', (e) => {
+            let id = this.counter++;
+            let onLoad = (loop) =>{
+                this.loops.push(<Loop
+                    key={id}
+                    id={id}
+                    name={uploader.files[0].name}
+                    recording={false}
+                    audioLoop={loop}
+                    handleToggleRecording={null}
+                />);
+                this.setState({'processing': false});
+            };
+            this.loopBunch.loadLoop(uploader.files[0], onLoad);
+        });
+        uploader.click();
+    };
 
     render() {
         return (
@@ -145,13 +172,16 @@ class Looper extends React.Component {
                         <Button name='play' onClick={this.handlePlay} 
                             toggled={this.state.playing} 
                             flashing={this.state.recording && !this.state.playing}
-                            avail={true}/>
+                            avail={!this.state.processing}/>
                         <Button name='rec' onClick={this.handleRec} 
-                            toggled={this.state.recording} avail={!this.state.playing || this.state.recording}/>
+                            toggled={this.state.recording} 
+                            avail={(!this.state.playing || this.state.recording) && !this.state.processing}/>
                         <Button name='quant' onClick={this.handleQuant} 
                             toggled={this.state.quantized} avail={!this.state.playing}/>  
                         <Button name='input mon' onClick={this.handleInputMonit} 
                             toggled={this.state.inputMonitoring} avail={!this.state.playing}/>
+                        <Button name="load loop" onClick={this.loadLoop}
+                            toggled={false} avail={!this.state.playing && !this.state.recording}/>
                         <Button name='down load' onClick={this.loopBunch.download} 
                             toggled={false} avail={this.state.numLoops > 0}/>                              
                         <Button 
