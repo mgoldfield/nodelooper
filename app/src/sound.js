@@ -353,6 +353,35 @@ class AudioLoop {
     };
 
     recordBuffer(mediaPromise, playBunch, stopBunch, handleChunk, clickTrack, quantized, onFailure, onSuccess){
+        let playTime = null; // audiocontext time when playing starts
+        let audioChunks = [];
+        let onStop = async () => {
+            try{
+                // console.log("stop called...");
+                // console.log("stream active after stop: %s", stream.active);
+                // console.log("media recorder state: %s", this.mediaRecorder.state);
+                let stopTime = this.getAudioContext().currentTime;
+                await this.handleChunks(audioChunks, 
+                    // toDo: examine assumptions about outputLatency
+                    stopTime - playTime - (2 * this.getAudioContext().outputLatency),
+                    quantized,
+                    clickTrack.oneMeasureInSeconds);
+                stopBunch();
+                this.redraw({'hasBuffer': true});                
+                //stream.getTracks().forEach((track) => track.stop());
+            }catch(e){
+                console.log(e);
+                onFailure();
+                return;
+            }
+            onSuccess();
+        };
+        let dataAvailable = (event) => {
+            audioChunks.push(event.data);
+            handleChunk(event.data);
+            console.log(audioChunks);
+        }
+
         if (this.recording) 
             throw Error("already recording"); 
         else {
@@ -363,36 +392,10 @@ class AudioLoop {
         mediaPromise.then((stream) => {
             stream.addEventListener('inactive', (e) => alert("lost audio stream"));
             this.mediaRecorder = new MediaRecorder(stream);
-            let playTime = null; // audiocontext time when playing starts
 
-            let audioChunks = [];
-            this.mediaRecorder.addEventListener("dataavailable", event => {
-                audioChunks.push(event.data);
-                handleChunk(event.data);
-                console.log(audioChunks);
-            });
+            this.mediaRecorder.addEventListener("dataavailable", dataAvailable);
 
-            this.mediaRecorder.addEventListener("stop", async () => {
-                try{
-                    // console.log("stop called...");
-                    // console.log("stream active after stop: %s", stream.active);
-                    // console.log("media recorder state: %s", this.mediaRecorder.state);
-                    let stopTime = this.getAudioContext().currentTime;
-                    await this.handleChunks(audioChunks, 
-                        // toDo: examine assumptions about outputLatency
-                        stopTime - playTime - (2 * this.getAudioContext().outputLatency),
-                        quantized,
-                        clickTrack.oneMeasureInSeconds);
-                    stopBunch();
-                    stream.getTracks().forEach((track) => track.stop());
-                    this.redraw({'hasBuffer': true});
-                }catch(e){
-                    console.log(e);
-                    onFailure();
-                    return;
-                }
-                onSuccess();
-            });
+            this.mediaRecorder.addEventListener("stop", onStop);
 
             this.mediaRecorder.addEventListener("start", () => {
                 playTime = playBunch();
@@ -529,8 +532,16 @@ function bufferToWav(buff) {
     return new Blob([newBuff], {type: "audio/wav"});
 }
 
-function download(filename, file){
-
+function download(filename, blob){
+    let tmp = document.createElement('a');
+    tmp.style = "display: none";
+    document.body.appendChild(tmp);
+    let url = window.URL.createObjectURL(blob);
+    tmp.href = url;
+    tmp.download = filename;
+    tmp.click();
+    document.removeChild(tmp);
+    setTimeout(() => window.URL.revokeObjectURL(url), 1000);
 }
 
 
