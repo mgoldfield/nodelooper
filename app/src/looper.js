@@ -148,13 +148,14 @@ class Looper extends React.Component {
         uploader.addEventListener('change', (e) => {
             let id = this.counter++;
             let onLoad = (loop) =>{
+                console.log("pushing loop...");
                 this.loops.push(<Loop
                     key={id}
                     id={id}
                     name={uploader.files[0].name}
                     recording={false}
                     audioLoop={loop}
-                    handleToggleRecording={null}
+                    handleToggleRecording={()=>null}
                 />);
                 this.setState({'processing': false});
             };
@@ -180,7 +181,7 @@ class Looper extends React.Component {
                             toggled={this.state.quantized} avail={!this.state.playing}/>  
                         <Button name='input mon' onClick={this.handleInputMonit} 
                             toggled={this.state.inputMonitoring} avail={!this.state.playing}/>
-                        <Button name="load loop" onClick={this.loadLoop}
+                        <Button name="load .wav" onClick={this.loadLoop}
                             toggled={false} avail={!this.state.playing && !this.state.recording}/>
                         <Button name='down load' onClick={this.loopBunch.download} 
                             toggled={false} avail={this.state.numLoops > 0}/>                              

@@ -227,16 +227,17 @@ class AudioLoopBunch{
         let reader = new FileReader();
         reader.onload = (event) => {
             let buff;
-            try {
-                buff = wavToPCM(event.target.result);
-            }catch (e){
-                alert(e.toString());
-                return;
-            }
+            // try {
+                buff = wavToPCM(event.target.result, this.getAudioContext());
+            // }catch (e){
+            //     alert(e.toString());
+            //     return;
+            // }
             let loop = new AudioLoop(this.getAudioContext);
             loop.buffer = buff;
             // toDo: mod loop in any way needed
             this.addLoop(loop);
+            console.log("added new loop to loopbunch");
             audioloop_cb(loop);
         }
         reader.readAsArrayBuffer(f);
@@ -527,45 +528,78 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
 
 
 //// helper methods ///// 
-function wavToPCM(arraybuff, ac){
+
+function debugWav(view){
+    console.log("RIFF - dec:%s, hex:%s", view.getUint32(0, true).toString(), view.getUint32(0, true).toString(16));
+    console.log("length - 8 - dec:%s, hex:%s", view.getUint32(4, true).toString(), view.getUint32(4, true).toString(16));
+    console.log("WAVE - dec:%s, hex:%s", view.getUint32(8, true).toString(), view.getUint32(8, true).toString(16));
+    console.log("fmt - dec:%s, hex:%s", view.getUint32(12, true).toString(), view.getUint32(12, true).toString(16));
+    console.log("16 - dec:%s, hex:%s", view.getUint32(16, true).toString(), view.getUint32(16, true).toString(16));
+    console.log("1 - dec:%s, hex:%s", view.getUint16(20, true).toString(), view.getUint16(20, true).toString(16));
+    console.log("num channels - dec:%s, hex:%s", view.getUint16(22, true).toString(), view.getUint16(22, true).toString(16));
+    console.log("sample rate - dec:%s, hex:%s", view.getUint32(24, true).toString(), view.getUint32(24, true).toString(16));
+    console.log("bytes / sec - dec:%s, hex:%s", view.getUint32(28, true).toString(), view.getUint32(28, true).toString(16));
+    console.log("block size - dec:%s, hex:%s", view.getUint16(32, true).toString(), view.getUint16(32, true).toString(16));
+    console.log("bits per sample - dec:%s, hex:%s", view.getUint16(34, true).toString(), view.getUint16(34, true).toString(16));
+    console.log("data - dec:%s, hex:%s", view.getUint32(36, true).toString(), view.getUint32(36, true).toString(16));
+    console.log("data length - dec:%s, hex:%s", view.getUint32(40, true).toString(), view.getUint32(40, true).toString(16));
+}
+
+function wavToPCM(arraybuff, ac, debug=false){
     let view = new DataView(arraybuff),
-        length = view.getUint32(4) + 8,
-        numChannels = view.getUint16(22),
-        bytesPerSample = view.getUint16(36) / 8,
-        sampleRate = view.getUint32(24),
-        totalSamples = (length - 44) / bytesPerSample,
+        numChannels = view.getUint16(22, true),
+        bytesPerSample = view.getUint16(34, true) / 8,
+        sampleRate = view.getUint32(24, true),
+        totalSamples = view.getUint32(40, true) / (bytesPerSample * 8),
         samplesPerChannel = totalSamples / numChannels;
 
+    if (debug){
+        console.log("data view length: %s bytes", view.byteLength);
+        console.log("samplesPerChannel: %s", samplesPerChannel);
+        console.log("bytesPerSample: %s", bytesPerSample);
+        console.log("sampleRate: %s", sampleRate);
+        console.log("totalSamples: %s", totalSamples);
+        console.log("numChannels: %s", numChannels);
+        debugWav(view);
+    }
+
     if (numChannels > 2) throw Error("Audio must be mono or stereo, " + numChannels.toString() + " channels detected...");
-    if (![1,2,4].includes(bytesPerSample)) throw Error("unexpected byte rate");
+    if (![1,2,4].includes(bytesPerSample)) throw Error("unexpected byte rate: " + bytesPerSample.toString());
 
     let getters = {
-        1: view.getUint8,
-        2: view.getUint16,
-        4: view.getUint32
+        1: (v) => view.getInt8(v, true),
+        2: (v) => view.getInt16(v, true),
+        4: (v) => view.getInt32(v, true)
     };
     
     let getSample = getters[bytesPerSample],
         pos = 44,
         channels = [],
         counter = 0,
-        normalizeBy = Math.pow(2, bytesPerSample * 8);
+        normalizeBy = Math.pow(2, bytesPerSample * 8 - 1);
+
+    if (debug)
+        console.log("normalizeBy: %s", normalizeBy )
 
     for (let i=0; i < numChannels; i++)
-        channels.push(Float32Array(samplesPerChannel));
+        channels.push(new Float32Array(samplesPerChannel));
 
-    while (pos < length){
+    while (counter < samplesPerChannel){
         for (let i=0; i < numChannels; i++){
             channels[i][counter] = getSample(pos) / normalizeBy;
+            if (counter < 10){
+                console.log(channels[i][counter]);
+            }
             pos += bytesPerSample;
         }
         counter++;
     }
 
-    let newBuff = ac.createBuffer(numChannels, totalSamples, sampleRate);
+    let newBuff = ac.createBuffer(numChannels, samplesPerChannel, sampleRate);
     for (let i=0; i < numChannels; i++){
         newBuff.copyToChannel(channels[i], i, 0);
     }
+    console.log(newBuff);
     return newBuff;
 
 }
@@ -573,7 +607,7 @@ function wavToPCM(arraybuff, ac){
 
 // Convert a audio-buffer segment to a Blob using WAVE representation
 // with help from https://stackoverflow.com/questions/29584420/how-to-manipulate-the-contents-of-an-audio-tag-and-create-derivative-audio-tags/30045041#30045041
-function bufferToWav(buff) {
+function bufferToWav(buff, debug=false) {
 
     function setUint16(data) {
         view.setUint16(pos, data, true);
@@ -583,7 +617,12 @@ function bufferToWav(buff) {
     function setUint32(data) {
         view.setUint32(pos, data, true);
         pos += 4;
-    };    
+    };  
+
+    function setInt16(data ){
+        view.setInt16(pos, data, true);
+        pos += 2;
+    }
 
     let numOfChan = buff.numberOfChannels,                                          // 2 channels
         bytesPerSample = 2,                                 
@@ -619,9 +658,19 @@ function bufferToWav(buff) {
         for(i = 0; i < numOfChan; i++) {                                            // interleave channels
             let sample = Math.max(-1, Math.min(1, channels[i][offset]));            // clamp in [-1,1]
             sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767)|0;        // scale to 16-bit signed int
-            setUint16(sample);                                                       // update data chunk
+            if (offset < 10){
+                console.log(channels[i][offset]);
+            }
+            setInt16(sample);                                                       // update data chunk
         }
         offset++                                                                    // next source sample
+    }
+
+    if (debug){
+        debugWav(view);
+        console.log("numberOfChannels: %s", buff.numberOfChannels);
+        console.log("bytesPerSample: %s", bytesPerSample);
+        console.log("buff length: %s", buff.length);
     }
 
     // create Blob

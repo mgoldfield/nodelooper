@@ -1,12 +1,14 @@
 To Do:
 - allow loops to be uploaded
 - allow manipulation of progress bar and recording at a certain spot
+- max number of loop repeats
+- modularize jsx 
 
 With/after api:
 
 Infrastructure:
 - rabbitmq
-- memcached -- do I not even need a database????????
+- memcached -- do I not even need a database???????? -- ans: need a DB if you want to scale to multiple servers...
 - dockerize
 
 - can two people record at the same time?  I think yes...
