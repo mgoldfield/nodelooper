@@ -80,6 +80,7 @@ class AudioLoopBunch{
             });
         }else{
             if (this.inputMontiorSource){
+                this.inputMontiorSource.mediaStream.getTracks().forEach((track) => track.stop());
                 this.inputMontiorSource.disconnect();
                 this.inputMontiorSource = null;
             }
