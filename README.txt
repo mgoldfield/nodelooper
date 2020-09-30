@@ -1,6 +1,4 @@
 To Do:
-- allow manipulation of progress bar and recording at a certain spot
-- max number of loop repeats
 - modularize jsx 
 
 With/after api:
@@ -23,6 +21,8 @@ v2:
 
 
 done:
+- max number of loop repeats
+- allow manipulation of progress bar and recording at a certain spot
 - allow loops to be uploaded
 - download mixed loops and individal loops
 - input picker

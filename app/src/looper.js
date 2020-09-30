@@ -250,6 +250,7 @@ class Loop extends React.Component {
             'playing': this.audioLoop.playing,
             'recording': props.recording,
             'hasBuffer': !!this.audioLoop.buffer,
+            'maxRepeats': this.audioLoop.maxRepeats,
         }
 
         this.audioLoop.setName(props.name);
@@ -285,12 +286,17 @@ class Loop extends React.Component {
         this.audioLoop.setName(e.target.value);
     }
 
+    handleMaxRepeats = (e) => {
+        this.setState({'maxRepeats': e.target.value});
+        this.audioLoop.maxRepeats = e.target.value;
+    }
+
     render() {
         return (
             <li className="loopItem">
             <div className="loopControls">
                 <div className={(this.state.recording) ? 'recordingDot' : 'dot'} />
-                <input type='text' className='inputFont loopName'
+                <input type='text' className='inputFont loopName maxRepsInput'
                     value={this.state.name} onChange={this.setName}
                 />
                 <Slider 
@@ -305,6 +311,12 @@ class Loop extends React.Component {
                     toggled={this.state.looping} avail={this.state.hasBuffer && !this.state.playing}/>
                 <Button name="down load" onClick={this.download}
                     toggled={false} avail={this.state.hasBuffer} />
+                <span className='maxReps'>
+                    reps
+                    <input type='text' className='maxRepsInput' 
+                        value={this.state.maxRepeats === 0 ? "" : this.state.maxRepeats} 
+                        size='3' maxsize='3' onChange={this.handleMaxRepeats}/>
+                </span>
             </div>
             <LoopProgress update={(f) => this.audioLoop.updateProgress = f} />
             </li>
