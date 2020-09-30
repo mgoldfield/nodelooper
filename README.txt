@@ -1,5 +1,6 @@
 To Do:
 - modularize jsx 
+- instructions on left bar
 
 With/after api:
 

@@ -165,67 +165,79 @@ class Looper extends React.Component {
         uploader.click();
     };
 
+    renderMainBar(){
+        return (
+            <div className='mainMasterLoop'> 
+                <Button name='stop' onClick={this.handleStop} avail={true}/>
+                <Button name='play' onClick={this.handlePlay} 
+                    toggled={this.state.playing} 
+                    flashing={this.state.recording && !this.state.playing}
+                    avail={!this.state.processing}/>
+                <Button name='rec' onClick={this.handleRec} 
+                    toggled={this.state.recording} 
+                    avail={(!this.state.playing || this.state.recording) && !this.state.processing}/>
+                <Button name='quant' onClick={this.handleQuant} 
+                    toggled={this.state.quantized} avail={!this.state.playing}/>  
+                <Button name='input mon' onClick={this.handleInputMonit} 
+                    toggled={this.state.inputMonitoring} avail={!this.state.playing}/>
+                <Button name="load .wav" onClick={this.loadLoop}
+                    toggled={false} avail={!this.state.playing && !this.state.recording}/>
+                <Button name='down load' onClick={this.loopBunch.download} 
+                    toggled={false} avail={this.state.numLoops > 0}/>                              
+                <Button 
+                    name={(this.state.expanded) ? 'collapse' : 'expand'}
+                    onClick={() => this.setState({'expanded': !this.state.expanded})} 
+                    avail={true}
+                />
+            </div>
+        );
+    }
+
+    renderExtension(){
+        return(
+            <div className={'masterExtension '.concat((this.state.expanded) ? 'visibleExtension' : '')}>
+                <div className='extensionControls'>
+                    <Button name='click' onClick={this.handleClick} 
+                    toggled={this.state.clicking} avail={!this.state.playing} />
+                    <Button name='count in' onClick={this.handleCountIn} 
+                        toggled={this.state.clicking && this.state.countIn} 
+                        avail={this.state.clicking && !this.state.playing}/>
+                    <DropDown name="input" onChange={this.handleInputChange} 
+                        options={this.loopBunch.availableDevices} 
+                        updateOptions={(f) => {this.loopBunch.ondevicechange = f; this.loopBunch.refreshAvailableDevices()}}/>                                
+                    <span className='bpm'>
+                        bpm
+                        <input type='text' className='bpmInput' value={this.loopBunch.clickTrack.bpm} size='2' maxsize='2' onChange={this.handleBpm}/>
+                    </span>
+                    <Slider 
+                        name='tempo' min='30' max='200' 
+                        value={this.state.tempo} 
+                        onChange={this.handleTempo}
+                    />
+                    <Slider 
+                        name='master gain' min='0' max='10' 
+                        value='1' step='0.01'
+                        onChange={this.handleMaster}
+                    />
+                </div>
+                <div className='progressBar'>
+                    <ProgressBar
+                        max={0}
+                        updater = {(f) => this.loopBunch.updateProgressBar = f}
+                        getVal = {(f) => this.loopBunch.getOffset = f}
+                        onChange = {() => null}
+                    />
+                </div>                        
+            </div>
+        );
+    }
+
     render() {
         return (
             <div className='looper'>
                 <div className='masterLoop'>
-                    <div className='mainMasterLoop'> 
-                        <Button name='stop' onClick={this.handleStop} avail={true}/>
-                        <Button name='play' onClick={this.handlePlay} 
-                            toggled={this.state.playing} 
-                            flashing={this.state.recording && !this.state.playing}
-                            avail={!this.state.processing}/>
-                        <Button name='rec' onClick={this.handleRec} 
-                            toggled={this.state.recording} 
-                            avail={(!this.state.playing || this.state.recording) && !this.state.processing}/>
-                        <Button name='quant' onClick={this.handleQuant} 
-                            toggled={this.state.quantized} avail={!this.state.playing}/>  
-                        <Button name='input mon' onClick={this.handleInputMonit} 
-                            toggled={this.state.inputMonitoring} avail={!this.state.playing}/>
-                        <Button name="load .wav" onClick={this.loadLoop}
-                            toggled={false} avail={!this.state.playing && !this.state.recording}/>
-                        <Button name='down load' onClick={this.loopBunch.download} 
-                            toggled={false} avail={this.state.numLoops > 0}/>                              
-                        <Button 
-                            name={(this.state.expanded) ? 'collapse' : 'expand'}
-                            onClick={() => this.setState({'expanded': !this.state.expanded})} 
-                            avail={true}
-                        />
-                    </div>
-                    <div className={'masterExtension '.concat((this.state.expanded) ? 'visibleExtension' : '')}>
-                        <div className='extensionControls'>
-                            <Button name='click' onClick={this.handleClick} 
-                            toggled={this.state.clicking} avail={!this.state.playing} />
-                            <Button name='count in' onClick={this.handleCountIn} 
-                                toggled={this.state.clicking && this.state.countIn} 
-                                avail={this.state.clicking && !this.state.playing}/>
-                            <DropDown name="input" onChange={this.handleInputChange} 
-                                options={this.loopBunch.availableDevices} 
-                                updateOptions={(f) => {this.loopBunch.ondevicechange = f; this.loopBunch.refreshAvailableDevices()}}/>                                
-                            <span className='bpm'>
-                                bpm
-                                <input type='text' className='bpmInput' value={this.loopBunch.clickTrack.bpm} size='2' maxsize='2' onChange={this.handleBpm}/>
-                            </span>
-                            <Slider 
-                                name='tempo' min='30' max='200' 
-                                value={this.state.tempo} 
-                                onChange={this.handleTempo}
-                            />
-                            <Slider 
-                                name='master gain' min='0' max='10' 
-                                value='1' step='0.01'
-                                onChange={this.handleMaster}
-                            />
-                        </div>
-                        <div className='progressBar'>
-                            <ProgressBar
-                                max={0}
-                                updater = {(f) => this.loopBunch.updateProgressBar = f}
-                                getVal = {(f) => this.loopBunch.getOffset = f}
-                                onChange = {() => null}
-                            />
-                        </div>                        
-                    </div>
+                    {this.renderMainBar()}
+                    {this.renderExtension()}
                 </div>
 
 
