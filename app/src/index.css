@@ -3,9 +3,39 @@ body {
     background-color: gainsboro;
 }
 
+.pageContainer {
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.instructions {
+    background-color: slategray;
+    margin-top: 130px;
+    width: 300px;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.instrucText {
+    padding-left: 25px;
+    padding-right: 25px;
+}
+
+.userStatusBar {
+    background-color: slategray;
+    margin-top: 130px;
+    width: 200px;
+    display:flex;
+    flex-direction: column
+}
+
 .looper {
-    margin: auto;
-    margin-top: 50px;
+    margin-top: 100px;
+    margin-left: 50px;
+    margin-right:50px;
     width: 900px;
     background-color: goldenrod;
     display:flex;
@@ -28,6 +58,10 @@ body {
     flex-direction: row; 
     justify-content: center;
     align-items: center;
+}
+
+.loops{
+    display: flex;
 }
 
 .loopList {

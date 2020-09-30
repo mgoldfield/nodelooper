@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, DropDown, Slider, ProgressBar, LoopProgress} from './controls.js';
+import {Button, DropDown, Slider, ProgressBar, LoopProgress, Instructions} from './controls.js';
 import AudioLoopBunch from './sound.js';
 
 
@@ -234,15 +234,29 @@ class Looper extends React.Component {
 
     render() {
         return (
-            <div className='looper'>
-                <div className='masterLoop'>
-                    {this.renderMainBar()}
-                    {this.renderExtension()}
+            <div className='pageContainer'>
+                <div className='instructions'>
+                    <Instructions/>
                 </div>
+                <div className='looper'>
+                    <div className='masterLoop'>
+                        {this.renderMainBar()}
+                        {this.renderExtension()}
+                    </div>
 
-
-                <div className='loops'>
-                    <ul className='loopList'>{this.loops}</ul>
+                    <div className='loops'>
+                        <ul className='loopList'>{this.loops}</ul>
+                    </div>
+                </div>
+                <div className='userStatusBar'>
+                    <p> this will be users and status... </p>
+                    <p> this will be users and status... </p>
+                    <p> this will be users and status... </p>
+                    <p> this will be users and status... </p>
+                    <p> this will be users and status... </p>
+                    <p> this will be users and status... </p>
+                    <p> this will be users and status... </p>
+                    <p> this will be users and status... </p>
                 </div>
             </div>
         );

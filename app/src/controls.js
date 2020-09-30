@@ -174,5 +174,22 @@ class LoopProgress extends React.Component {
     }
 }
 
+class Instructions extends React.Component {
 
-export {Button, DropDown, Slider, ProgressBar, LoopProgress};
+    render(){
+        return (
+            <div className="instrucText">
+            <p>These are the instructions.... bla bla bla blablab albla bal balbl ab</p>
+            <p>These are the instructions.... bla bla bla blablab albla bal balbl ab</p>
+            <p>These are the instructions.... bla bla bla blablab albla bal balbl ab</p>
+            <p>These are the instructions.... bla bla bla blablab albla bal balbl ab</p>
+            <p>These are the instructions.... bla bla bla blablab albla bal balbl ab</p>
+            <p>These are the instructions.... bla bla bla blablab albla bal balbl ab</p>
+            </div>
+        );
+    }
+
+}
+
+
+export {Button, DropDown, Slider, ProgressBar, LoopProgress, Instructions};
