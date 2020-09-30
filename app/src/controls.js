@@ -175,20 +175,27 @@ class LoopProgress extends React.Component {
 }
 
 class Instructions extends React.Component {
-
     render(){
         return (
             <div className="instrucText">
-            <p>These are the instructions.... bla bla bla blablab albla bal balbl ab</p>
-            <p>These are the instructions.... bla bla bla blablab albla bal balbl ab</p>
-            <p>These are the instructions.... bla bla bla blablab albla bal balbl ab</p>
-            <p>These are the instructions.... bla bla bla blablab albla bal balbl ab</p>
-            <p>These are the instructions.... bla bla bla blablab albla bal balbl ab</p>
-            <p>These are the instructions.... bla bla bla blablab albla bal balbl ab</p>
+                <p><b>bpm</b>: beats per measure.  used with <i>click</i> and <i>quant</i></p> 
+                <p><b>click</b>: emit a click track while playing and recording according to <i>tempo</i> and <i>bpm</i></p>  
+                <p><b>count in</b>: when recording, emit one measure of clicks before recording begins.</p>
+                <p><b>download</b>: download current mix or given loop as <i>.wav</i>. track will be the length of the longest loop. </p>
+                <p><b>input</b>: choose audio input. default is internal mic </p>
+                <p><b>input mon</b>: when toggled, plays selected input through to output </p>
+                <p><b>load .wav</b>: load a <i>.wav</i> file as a loop.  if you have a sound file of another format,
+                    such as an <i>.mp3</i>, use a program like garageband to convert the file to <i>.wav</i>. </p>
+                <p><b>loop</b>: when toggled, loop repeats.  when not toggled, loop plays just once. </p>                
+                <p><b>master gain</b>: gain/volume for entire project. </p>
+                <p><b>mute</b>: mute loop</p>            
+                <p><b>quant</b>: quantizes loops to the nearest measure, as defined by <i>tempo</i> and <i>bmp</i></p>
+                <p><b>rec</b>: creates a new loop.  press <i>play</i> after pressing <i>rec</i> to start recording a</p>
+                <p><b>reps</b>: max repetitions of a loop. when blank, loop repeats infinitely. </p>
+                <p><b>tempo</b>: beats per minute. used with <i>click</i> and <i>quant</i></p>
             </div>
         );
     }
-
 }
 
 

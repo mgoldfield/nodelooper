@@ -1,10 +1,11 @@
 To Do:
-- modularize jsx 
 - instructions on left bar
+- title bar
 
 With/after api:
 
 Infrastructure:
+- mysql / aurora - turn compute off when not using
 - rabbitmq
 - memcached -- do I not even need a database???????? -- ans: need a DB if you want to scale to multiple servers...
 - dockerize
@@ -22,6 +23,7 @@ v2:
 
 
 done:
+- modularize jsx 
 - max number of loop repeats
 - allow manipulation of progress bar and recording at a certain spot
 - allow loops to be uploaded
