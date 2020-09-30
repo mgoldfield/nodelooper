@@ -1,5 +1,4 @@
 To Do:
-- allow loops to be uploaded
 - allow manipulation of progress bar and recording at a certain spot
 - max number of loop repeats
 - modularize jsx 
@@ -24,6 +23,7 @@ v2:
 
 
 done:
+- allow loops to be uploaded
 - download mixed loops and individal loops
 - input picker
 - listen-through/ input monitoring
