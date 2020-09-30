@@ -116,8 +116,8 @@ class AudioLoopBunch{
             this.getUserAudio(),
             () => {
                 let offset = this.getOffset();
-                this.playLoops(offset);
                 this.recordingLoop.delayedStart = offset;
+                return this.playLoops(offset);
             },
             () => this.stop(),
             this.handleChunk,
