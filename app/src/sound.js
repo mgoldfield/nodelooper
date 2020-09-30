@@ -24,6 +24,7 @@ class AudioLoopBunch{
 
         // set by looper 
         this.updateProgressBar = null;
+        this.getOffset = null;
     }
 
     // we don't suspend audiocontext here because we're mostly using it in the app
@@ -110,9 +111,14 @@ class AudioLoopBunch{
         this.recording = true;
 
         // mediaPromise, playBunch, stopBunch, handleChunk, clickTrack, quantized, onEarlyStop, onSuccess
+        // toDo: yuck... lets refactor this sometime ...
         this.recordingLoop.recordBuffer(
             this.getUserAudio(),
-            () => this.playLoops(),
+            () => {
+                let offset = this.getOffset();
+                this.playLoops(offset);
+                this.recordingLoop.delayedStart = offset;
+            },
             () => this.stop(),
             this.handleChunk,
             this.clickTrack,
@@ -158,16 +164,17 @@ class AudioLoopBunch{
     }
 
 
-    startUpdatingProgressBar(playTime){
+    startUpdatingProgressBar(playTime, offset){
         if (this.playing){
-            let totalTime = this.getAudioContext().currentTime - playTime;
+            let totalTime = (this.getAudioContext().currentTime + offset);
+            totalTime -= playTime;
             if (totalTime > 0)
                 this.updateProgressBar(totalTime);                
-            setTimeout(()=>{this.startUpdatingProgressBar(playTime)}, 500);
+            setTimeout(()=>{this.startUpdatingProgressBar(playTime, offset)}, 500);
         }        
     }
 
-    playLoops(){
+    playLoops(offset=0){
         this.refreshMergeNode();
         this.playing = true;
 
@@ -179,9 +186,9 @@ class AudioLoopBunch{
 
         this.clickTrack.start(clickStartTime);
         for (const l of this.audioLoops)
-            l.play(playTime);
+            l.play(playTime, offset);
 
-        this.startUpdatingProgressBar(playTime);
+        this.startUpdatingProgressBar(playTime, offset);
         return playTime;
     }
 
@@ -246,12 +253,15 @@ class AudioLoopBunch{
 
 
 class AudioLoop {
-    constructor(getAudioContext, chunkSize=5000){
+    constructor(getAudioContext){
+        this.getAudioContext = getAudioContext;
+        this.chunkSize = 5000
         this.buffer = null;
         this.source = null;
         this.mediaRecorder = null;
-        this.getAudioContext = getAudioContext;
-        this.chunkSize = chunkSize;        
+        this.maxRepeats = 0;
+        // may get set during record
+        this.delayedStart = 0; 
 
         this.recording = false;
         this.playing = false;
@@ -279,7 +289,7 @@ class AudioLoop {
         this.redraw = f;
     }
 
-    play(contextTime){
+    play(contextTime, offset=0){
         if (this.playing) return;
 
         this.playing = true;
@@ -289,19 +299,30 @@ class AudioLoop {
         this.source.buffer = this.buffer;
         this.source.connect(this.gainNode, 0);
         this.source.loop = this.looping;
+
+        if (this.looping && this.maxRepeats > 0){
+            this.source.loopEnd = this.maxRepeats * this.length;
+            setTimeout(() => this.stop(), (this.maxRepeats * this.length + this.delayedStart) * 1000);
+        }
+
         //toDo: is this the right thing to do with outputLatency?
         let startTime = contextTime - this.getAudioContext().outputLatency;
-        this.source.start(startTime);
-        this.startLoopProgressBar(startTime);
+        if (offset - this.delayedStart > 0){
+            offset = offset - this.delayedStart;
+        }else if (offset !== this.delayedStart){
+            startTime += this.delayedStart - offset;
+        }
+        this.source.start(startTime, offset);
+        this.startLoopProgressBar(startTime, offset);
     }
 
-    startLoopProgressBar(startTime){
+    startLoopProgressBar(startTime, offset){
         if (!this.playing){
             this.updateProgress(0);
             return;
         }
 
-        let currPlayTime = this.getAudioContext().currentTime - startTime;
+        let currPlayTime = this.getAudioContext().currentTime - startTime + offset;
         if (currPlayTime > 0){
             if (this.looping)
                 this.updateProgress(currPlayTime % this.length / this.length);
@@ -309,7 +330,7 @@ class AudioLoop {
                 this.updateProgress(Math.min(currPlayTime / this.length, 1));
         }
         
-        setTimeout(() =>{this.startLoopProgressBar(startTime)}, 250);
+        setTimeout(() => {this.startLoopProgressBar(startTime, offset)}, 250);
     }
 
     stop(){
@@ -381,7 +402,7 @@ class AudioLoop {
             let dataAvailable = (event) => {
                 audioChunks.push(event.data);
                 handleChunk(event.data);
-                console.log(audioChunks);
+                //console.log(audioChunks);
             }            
             let onStop = async () => {
                 try{
@@ -587,9 +608,6 @@ function wavToPCM(arraybuff, ac, debug=false){
     while (counter < samplesPerChannel){
         for (let i=0; i < numChannels; i++){
             channels[i][counter] = getSample(pos) / normalizeBy;
-            if (counter < 10){
-                console.log(channels[i][counter]);
-            }
             pos += bytesPerSample;
         }
         counter++;
@@ -658,9 +676,6 @@ function bufferToWav(buff, debug=false) {
         for(i = 0; i < numOfChan; i++) {                                            // interleave channels
             let sample = Math.max(-1, Math.min(1, channels[i][offset]));            // clamp in [-1,1]
             sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767)|0;        // scale to 16-bit signed int
-            if (offset < 10){
-                console.log(channels[i][offset]);
-            }
             setInt16(sample);                                                       // update data chunk
         }
         offset++                                                                    // next source sample

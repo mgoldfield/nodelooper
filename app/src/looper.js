@@ -63,10 +63,11 @@ class Looper extends React.Component {
                     this.handleStop(null, "earlyStop");
                 });
             }else{
-                if (this.loops.length > 0)
-                    this.loopBunch.playLoops();
-                else
+                if (this.loops.length > 0){
+                    this.loopBunch.playLoops(this.loopBunch.getOffset());
+                }else{
                     this.handleStop();
+                }
             }
         }
     };
@@ -220,6 +221,7 @@ class Looper extends React.Component {
                             <ProgressBar
                                 max={0}
                                 updater = {(f) => this.loopBunch.updateProgressBar = f}
+                                getVal = {(f) => this.loopBunch.getOffset = f}
                                 onChange = {() => null}
                             />
                         </div>                        
