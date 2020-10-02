@@ -125,7 +125,6 @@ class AudioLoopBunch{
             (newBuff) => {
                 this.recordingLoop.setBuffer(newBuff);
                 this.addLoop(this.recordingLoop);
-                console.log("set buffer: ");
                 console.log(newBuff);
             }
         );
@@ -265,7 +264,6 @@ class Recorder {
 
     recordBuffer(mediaPromise, quantUnit, onFailure, onSuccess){
         mediaPromise.then((stream) => {
-            console.log("in recordBuffer");
             let playTime = null; // audiocontext time when playing starts
             let audioChunks = [];
             let dataAvailable = (event) => {
@@ -273,11 +271,10 @@ class Recorder {
             }            
             let onStop = async () => {
                 try{
-                    console.log("in onStop");
                     let stopTime = this.bunch.getAudioContext().currentTime;
                     this.bunch.stop();
                     stream.getTracks().forEach((track) => track.stop());
-                    console.log("stopTime: %s, playTime: %s, 2xl: %s, total: %s", stopTime, playTime, (2 * this.bunch.getAudioContext().outputLatency), stopTime - playTime - (2 * this.bunch.getAudioContext().outputLatency))
+                    //console.log("stopTime: %s, playTime: %s, 2xl: %s, total: %s", stopTime, playTime, (2 * this.bunch.getAudioContext().outputLatency), stopTime - playTime - (2 * this.bunch.getAudioContext().outputLatency))
                     let newBuff = await this.handleChunks(audioChunks, 
                         // toDo: examine assumptions about outputLatency
                         stopTime - playTime - (2 * this.bunch.getAudioContext().outputLatency),
