@@ -9,6 +9,8 @@ security/no bots
 
 ....
 
+- small box around stop/play/rec
+
 - memcached -- do I not even need a database???????? -- ans: need a DB if you want to scale to multiple servers...
 - dockerize
 

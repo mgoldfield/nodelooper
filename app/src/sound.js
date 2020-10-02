@@ -308,7 +308,7 @@ class AudioLoop {
         }
 
         //toDo: is this the right thing to do with outputLatency?
-        let startTime = contextTime - this.getAudioContext().outputLatency;
+        let startTime = contextTime; // - this.getAudioContext().outputLatency;
         if (offset - this.delayedStart > 0){
             offset = offset - this.delayedStart;
         }else if (offset !== this.delayedStart){
@@ -453,7 +453,8 @@ class AudioLoop {
 
         let samplesToTrim = buffer.length - Math.round(targetLength * buffer.sampleRate);
         let trimmedAudio = new Float32Array(buffer.length);
-        buffer.copyFromChannel(trimmedAudio, 0, 0);
+        let trimFromFront = 2 * this.getAudioContext().outputLatency * buffer.sampleRate;
+        buffer.copyFromChannel(trimmedAudio, 0, trimFromFront);
         trimmedAudio = trimmedAudio.slice(samplesToTrim);
 
         if (quantized && (quantUnit > 0)){
