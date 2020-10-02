@@ -235,28 +235,33 @@ class Looper extends React.Component {
     render() {
         return (
             <div className='pageContainer'>
-                <div className='instructions'>
-                    <Instructions/>
+                <div className='headerContainer'>
+                    <span className='title'>loop magic!</span>
                 </div>
-                <div className='looper'>
-                    <div className='masterLoop'>
-                        {this.renderMainBar()}
-                        {this.renderExtension()}
+                <div className='bodyContainer'>
+                    <div className='instructions'>
+                        <Instructions/>
                     </div>
+                    <div className='looper'>
+                        <div className='masterLoop'>
+                            {this.renderMainBar()}
+                            {this.renderExtension()}
+                        </div>
 
-                    <div className='loops'>
-                        <ul className='loopList'>{this.loops}</ul>
+                        <div className='loops'>
+                            <ul className='loopList'>{this.loops}</ul>
+                        </div>
                     </div>
-                </div>
-                <div className='userStatusBar'>
-                    <p> this will be users and status... </p>
-                    <p> this will be users and status... </p>
-                    <p> this will be users and status... </p>
-                    <p> this will be users and status... </p>
-                    <p> this will be users and status... </p>
-                    <p> this will be users and status... </p>
-                    <p> this will be users and status... </p>
-                    <p> this will be users and status... </p>
+                    <div className='userStatusBar'>
+                        <p> this will be users and status... </p>
+                        <p> this will be users and status... </p>
+                        <p> this will be users and status... </p>
+                        <p> this will be users and status... </p>
+                        <p> this will be users and status... </p>
+                        <p> this will be users and status... </p>
+                        <p> this will be users and status... </p>
+                        <p> this will be users and status... </p>
+                    </div>
                 </div>
             </div>
         );

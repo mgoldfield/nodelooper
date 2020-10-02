@@ -5,14 +5,31 @@ body {
 
 .pageContainer {
     display:flex;
+    flex-direction: column;
+}
+
+.headerContainer {
+    display: flex;
+    justify-content: center;
+}
+
+.bodyContainer {
+    display:flex;
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
+    margin-top: 50px;
+}
+
+.title {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 30px;
+    font-weight: bold;
 }
 
 .instructions {
     background-color: #abb8c4;
-    margin-top: 130px;
+    margin-top: 25px;
     width: 300px;
     display:flex;
     flex-direction: column;
@@ -27,14 +44,13 @@ body {
 
 .userStatusBar {
     background-color: #abb8c4;
-    margin-top: 130px;
+    margin-top: 25px;
     width: 200px;
     display:flex;
     flex-direction: column
 }
 
 .looper {
-    margin-top: 100px;
     margin-left: 50px;
     margin-right:50px;
     width: 900px;

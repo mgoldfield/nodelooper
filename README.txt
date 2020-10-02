@@ -1,19 +1,23 @@
 To Do:
-- instructions on left bar
-- title bar
-
-With/after api:
-
-Infrastructure:
+- latency fixup
 - mysql / aurora - turn compute off when not using
 - rabbitmq
+
+loop communication
+chat
+security/no bots
+
+....
+
 - memcached -- do I not even need a database???????? -- ans: need a DB if you want to scale to multiple servers...
 - dockerize
 
-- can two people record at the same time?  I think yes...
 - show loops being recording - maybe thin flashing bars with name of recorder ?
 - apogee element bug
 - what happens when a device becomes unavailable mid-recording / while app is open?
+
+- title page
+- github readme
 
 
 v2: 
@@ -23,6 +27,8 @@ v2:
 
 
 done:
+- title bar
+- instructions on left bar
 - modularize jsx 
 - max number of loop repeats
 - allow manipulation of progress bar and recording at a certain spot
