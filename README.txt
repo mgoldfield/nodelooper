@@ -21,6 +21,10 @@ security/no bots
 - title page
 - github readme
 
+- test suite
+
+- more latency futzing
+
 
 v2: 
 - compressor

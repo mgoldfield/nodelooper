@@ -15,7 +15,7 @@ class Looper extends React.Component {
             'playing': this.loopBunch.playing,
             'clicking': this.loopBunch.clickTrack.clicking,
             'countIn': this.loopBunch.clickTrack.countIn,
-            'quantized': this.loopBunch.quantized,
+            'quantize': this.loopBunch.recorder.quantize,
             'tempo': this.loopBunch.clickTrack.tempo,
             'bpm': this.loopBunch.clickTrack.bpm,
             'loopRecStatus': [],
@@ -97,8 +97,8 @@ class Looper extends React.Component {
     };
 
     handleQuant = () => {
-        this.setState({'quantized': !this.loopBunch.quantized});
-        this.loopBunch.quantized = !this.loopBunch.quantized;
+        this.setState({'quantize': !this.loopBunch.recorder.quantize});
+        this.loopBunch.recorder.quantize = !this.loopBunch.recorder.quantize;
     };
 
     handleClick = () => {
@@ -177,7 +177,7 @@ class Looper extends React.Component {
                     toggled={this.state.recording} 
                     avail={(!this.state.playing || this.state.recording) && !this.state.processing}/>
                 <Button name='quant' onClick={this.handleQuant} 
-                    toggled={this.state.quantized} avail={!this.state.playing}/>  
+                    toggled={this.state.quantize} avail={!this.state.playing}/>  
                 <Button name='input mon' onClick={this.handleInputMonit} 
                     toggled={this.state.inputMonitoring} avail={!this.state.playing}/>
                 <Button name="load .wav" onClick={this.loadLoop}

@@ -5,7 +5,6 @@ class AudioLoopBunch{
         this.recordingLoop = null;
 
         this.clickTrack = new ClickTrack(this.getAudioContext);
-        this.quantized = true;
 
         this.recording = false;
         this.playing = false;
@@ -21,6 +20,8 @@ class AudioLoopBunch{
         this.ondevicechange = null;
         this.refreshAvailableDevices();
         navigator.mediaDevices.ondevicechange = this.refreshAvailableDevices;
+
+        this.recorder = new Recorder(this);
 
         // set by looper 
         this.updateProgressBar = null;
@@ -111,25 +112,22 @@ class AudioLoopBunch{
             throw Error("Record has not been prepped...something is wrong");
 
         this.recording = true;
+        this.recordingLoop.record(this.getOffset());
 
-        // mediaPromise, playBunch, stopBunch, handleChunk, clickTrack, quantized, onEarlyStop, onSuccess
-        // toDo: yuck... lets refactor this sometime ...
-        this.recordingLoop.recordBuffer(
+        // mediaPromise, quantUnit, onFailure, onSuccess
+        this.recorder.recordBuffer(
             this.getUserAudio(),
-            () => {
-                let offset = this.getOffset();
-                this.recordingLoop.delayedStart = offset;
-                return this.playLoops(offset);
-            },
-            () => this.stop(),
-            this.handleChunk,
-            this.clickTrack,
-            this.quantized,
+            this.clickTrack.oneMeasureInSeconds,
             () => {
                 onEarlyStop();
                 this.unprepareToRecord();
             },
-            () => this.addLoop(this.recordingLoop)
+            (newBuff) => {
+                this.recordingLoop.setBuffer(newBuff);
+                this.addLoop(this.recordingLoop);
+                console.log("set buffer: ");
+                console.log(newBuff);
+            }
         );
     }
 
@@ -139,6 +137,7 @@ class AudioLoopBunch{
 
     stop(){
         if (this.recording){
+            this.recorder.stop();
             this.recordingLoop.stop();
             this.recording = false;
         }
@@ -236,22 +235,120 @@ class AudioLoopBunch{
         let reader = new FileReader();
         reader.onload = (event) => {
             let buff;
-            // try {
+            try {
                 buff = wavToPCM(event.target.result, this.getAudioContext());
-            // }catch (e){
-            //     alert(e.toString());
-            //     return;
-            // }
+            }catch (e){
+                alert(e.toString());
+                return;
+            }
+
             let loop = new AudioLoop(this.getAudioContext);
             loop.buffer = buff;
-            // toDo: mod loop in any way needed
             this.addLoop(loop);
-            console.log("added new loop to loopbunch");
             audioloop_cb(loop);
         }
         reader.readAsArrayBuffer(f);
     }
 }
+
+
+class Recorder {
+    constructor(bunch){
+        this.bunch = bunch;
+        this.quantize = true;
+        this.mediaRecorder = null;
+    }
+
+    stop(){
+        this.mediaRecorder.stop();
+    }
+
+    recordBuffer(mediaPromise, quantUnit, onFailure, onSuccess){
+        mediaPromise.then((stream) => {
+            console.log("in recordBuffer");
+            let playTime = null; // audiocontext time when playing starts
+            let audioChunks = [];
+            let dataAvailable = (event) => {
+                audioChunks.push(event.data);
+            }            
+            let onStop = async () => {
+                try{
+                    console.log("in onStop");
+                    let stopTime = this.bunch.getAudioContext().currentTime;
+                    this.bunch.stop();
+                    stream.getTracks().forEach((track) => track.stop());
+                    console.log("stopTime: %s, playTime: %s, 2xl: %s, total: %s", stopTime, playTime, (2 * this.bunch.getAudioContext().outputLatency), stopTime - playTime - (2 * this.bunch.getAudioContext().outputLatency))
+                    let newBuff = await this.handleChunks(audioChunks, 
+                        // toDo: examine assumptions about outputLatency
+                        stopTime - playTime - (2 * this.bunch.getAudioContext().outputLatency),
+                        quantUnit);
+                    onSuccess(newBuff);
+                }catch(e){
+                    console.log(e);
+                    onFailure();
+                    return;
+                }
+            };
+
+            stream.addEventListener('inactive', (e) => alert("lost audio stream"));
+            this.mediaRecorder = new MediaRecorder(stream);
+            this.mediaRecorder.addEventListener("dataavailable", dataAvailable);
+            this.mediaRecorder.addEventListener("stop", onStop);
+            this.mediaRecorder.addEventListener("start", () => {
+                playTime = this.bunch.playLoops(this.bunch.getOffset());                
+            });
+            this.mediaRecorder.start(this.chunkSize);
+        })
+        .catch((error) => {
+            console.log(error);
+            alert("Error connecting to input audio: " + error.toString());
+        });;
+    }
+
+    handleChunks = async function(audioChunks, targetLength, quantUnit){
+        const blob = new Blob(audioChunks, {'type' : 'audio/ogg; codecs=opus'});
+        let buffer = await this.bunch.getAudioContext().decodeAudioData(await blob.arrayBuffer());
+        return this.trimAndQuantizeAudio(buffer, targetLength, quantUnit);
+    };       
+
+    trimAndQuantizeAudio(buffer, targetLength, quantUnit){
+        // first we trim to target length from the beginning
+        // then we add or trim from the end to quantize if qantized is set to true
+
+        let samplesToTrim = buffer.length - Math.round(targetLength * buffer.sampleRate);
+        let trimmedAudio = new Float32Array(buffer.length);
+        let trimFromFront = 2 * this.bunch.getAudioContext().outputLatency * buffer.sampleRate;
+        buffer.copyFromChannel(trimmedAudio, 0, trimFromFront);
+        trimmedAudio = trimmedAudio.slice(samplesToTrim);
+
+        if (this.quantize && (quantUnit > 0)){
+            let remainder = targetLength % quantUnit;
+
+            // threshold of over 3/10 of a measure, assume user is intentonally 
+            // creating a new measure
+            if ((remainder / quantUnit) > .3){ 
+                let toAdd = Math.round((quantUnit - remainder) * buffer.sampleRate);
+                let quantizedAudio = new Float32Array(trimmedAudio.length + toAdd);
+                quantizedAudio.set(trimmedAudio);
+                trimmedAudio = quantizedAudio;
+            }else{
+                let toTrim = Math.round(remainder * buffer.sampleRate);
+                trimmedAudio = trimmedAudio.slice(0, trimmedAudio.length - toTrim);
+            }           
+        }
+
+        if (trimmedAudio.length === 0){
+            throw Error("No audio received")
+        }
+
+        // make final buffer, mono -> stereo
+        let returnBuffer = this.bunch.getAudioContext().createBuffer(2, trimmedAudio.length, buffer.sampleRate);
+        returnBuffer.copyToChannel(trimmedAudio, 0, 0);
+        returnBuffer.copyToChannel(trimmedAudio, 1, 0); 
+        return returnBuffer;
+    }     
+}
+
 
 
 class AudioLoop {
@@ -291,6 +388,11 @@ class AudioLoop {
         this.redraw = f;
     }
 
+    setBuffer(buff){
+        this.buffer = buff;
+        this.redraw({'hasBuffer': true});                
+    }
+
     play(contextTime, offset=0){
         if (this.playing) return;
 
@@ -318,6 +420,12 @@ class AudioLoop {
         this.startLoopProgressBar(startTime, offset);
     }
 
+    record(delay){
+        this.delayedStart = delay;
+        this.recording = true;
+        this.redraw({'recording': true});
+    }
+
     startLoopProgressBar(startTime, offset){
         if (!this.playing){
             this.updateProgress(0);
@@ -336,19 +444,14 @@ class AudioLoop {
     }
 
     stop(){
-        if (this.recording) {
-            this.mediaRecorder.stop();
-            this.recording = false;
-            this.redraw({'recording': true});
-        }
-
         if (this.playing){
             this.source.stop();
             this.source.disconnect();
             this.source = null;
         }
         this.playing = false;
-        this.redraw({'playing':false});
+        this.recording = false;
+        this.redraw({'playing':false, 'recording': false});
     }
 
     get gain(){
@@ -389,100 +492,6 @@ class AudioLoop {
     download(){
         downloadBlob(this.name + '.wav', bufferToWav(this.buffer));
     }
-
-    recordBuffer(mediaPromise, playBunch, stopBunch, handleChunk, clickTrack, quantized, onFailure, onSuccess){
-        if (this.recording) 
-            throw Error("already recording"); 
-        else {
-            this.recording = true;
-            this.redraw({'recording': true});
-        }
-
-        mediaPromise.then((stream) => {
-            let playTime = null; // audiocontext time when playing starts
-            let audioChunks = [];
-            let dataAvailable = (event) => {
-                audioChunks.push(event.data);
-                handleChunk(event.data);
-                //console.log(audioChunks);
-            }            
-            let onStop = async () => {
-                try{
-                    // console.log("stop called...");
-                    // console.log("stream active after stop: %s", stream.active);
-                    // console.log("media recorder state: %s", this.mediaRecorder.state);
-                    let stopTime = this.getAudioContext().currentTime;
-                    await this.handleChunks(audioChunks, 
-                        // toDo: examine assumptions about outputLatency
-                        stopTime - playTime - (2 * this.getAudioContext().outputLatency),
-                        quantized,
-                        clickTrack.oneMeasureInSeconds);
-                    stopBunch();
-                    this.redraw({'hasBuffer': true});                
-                    stream.getTracks().forEach((track) => track.stop());
-                }catch(e){
-                    console.log(e);
-                    onFailure();
-                    return;
-                }
-                onSuccess();
-            };
-
-            stream.addEventListener('inactive', (e) => alert("lost audio stream"));
-            this.mediaRecorder = new MediaRecorder(stream);
-            this.mediaRecorder.addEventListener("dataavailable", dataAvailable);
-            this.mediaRecorder.addEventListener("stop", onStop);
-            this.mediaRecorder.addEventListener("start", () => playTime = playBunch());
-            this.mediaRecorder.start(this.chunkSize);
-        })
-        .catch((error) => {
-            console.log(error);
-            alert("Error connecting to input audio: " + error.toString());
-        });;
-    }
-
-    handleChunks = async function(audioChunks, targetLength, quantized, quantUnit){
-        const blob = new Blob(audioChunks, {'type' : 'audio/ogg; codecs=opus'});
-        let buffer = await this.getAudioContext().decodeAudioData(await blob.arrayBuffer());
-        this.buffer = this.trimAndQuantizeAudio(buffer, targetLength, quantized, quantUnit);
-    };       
-
-    trimAndQuantizeAudio(buffer, targetLength, quantized, quantUnit){
-        // first we trim to target length from the beginning
-        // then we add or trim from the end to quantize if qantized is set to true
-
-        let samplesToTrim = buffer.length - Math.round(targetLength * buffer.sampleRate);
-        let trimmedAudio = new Float32Array(buffer.length);
-        let trimFromFront = 2 * this.getAudioContext().outputLatency * buffer.sampleRate;
-        buffer.copyFromChannel(trimmedAudio, 0, trimFromFront);
-        trimmedAudio = trimmedAudio.slice(samplesToTrim);
-
-        if (quantized && (quantUnit > 0)){
-            let remainder = targetLength % quantUnit;
-
-            // threshold of over 3/10 of a measure, assume user is intentonally 
-            // creating a new measure
-            if ((remainder / quantUnit) > .3){ 
-                let toAdd = Math.round((quantUnit - remainder) * buffer.sampleRate);
-                let quantizedAudio = new Float32Array(trimmedAudio.length + toAdd);
-                quantizedAudio.set(trimmedAudio);
-                trimmedAudio = quantizedAudio;
-            }else{
-                let toTrim = Math.round(remainder * buffer.sampleRate);
-                trimmedAudio = trimmedAudio.slice(0, trimmedAudio.length - toTrim);
-            }           
-        }
-
-        if (trimmedAudio.length === 0){
-            throw Error("No audio received")
-        }
-
-        // make final buffer, mono -> stereo
-        let returnBuffer = this.getAudioContext().createBuffer(2, trimmedAudio.length, buffer.sampleRate);
-        returnBuffer.copyToChannel(trimmedAudio, 0, 0);
-        returnBuffer.copyToChannel(trimmedAudio, 1, 0); 
-        return returnBuffer;
-    } 
 }
 
 
