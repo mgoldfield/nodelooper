@@ -29,30 +29,34 @@ body {
 
 .instructions {
     background-color: #abb8c4;
-    margin-top: 25px;
+    /* margin-top: 25px;*/
     width: 300px;
+    margin-left: 15px;
+    margin-right: 25px;
     display:flex;
     flex-direction: column;
     justify-content: center;
 }
 
 .instrucText {
-    padding-left: 25px;
-    padding-right: 25px;
+    padding-left: 15px;
+    padding-right: 15px;
     font-family: "Courier New", Courier, monospace;
 }
 
 .userStatusBar {
     background-color: #abb8c4;
-    margin-top: 25px;
+    /*margin-top: 25px;*/
+    margin-left: 25px;
+    margin-right: 15px;
     width: 200px;
     display:flex;
     flex-direction: column
 }
 
 .looper {
-    margin-left: 50px;
-    margin-right:50px;
+    margin-left: 25px;
+    margin-right:25px;
     width: 900px;
     background-color: goldenrod;
     display:flex;
