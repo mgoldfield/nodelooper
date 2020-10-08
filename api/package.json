@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "amqplib": "^0.6.0",
     "aws-sdk": "^2.765.0",
     "express": "^4.17.1",
     "uuid": "^8.3.1"
