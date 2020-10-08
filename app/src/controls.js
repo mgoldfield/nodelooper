@@ -179,7 +179,7 @@ class Instructions extends React.Component {
         return (
             <div className="instrucText">
                 <p><b>bpm</b>: beats per measure.  used with <i>click</i> and <i>quant</i></p> 
-                <p><b>click</b>: emit a click track while playing and recording according to <i>tempo</i> and <i>bpm</i></p>  
+                <p><b>click</b>: metronome. when toggled, emits a click track while playing and recording according to <i>tempo</i> and <i>bpm</i></p>  
                 <p><b>count in</b>: when recording, emit one measure of clicks before recording begins.</p>
                 <p><b>download</b>: download current mix or given loop as <i>.wav</i>. track will be the length of the longest loop. </p>
                 <p><b>input</b>: choose audio input. default is internal mic </p>

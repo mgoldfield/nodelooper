@@ -1,15 +1,17 @@
 To Do:
-- latency fixup
-- mysql / aurora - turn compute off when not using
+- set up db - maybe store audio files in dynamo?
 - rabbitmq
 
 loop communication
 chat
 security/no bots
+- latency fixup
+
 
 ....
 
 - small box around stop/play/rec
+- reps on / reps(or measures) off for a loop instead of max reps? 
 
 - memcached -- do I not even need a database???????? -- ans: need a DB if you want to scale to multiple servers...
 - dockerize
@@ -20,13 +22,15 @@ security/no bots
 
 - title page
 - github readme
+- max length for a loop
 
-- test suite
+- testssssss
 
 - more latency futzing
 
 
 v2: 
+- loops transmitted in chunks
 - compressor
 - distortion
 - create waveform images while/after recording
@@ -47,17 +51,25 @@ done:
 - way to track progess on each loop
 
 
-./src/looper.js:            // toDo: what to do with names
-./src/looper.js:        // toDo: handle stop correctly if stopped within countIn 
-./src/looper.js:        // toDo: don't allow play if no loops have been recorded
-./src/looper.js:            //toDo: gray out click when playing
-./src/looper.js:        // toDo: don't allow countIn if click isnt selected, grey out button
-./src/looper.js:        // toDo: make font on loop name the same as rest of app
-./src/sound.js:        // toDo: only count in when recording
-./src/sound.js:    // toDo: figure out when to suspend and resume audioContext
-./src/sound.js:        // toDo: determine what waitTime should actually be
-./src/sound.js:        //toDo: determine if buffer needs baseLatency trimmed from the end
-./src/sound.js:        //toDo: round buffer to multiple of initial loop
-./src/sound.js:            // toDo: what's wrong with latency when no count-in click
+Testers:
+mirah
+micah 
+alex
+batya
+lucy
+aliza?
+
+
+THINKING:...
+
+potential dynamo schema
+
+loop:
+loop id
+project id
+metadata
+file or location in s3 (start with whole file)
+
+
 
 
