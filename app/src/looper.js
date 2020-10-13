@@ -236,7 +236,9 @@ class Looper extends React.Component {
         return (
             <div className='pageContainer'>
                 <div className='headerContainer'>
+                    <span className='backHome'>home</span>
                     <span className='title'>loop magic!</span>
+                    <span className='support'>support this project</span>
                 </div>
                 <div className='bodyContainer'>
                     <div className='instructions'>

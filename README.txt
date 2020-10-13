@@ -5,10 +5,11 @@ To Do:
 loop communication
 chat
 security/no bots
-- latency fixup
 
 
 ....
+
+- figure out how to do rolling deploy with beanstalk
 
 - small box around stop/play/rec
 - reps config (only available if click is on) meas. on, meas. off
@@ -20,11 +21,22 @@ security/no bots
 
 - title page
 - github readme
-- max length for a loop
 
-- testssssss
+security:
+- max length for a loop
+- max loops
+- max participants per loop
+- max participants global
+- ddos prevention with IP and user-agen fingerprinting
+
+- testssssss / jest
 - snap to beat in main progress bar
 - more latency futzing
+
+instructions/faq:
+- how to convert wav to mp3
+- how to use midi
+- how is this project funded?
 
 
 v2: 
