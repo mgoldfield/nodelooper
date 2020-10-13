@@ -1,6 +1,7 @@
 import { createRequire } from 'module';
 import { v4 as uuidv4 } from 'uuid';
 import { config } from './config.js';
+import { newq } from './rabbit.js';
 
 const require = createRequire(import.meta.url);
 
@@ -70,30 +71,43 @@ let getLoop = (pjid, lpid) => {
 
 let newProject = () => {
     let projectID = uuidv4();
-    let params = {
-        Key: {
-            'ProjectID': {
-                S: projectID,
-            },
-            'LoopID': {
-                S: 'newloop',
-            }
-        },
-        TableName: config.dynamodb.looper_table,
-        AttributeUpdates: {
-            expires: {
-                Action: 'ADD',
-                Value: {
-                    N: expiresFromCurrentTime(),
-                }
-            }
-        }
-    };
     return new Promise((resolve, reject) => {
-        dynamodb.updateItem(params, function(err, data) {
-            if (err) reject(err, err.stack); // an error occurred
-            else     resolve(projectID);
-        });
+        newq().then((q) => {
+            let params = {
+                Key: {
+                    'ProjectID': {
+                        S: projectID,
+                    },
+                    'LoopID': {
+                        S: 'newloop',
+                    }
+                },
+                TableName: config.dynamodb.looper_table,
+                AttributeUpdates: {
+                    expires: {
+                        Action: 'ADD',
+                        Value: {
+                            N: expiresFromCurrentTime(),
+                        }
+                    }
+                    metadata: {
+                        Action: 'ADD',
+                        Value: {
+                            M: {
+                                queue: q,
+                            }
+                        }
+                    }
+                }
+            };
+            dynamodb.updateItem(params, function(err, data) {
+                if (err) reject(err, err.stack); // an error occurred
+                else     resolve({
+                    'ProjectID': ProjectID,
+                    'Queue': q,
+                });
+            });
+        };
     });
 };
 
