@@ -16,15 +16,15 @@ app.listen(port, () => {
 app.get('/test', (req, res) => {
     getProject('testproject')
     .then((data) => res.send(data))
-    .catch((err, stack) => {console.log(stack); throw(err);});
+    .catch((err) => {console.log(stack); throw err;});
 });
 
 
 app.get('/newsesh', (req, res) => {
     // toDo: block ddos here, maybe with browser fingerprinting
     newProject()
-    .then((pid) => res.send(config.base_loop_url + '/loop?' + 'p=' + pid))
-    .catch((err, stack) => {console.log(stack); throw(err)});
+    .then((seshdata) => res.send(seshdatad))
+    .catch((err) => {throw err});
 });
 
 app.get('/loop', (req, res) => {
@@ -34,7 +34,11 @@ app.get('/loop', (req, res) => {
 
 
 app.get('/addtrack', (req, res) => {
-    putTrack(req.body.projectID, req.body.name, req.body.metadata, req.body.audio);
+    if (req.body.name === 'xxxLOOPxxx')
+        throw Error('reserved name');
+    putTrack(req.body.projectID, req.body.name, req.body.metadata, req.body.audio, req.body.queue)
+    .catch((err) => {throw err});
+    res.send('ok');
 });
 
 app.get('/getTrack', (req, res) => {
