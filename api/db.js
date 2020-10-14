@@ -15,7 +15,7 @@ AWS.config.getCredentials(function(err) {
 });
 
 // toDo: is this right to have localhost?? 
-AWS.config.update({region: 'us-east-1', endpoint: "http://localhost:8000"});
+AWS.config.update({region: 'us-east-1'});
 let db_client = new AWS.DynamoDB.DocumentClient();
 
 let expiresFromCurrentTime = () => Math.round((Date.now() + 86400) / 1000).toString();
@@ -74,12 +74,12 @@ let getTrack = (pjid, lpid) => {
 
 let newProject = () => {
     return new Promise((resolve, reject) => {
-        let projectID = uuidv4();
+        let ProjectID = uuidv4();
         newq().then((q) => {
             let params = {
                 TableName: config.dynamodb.looper_table,
                 Item: {
-                    'ProjectID': projectID,
+                    'ProjectID': ProjectID,
                     'LoopID': 'xxxLOOPxxx',
                     'expires': expiresFromCurrentTime(),
                     'metadata': {
@@ -93,7 +93,6 @@ let newProject = () => {
                 else resolve({
                     'ProjectID': ProjectID,
                     'Queue': q,
-                    'data': data,
                 });
             });
         });

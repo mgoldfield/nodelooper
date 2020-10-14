@@ -23,7 +23,7 @@ app.get('/test', (req, res) => {
 app.get('/newsesh', (req, res) => {
     // toDo: block ddos here, maybe with browser fingerprinting
     newProject()
-    .then((seshdata) => res.send(seshdatad))
+    .then((seshdata) => res.send(seshdata))
     .catch((err) => {throw err});
 });
 
