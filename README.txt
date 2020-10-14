@@ -34,6 +34,7 @@ security:
 - more latency futzing
 
 instructions/faq:
+- loops persist for 1 day
 - how to convert wav to mp3
 - how to use midi
 - how is this project funded?
@@ -49,6 +50,8 @@ v2:
 
 
 Testers:
+Dan Dickison - collaborator?
+
 mirah
 micah 
 alex
@@ -58,6 +61,8 @@ aliza?
 anna f
 molly
 jens
+maeve
+jenna moynihan 
 
 
 THINKING:...

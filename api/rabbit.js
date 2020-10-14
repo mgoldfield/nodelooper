@@ -26,10 +26,9 @@ let newq = () => {
 		    });
 		    setTimeout(function() {
 		        connection.close();
-		        process.exit(0);
 		    }, 500);
 		});
-	};
+	});
 }
 
 
@@ -48,10 +47,9 @@ let send = (msg, queue) => {
 		    });
 		    setTimeout(function() {
 		        connection.close();
-		        process.exit(0);
 		    }, 500);
 		});
-	};
+	});
 }
 
 

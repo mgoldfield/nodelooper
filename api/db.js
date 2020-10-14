@@ -23,20 +23,19 @@ let expiresFromCurrentTime = () => (Date.now() + 86400).toString();
 // toDo: add exponential backoff
 let getProject = (id) => {
     // no need to sanitize because we're not parsing the data...
-    let params = {
-        TableName: 'looper-development',
-        KeyConditionExpression: '#pj = :pjid',
-        ExpressionAttributeNames: {
-            '#pj': 'ProjectID',
-        },
-        ExpressionAttributeValues: {
-            ":pjid": id,
-        }
-    };
     return new Promise((resolve, reject) => {
+        let params = {
+            TableName: 'looper-development',
+            KeyConditionExpression: '#pj = :pjid',
+            ExpressionAttributeNames: {
+                '#pj': 'ProjectID',
+            },
+            ExpressionAttributeValues: {
+                ":pjid": id,
+            }
+        };        
         db_client.query(params, (err, data) => {
             if(err) {
-                console.log(err);
                 reject(err);
             }else{
                 resolve(data);
@@ -46,32 +45,39 @@ let getProject = (id) => {
 };
 
 
-let getLoop = (pjid, lpid) => {
-    let params = {
-        RequestItems: {
-            'looper-development': {
-                Keys: [{
-                    'ProjectID': {
-                        S: pjid,
-                    }, 
-                    'LoopID': {
-                        S: lpid,
-                    },
-                }], 
-            }
-        }
-    };
+let getTrack = (pjid, lpid) => {
     return new Promise((resolve, reject) => {
+        let params = {
+            RequestItems: {
+                'looper-development': {
+                    Keys: [{
+                        'ProjectID': {
+                            S: pjid,
+                        }, 
+                        'LoopID': {
+                            S: lpid,
+                        },
+                    }], 
+                }
+            }
+        };        
         dynamodb.batchGetItem(params, function(err, data) {
             if (err) reject(err, err.stack)
-            else resolve(data);
+            else {
+                let records = data.Responses['looper-development'];
+                if (records.length === 0) {
+                    reject('Loop does not exist');
+                }else{
+                    resolve(data.Responses['looper-development'][0].audio.B);
+                }
+            }
         });
     });
 };
 
 let newProject = () => {
-    let projectID = uuidv4();
     return new Promise((resolve, reject) => {
+        let projectID = uuidv4();
         newq().then((q) => {
             let params = {
                 Key: {
@@ -89,7 +95,7 @@ let newProject = () => {
                         Value: {
                             N: expiresFromCurrentTime(),
                         }
-                    }
+                    },
                     metadata: {
                         Action: 'ADD',
                         Value: {
@@ -97,7 +103,7 @@ let newProject = () => {
                                 queue: q,
                             }
                         }
-                    }
+                    },
                 }
             };
             dynamodb.updateItem(params, function(err, data) {
@@ -105,22 +111,52 @@ let newProject = () => {
                 else     resolve({
                     'ProjectID': ProjectID,
                     'Queue': q,
+                    'data': data,
                 });
             });
-        };
+        });
     });
 };
 
 
+let putTrack = (projectID, name, metadata, audio) => {
+    return new Promise((resolve, reject) => {
+        let params = {
+            Key: {
+                'ProjectID': {
+                    S: projectID,
+                },
+                'LoopID': {
+                    S: name,
+                }
+            },
+            TableName: config.dynamodb.looper_table,
+            AttributeUpdates: {
+                expires: {
+                    Action: 'ADD',
+                    Value: {
+                        N: expiresFromCurrentTime(),
+                    }
+                },
+                'metadata': {
+                    Action: 'ADD',
+                    Value: {
+                        M: metadata,
+                    }
+                },
+                audio: {
+                    Action: 'ADD',
+                    Value: {
+                        B: audio, 
+                    }
+                },
+            },
+        };
+        dynamodb.updateItem(params, function(err, data) {
+            if (err) reject(err, err.stack); // an error occurred
+            else     resolve(data);
+        });
+    });
+};
 
-
-
-
-
-
-
-
-
-
-
-export {getProject, getLoop, newProject}
+export {getProject, getTrack, newProject, putTrack}
