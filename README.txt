@@ -2,13 +2,6 @@ To Do:
 - set up db - maybe store audio files in dynamo?
 - rabbitmq
 
-loop communication
-chat
-security/no bots
-
-
-....
-
 - figure out how to do rolling deploy with beanstalk
 
 - small box around stop/play/rec
@@ -28,10 +21,11 @@ security:
 - max participants per loop
 - max participants global
 - ddos prevention with IP and user-agen fingerprinting
+- prevent bots
 
 - testssssss / jest
 - snap to beat in main progress bar
-- more latency futzing
+- more latency futzing - especially remove quant and see whats happening when I'm trimming stuff off of the back of the loop.  I think I'm probably trimming too much off the back?  
 
 instructions/faq:
 - loops persist for 1 day
@@ -62,18 +56,10 @@ anna f
 molly
 jens
 maeve
-jenna moynihan 
-
-
-THINKING:...
-
-potential dynamo schema
-
-loop:
-loop id
-project id
-metadata
-file or location in s3 (start with whole file)
+jenna moynihan
+liz cook
+noah weinberg
+george guitar teacher
 
 
 

@@ -11,14 +11,12 @@ app.listen(port, () => {
     console.log(`Listening at http://localhost:${port}`);
 });
 
-
 //toDo: delete this test, put in real tests :P
 app.get('/test', (req, res) => {
     getProject('testproject')
     .then((data) => res.send(data))
     .catch((err) => {console.log(stack); throw err;});
 });
-
 
 app.get('/newsesh', (req, res) => {
     // toDo: block ddos here, maybe with browser fingerprinting
@@ -31,7 +29,6 @@ app.get('/loop', (req, res) => {
     // send back current data
     res.send('boop');
 });
-
 
 app.get('/addtrack', (req, res) => {
     if (req.body.name === 'xxxLOOPxxx')

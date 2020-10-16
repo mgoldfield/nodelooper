@@ -7,6 +7,9 @@ import { config } from './config.js';
 
 var amqp = require('amqplib/callback_api');
 
+
+// toDo: https://www.rabbitmq.com/production-checklist.html
+
 let newq = () => {
 	return new Promise((resolve, reject) => {
 		amqp.connect(config.rabbit.url, function(error0, connection) {
