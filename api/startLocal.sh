@@ -1,7 +1,8 @@
 brew services start rabbitmq
-sleep 1
+sleep 5
 
 # toDo: change testpass
+# toDo: create cluster
 rabbitmqctl await_startup
 rabbitmqctl delete_user 'guest'
 rabbitmqctl add_user 'loopadmin' 'testpass'
