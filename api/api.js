@@ -2,7 +2,7 @@ import { getProject, getTrack, newProject, putTrack } from './db.js';
 import { config } from './config-api.js';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-
+const url = require('url');
 // set up express
 const express = require('express');
 const app = express();
@@ -26,7 +26,9 @@ app.get('/newsesh', (req, res) => {
 });
 
 app.get('/loop', (req, res) => {
-    getProject(req.body.projectID)
+    let qs = url.parse(req.url,true).query;
+    console.log(qs);
+    getProject(qs.projectID)
     .then((data) => res.send(data))
     .catch((err => {console.log(err); throw err}));
 });
