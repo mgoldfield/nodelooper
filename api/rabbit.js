@@ -13,19 +13,27 @@ let http = require('http');
 // toDo: https://www.rabbitmq.com/production-checklist.html
 // toDo: https://www.cloudamqp.com/blog/2017-12-29-part1-rabbitmq-best-practice.html
 
+let rabbitUrl = () => {
+    let url = 'amqp://' + config.rabbit.user + ':' + config.rabbit.pass;
+    url += '@' + config.rabbit.url + '/' + config.rabbit.vhost;
+    console.log(url);
+    return url;
+}
+
 let newq = () => {
     return new Promise((resolve, reject) => {
         // toDo: would a persistent connection make sense here?   
-        amqp.connect(config.rabbit.url, function(error0, connection) {
+        // toDo: amqps 
+        amqp.connect(rabbitUrl(), function(error0, connection) {
             if (error0) {
                 reject(error0);
+                return;
             }
             connection.createChannel(function(error1, channel) {
                 // toDo: do I always need to assert the channel's existence?
                 if (error1) {
                     reject(error1);
                 }
-
                 let queue = uuidv4();
 
                 channel.assertQueue(queue, {durable: true, maxLength: config.rabbit.maxQueueLength});
@@ -74,7 +82,7 @@ class Message {
 
     send = () => {
         return new Promise((resolve, reject) => {
-            amqp.connect(config.rabbit.url, function(error0, connection) {
+            amqp.connect(rabbitUrl(), function(error0, connection) {
                 if (error0) {
                     reject(error0);
                 }
@@ -95,36 +103,56 @@ class Message {
 
 
 let addRabbitUser = (queue) => {
+    // toDo: this is gross - clean it up
     // toDo: configure rabbit for https and make this https
     return new Promise((resolve, reject) => {
-        try {
-            // create user
-            let username = uuidv4();
-            let password = uuidv4(); // toDo: does this take up too much space?  
-            let options = {
-                host: config.rabbit.url, 
-                path: '/api/users/' + username,
-                authorization: 'Basic ' + Buffer.from(config.rabbit.user + ':' + config.rabbit.pass).toString('base64'),
-                method: 'PUT',
-            };
+        // create user        
+        let username = uuidv4(),
+            password = uuidv4(); // toDo: does this take up too much space?  
 
-            let req = http.request(options, () => null);
-            req.on('error', (err) => reject(err));
-            req.write({
+        try {
+            let data = JSON.stringify({
                 'password': password,
                 'tags': 'none',
-            }.toString());
+            });
+
+            let auth = 'Basic ' + Buffer.from(config.rabbit.user + ':' + config.rabbit.pass).toString('base64');
+            let options = {
+                host: config.rabbit.url,
+                port: config.rabbit.admin_port, 
+                path: '/api/users/' + username,
+                method: 'PUT',
+                headers: {
+                    Authorization:  auth,
+                }
+            };
+
+
+            let req = http.request(options, (res) => {
+                if (res.statusCode == 201){
+                    data =JSON.stringify({
+                        'configure':'',
+                        'write': queue,
+                        'read': queue,
+                    })
+                    options.path = '/api/permissions/' + config.rabbit.vhost + '/' + username;
+                    req = http.request(options, (res) => {
+                        if (res.statusCode != 201){
+                            reject("could not set permissions for user " + username);
+                        }
+                    });
+                    req.on('error', (err) => reject(err));            
+                    req.write(data);
+                    req.end();   
+                }else{
+                    reject("failed to create user: " + res.statusCode);
+                }
+            });
+            req.on('error', (err) => reject(err));
+            req.write(data);
             req.end();
 
-            options.path = '/api/permissions/' + queue + '/' + username;
-            req = http.request(options, () => null);
-            req.on('error', (err) => reject(err));            
-            req.write({
-                'configure':'',
-                'write': queue,
-                'read': queue,
-            }.toString());
-            req.end();
+            console.log("created user");
 
             // log this in the db
             newRabbitUser(username);

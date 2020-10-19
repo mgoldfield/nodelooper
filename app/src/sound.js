@@ -29,6 +29,10 @@ class AudioLoopBunch{
         this.getOffset = null;
     }
 
+    initializeComms(){
+        
+    }
+
     // we don't suspend audiocontext here because we're mostly using it in the app
     getAudioContext = () => {
         if (!this._audioContext){

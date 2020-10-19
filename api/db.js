@@ -17,17 +17,24 @@ AWS.config.getCredentials(function(err) {
 });
 
 AWS.config.update({region: 'us-east-1'});
+// Create the DynamoDB service object
 // toDo: add exponential backoff to dynamo requests
-let db_client = new AWS.DynamoDB.DocumentClient();
+var ddb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
 
 let expiresFromCurrentTime = () => Math.round((Date.now() + 86400) / 1000).toString();
 let newLoopIdentifier = 'xxxLOOPxxx';
+
+
+let putItem = (params, cont) => {
+    console.log(params);
+    ddb.putItem(params, cont);
+}
 
 let getProject = (id) => {
     // no need to sanitize because we're not parsing the data...
     return new Promise((resolve, reject) => {
         let params = {
-            TableName: 'looper-development',
+            TableName: config.dynamodb.looper_table,
             KeyConditionExpression: '#pj = :pjid',
             ExpressionAttributeNames: {
                 '#pj': 'ProjectID',
@@ -36,7 +43,7 @@ let getProject = (id) => {
                 ":pjid": id,
             }
         };        
-        db_client.query(params, (err, data) => {
+        ddb.query(params, (err, data) => {
             if(err) {
                 reject(err);
             }else{
@@ -44,7 +51,7 @@ let getProject = (id) => {
                     for (const i of data.Items){
                         let found = false;
                         if (i.LoopID === newLoopIdentifier){
-                            newRabbitUser(i.metadata.queue).then((credentials) => {
+                            addRabbitUser(i.metadata.queue).then((credentials) => {
                                 resolve({
                                     loops: data.Items,
                                     rabbitCreds: credentials,
@@ -56,7 +63,6 @@ let getProject = (id) => {
                         if (!found)
                             reject(Error('Bad loop - no initial loop found...'));
                     }
-                    resolve(data.Items);
                 }catch (err){
                     console.log(err);
                     reject(err);
@@ -78,9 +84,9 @@ let getTrack = (pjid, lpid) => {
                     S: lpid,
                 },
             }],             
-            TableName:'looper-development',
+            TableName: config.dynamodb.looper_table,
         };        
-        db_client.GetItem(params, function(err, data) {
+        ddb.GetItem(params, function(err, data) {
             if (err) reject(err)
             else {
                 let records = data.Responses['looper-development'];
@@ -101,18 +107,20 @@ let newProject = () => {
             let params = {
                 TableName: config.dynamodb.looper_table,
                 Item: {
-                    'ProjectID': ProjectID,
-                    'LoopID': newLoopIdentifier,
-                    'expires': expiresFromCurrentTime(),
-                    'metadata': {
-                        queue: q,
-                    }
+                    'ProjectID': {S: ProjectID},
+                    'LoopID': {S:newLoopIdentifier},
+                    'expires': {N:expiresFromCurrentTime()},
+                    'metadata': { 
+                        M: {
+                            queue: {S: q},
+                        }
+                    },
                 },
             };
-            db_client.put(params, function(err, data) {
+            putItem(params, function(err, data) {
                 if (err) reject(err); // an error occurred
                 else {
-                    newRabbitUser(q)
+                    addRabbitUser(q)
                     .then((credentials) => {
                         resolve({
                             'ProjectID': ProjectID,
@@ -131,37 +139,16 @@ let newProject = () => {
 let putTrack = (projectID, name, metadata, audio, q) => {
     return new Promise((resolve, reject) => {
         let params = {
-            Key: {
-                'ProjectID': {
-                    S: projectID,
-                },
-                'LoopID': {
-                    S: name,
-                }
-            },
-            TableName: config.dynamodb.looper_table,
-            AttributeUpdates: {
-                expires: {
-                    Action: 'ADD',
-                    Value: {
-                        N: expiresFromCurrentTime(),
-                    }
-                },
-                'metadata': {
-                    Action: 'ADD',
-                    Value: {
-                        M: metadata,
-                    }
-                },
-                audio: {
-                    Action: 'ADD',
-                    Value: {
-                        B: audio, 
-                    }
-                },
+            TableName: config.dynamodb.looper_table,            
+            Item: {
+                'ProjectID': {S: projectID},
+                LoopID: {S: name},
+                expires: {N: expiresFromCurrentTime()},
+                metadata: {M: metadata},
+                audio: {B: audio},
             },
         };
-        db_client.updateItem(params, function(err, data) {
+        putItem(params, function(err, data) {
             if (err) reject(err); 
             else {
                 let msg = new Message(q, metadata.toString(), 'newLoop');
@@ -174,30 +161,17 @@ let putTrack = (projectID, name, metadata, audio, q) => {
 
 
 // log queues and users for future deletion via lambda
-let newRabbitUser = (username) => {
+let newRabbitItem = (username, itemtype) => {
     return new Promise((resolve, reject) => {
         let params = {
-            Key: {
-                'name': {
-                    S: username,
-                },
-            },
-            TableName: 'config.dynamodb.looper-rabbit',
-            AttributeUpdates: {
-                expires: {
-                    Action: 'ADD',
-                    Value: {
-                        N: expiresFromCurrentTime(),
-                    }
-                },
-                'type': {
-                    Action: 'ADD',
-                    Value: {
-                        S: 'user',
-                    }
-                },            },
+            TableName: config.dynamodb.rabbit_ttls,
+            Item: {
+                name: {S: username},
+                expires: {N: expiresFromCurrentTime()},
+                type: {S:itemtype},
+            }
         };
-        db_client.updateItem(params, function(err, data) {
+        putItem(params, function(err, data) {
             if (err) {
                 console.log(err);
                 reject(err); 
@@ -208,39 +182,8 @@ let newRabbitUser = (username) => {
     });
 };
 
-let newRabbitQueue = (queue) => {
-    return new Promise((resolve, reject) => {
-        let params = {
-            Key: {
-                'name': {
-                    S: queue,
-                },
-            },
-            TableName: 'config.dynamodb.looper-rabbit',
-            AttributeUpdates: {
-                expires: {
-                    Action: 'ADD',
-                    Value: {
-                        N: expiresFromCurrentTime(),
-                    }
-                },
-                'type': {
-                    Action: 'ADD',
-                    Value: {
-                        S: 'queue',
-                    }
-                },            },
-        };
-        db_client.updateItem(params, function(err, data) {
-            if (err) {
-                console.log(err);
-                reject(err); 
-            } else {
-                resolve(data);
-            }
-        });
-    });
-};
+let newRabbitUser = (u) => newRabbitItem(u, 'user');
+let newRabbitQueue = (q) => newRabbitItem(q, 'queue');
 
 export {
     getProject, 

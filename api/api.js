@@ -26,8 +26,9 @@ app.get('/newsesh', (req, res) => {
 });
 
 app.get('/loop', (req, res) => {
-    // send back current data
-    res.send('boop');
+    getProject(req.body.projectID)
+    .then((data) => res.send(data))
+    .catch((err => {console.log(err); throw err}));
 });
 
 app.get('/addtrack', (req, res) => {
