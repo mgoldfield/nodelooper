@@ -22,6 +22,7 @@ class AudioLoopBunch{
         navigator.mediaDevices.ondevicechange = this.refreshAvailableDevices;
 
         this.recorder = new Recorder(this);
+        this.comm = new Communication();
 
         // set by looper 
         this.updateProgressBar = null;

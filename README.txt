@@ -22,6 +22,7 @@ security:
 - max participants global
 - ddos prevention with IP and user-agent fingerprinting
 - prevent bots
+- https!!! on rabbit in particular
 
 - write out dynamo changes in cli
 - testssssss / jest

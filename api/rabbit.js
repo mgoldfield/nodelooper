@@ -46,6 +46,8 @@ class Message {
         renameLoop: 'R',
     };
 
+    divider = '|||';
+
     constructor(q, msg, type=null) {
         this.queue = q;
         if (type){ // create message to send
@@ -67,7 +69,7 @@ class Message {
     }
 
     makeMsg = () => {
-        return this.type + '|||' + this.msg;
+        return this.type + this.divider + this.msg;
     }
 
     send = () => {
