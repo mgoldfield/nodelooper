@@ -1,12 +1,12 @@
 To Do:
-- set up db - maybe store audio files in dynamo?
-- rabbitmq
-
-- figure out how to do rolling deploy with beanstalk
+- more latency futzing - especially remove quant and see whats happening when I'm trimming stuff off of the back of the loop.  I think I'm probably trimming too much off the back?  
+- snap to beat in main progress bar
 
 - small box around stop/play/rec
 - reps config (only available if click is on) meas. on, meas. off
 
+- lambda deleting rabbit users and queues 
+- figure out how to do rolling deploy with beanstalk?
 - dockerize
 
 - apogee element bug
@@ -20,18 +20,18 @@ security:
 - max loops
 - max participants per loop
 - max participants global
-- ddos prevention with IP and user-agen fingerprinting
+- ddos prevention with IP and user-agent fingerprinting
 - prevent bots
 
+- write out dynamo changes in cli
 - testssssss / jest
-- snap to beat in main progress bar
-- more latency futzing - especially remove quant and see whats happening when I'm trimming stuff off of the back of the loop.  I think I'm probably trimming too much off the back?  
 
 instructions/faq:
 - loops persist for 1 day
 - how to convert wav to mp3
 - how to use midi
 - how is this project funded?
+
 
 
 v2: 
@@ -60,6 +60,7 @@ jenna moynihan
 liz cook
 noah weinberg
 george guitar teacher
+chloe
 
 
 

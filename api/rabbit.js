@@ -3,7 +3,7 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
 import { newRabbitUser, newRabbitQueue } from './db.js';
-import { config } from './config.js';
+import { config } from './config-api.js';
 
 
 let amqp = require('amqplib/callback_api');

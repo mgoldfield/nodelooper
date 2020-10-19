@@ -1,6 +1,6 @@
 import { createRequire } from 'module';
 import { v4 as uuidv4 } from 'uuid';
-import { config } from './config.js';
+import { config } from './config-api.js';
 
 //toDo: move rabbit stuff out of db.js and up a level into api.js so shit is less confusing
 import { newq, Message, addRabbitUser } from './rabbit.js';
