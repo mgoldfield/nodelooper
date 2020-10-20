@@ -40,17 +40,19 @@ let getProject = (id) => {
                 '#pj': 'ProjectID',
             },
             ExpressionAttributeValues: {
-                ":pjid": id,
+                ":pjid": {S:id},
             }
-        };        
+        };
+        console.log("querying...");
         ddb.query(params, (err, data) => {
             if(err) {
                 reject(err);
             }else{
                 try{
+                    let found = false;
                     for (const i of data.Items){
-                        let found = false;
-                        if (i.LoopID === newLoopIdentifier){
+                        console.log("data item: %s", i.LoopID.S);
+                        if (i.LoopID.S === newLoopIdentifier){
                             addRabbitUser(i.metadata.queue).then((credentials) => {
                                 resolve({
                                     loops: data.Items,
@@ -60,9 +62,9 @@ let getProject = (id) => {
                             found = true;
                             break;
                         }
-                        if (!found)
-                            reject(Error('Bad loop - no initial loop found...'));
                     }
+                    if (!found)
+                        reject(Error('Bad loop - no initial loop found...'));
                 }catch (err){
                     console.log(err);
                     reject(err);
@@ -119,17 +121,7 @@ let newProject = () => {
             };
             putItem(params, function(err, data) {
                 if (err) reject(err); // an error occurred
-                else {
-                    addRabbitUser(q)
-                    .then((credentials) => {
-                        resolve({
-                            'ProjectID': ProjectID,
-                            'Queue': q,
-                            'RabbitCreds': credentials,
-                        });
-                    })
-                    .catch((err) => reject(err));
-                }
+                else resolve({'ProjectID': ProjectID});
             });
         });
     });
