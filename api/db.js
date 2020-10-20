@@ -26,7 +26,7 @@ let newLoopIdentifier = 'xxxLOOPxxx';
 
 
 let putItem = (params, cont) => {
-    console.log(params);
+    //console.log(params);
     ddb.putItem(params, cont);
 }
 
