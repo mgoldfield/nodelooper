@@ -1,5 +1,4 @@
-let url = require('url');
-import { Communication } from './communcate.js';
+import { Communication } from './communicate.js';
 
 class AudioLoopBunch{
     constructor(){
@@ -21,6 +20,7 @@ class AudioLoopBunch{
 
         this.ondevicechange = null;
         this.refreshAvailableDevices();
+        this.initComms();
 
         // toDo: is this working? 
         navigator.mediaDevices.ondevicechange = this.refreshAvailableDevices;

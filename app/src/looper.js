@@ -319,7 +319,6 @@ class Loop extends React.Component {
             'muted': this.audioLoop.muted,
             'gain': this.audioLoop.gainNode.gain.value,
         });
-        
     };
 
     handleLoop = () => {

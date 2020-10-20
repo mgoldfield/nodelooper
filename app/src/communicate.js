@@ -1,17 +1,13 @@
-let amqp = require('amqplib/callback_api');
+import { config } from './config-app.js'
 
-import { config, rabbitUrl } from './config-app.js'
+let http = require('http');
+let amqp = require('amqplib/callback_api');
 
 
 class Communication {
     // toDo: https!!!
     constructor(project_id, handleLoops) {
-        let options = {
-            host: config.api_url,
-            path: '/loop?projectID=' + project_id,
-        };
-
-        callback = (response) => {
+        let callback = (response) => {
             let json = '';
 
             //another chunk of data has been received, so append it to `str`
@@ -24,8 +20,8 @@ class Communication {
                 let data = JSON.parse(json);
                 this.rabbit_info = data.rabbitCreds;
                 for (const l of data.loops) {
-                    if (i.LoopID == "xxxLOOPxxx"){ // toDo: move xxxLOOPxxx to config
-                        this.rabbit_info['queue'] = i.metadata.M.queue.S;
+                    if (l.LoopID === "xxxLOOPxxx"){ // toDo: move xxxLOOPxxx to config
+                        this.rabbit_info['queue'] = l.metadata.M.queue.S;
                         break;
                     }
                 }
@@ -33,19 +29,19 @@ class Communication {
                 handleLoops(data.loops);
             });
         }
-        http.request(options, callback).end();        
+        http.get('http://' + config.api_url + '/loop?projectID=' + project_id, callback).end();        
     }
 
     subscribeQueue(rabbit_info) {
         // toDo: persistent connections?
-        amqp.connect(rabbitUrl(this.rabbit_info.user, this.rabbit_info.pass), function(error0, connection) {
+        amqp.connect(config.rabbitUrl(this.rabbit_info.user, this.rabbit_info.pass), function(error0, connection) {
             if (error0) 
                 throw error0;
             connection.createChannel(function(error1, channel) {
                 if (error1)
                     throw error1;
                 channel.assertQueue(this.rabbit_info.queue, {durable: true});
-                channel.consume(queue, this.handleMsg, {noAck: true});
+                channel.consume(this.rabbit_info.queue, this.handleMsg, {noAck: true});
             });
         });
     }
@@ -55,14 +51,14 @@ class Communication {
     };
 
     sendMsg(msg) {
-        amqp.connect(rabbitUrl(this.rabbit_info.user, this.rabbit_info.pass), function(error0, connection) {
+        amqp.connect(config.rabbitUrl(this.rabbit_info.user, this.rabbit_info.pass), function(error0, connection) {
             if (error0) 
                 throw error0;
             connection.createChannel(function(error1, channel) {
                 if (error1)
                     throw error1;
                 channel.assertQueue(this.rabbit_info.queue, {durable: true});
-                channel.sendToQueue(queue, Buffer.from(msg));
+                channel.sendToQueue(this.rabbit_info.queue, Buffer.from(msg));
             });
             setTimeout(function() {
                 connection.close();
