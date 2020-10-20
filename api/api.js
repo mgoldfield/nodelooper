@@ -27,7 +27,6 @@ app.get('/newsesh', (req, res) => {
 
 app.get('/loop', (req, res) => {
     let qs = url.parse(req.url,true).query;
-    console.log(qs);
     getProject(qs.projectID)
     .then((data) => res.send(data))
     .catch((err => {console.log(err); throw err}));

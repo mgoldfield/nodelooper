@@ -1,3 +1,5 @@
+let url = require('url');
+import { Communication } from './communcate.js';
 
 class AudioLoopBunch{
     constructor(){
@@ -19,18 +21,22 @@ class AudioLoopBunch{
 
         this.ondevicechange = null;
         this.refreshAvailableDevices();
+
+        // toDo: is this working? 
         navigator.mediaDevices.ondevicechange = this.refreshAvailableDevices;
 
         this.recorder = new Recorder(this);
-        this.comm = new Communication();
 
         // set by looper 
         this.updateProgressBar = null;
         this.getOffset = null;
     }
 
-    initializeComms(){
-        
+    initComms(cb) {
+        let params = new URLSearchParams(window.location.search),
+            project_id = params.get('projectID');
+
+        this.comms = new Communication(project_id, cb);
     }
 
     // we don't suspend audiocontext here because we're mostly using it in the app
@@ -105,11 +111,6 @@ class AudioLoopBunch{
 
         // if we started recording but pressed stop...
         this.recording = false;
-    }
-
-    addLoop(loop){
-        this.audioLoops.push(loop);
-        this.mergeOutOfDate = true;
     }
 
     record(onEarlyStop){
@@ -235,21 +236,25 @@ class AudioLoopBunch{
         downloadBlob('loop_mix.wav', bufferToWav(mix));
     }
 
+    addLoop(buff, cb){
+        let loop = new AudioLoop(this.getAudioContext);
+        loop.buffer = buff;
+        this.audioLoops.push(loop);
+        this.mergeOutOfDate = true;
+        cb(loop);
+    }    
+
     loadLoop = (f, audioloop_cb) => {
         let reader = new FileReader();
         reader.onload = (event) => {
             let buff;
             try {
                 buff = wavToPCM(event.target.result, this.getAudioContext());
+                this.addLoop(buff, audioloop_cb);
             }catch (e){
                 alert(e.toString());
                 return;
-            }
-
-            let loop = new AudioLoop(this.getAudioContext);
-            loop.buffer = buff;
-            this.addLoop(loop);
-            audioloop_cb(loop);
+            }            
         }
         reader.readAsArrayBuffer(f);
     }

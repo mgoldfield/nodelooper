@@ -7,6 +7,7 @@ class Looper extends React.Component {
     constructor(props){
         super(props);
         this.loopBunch = new AudioLoopBunch();
+        this.loopBunch.initComms(this.handleInitLoops);
         this.counter = 0;
         this.loops = [];
         this.state = {
@@ -28,6 +29,27 @@ class Looper extends React.Component {
 
         // functions passed up from children  
         this.finishRecording = () => null;  
+    }
+
+    handleInitLoops = (loops) => {
+        this.counter += loops.length - 1;
+
+
+        for (const l of loops){
+            let onLoad = (loop) =>{
+                console.log("pushing loop...");
+                this.loops.push(<Loop
+                    key={l.metadata.M.id.S}
+                    id={l.metadata.M.id.S}
+                    name={l.metadata.M.name.S}
+                    recording={false}
+                    audioLoop={loop}
+                    handleToggleRecording={()=>null}
+                />);
+            };
+            if (l.LoopID !== 'xxxLOOPxxx')
+                this.loopBunch.loadLoop(l.audio.B, onLoad);
+        }       
     }
 
     handleStop = (event=null, err=false) => {
