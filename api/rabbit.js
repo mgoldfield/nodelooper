@@ -64,7 +64,7 @@ class Message {
                 throw Error("Unknown msg type to send: " + msgType);
             this.type = msgTypes[type];
         }else{ // parse message received 
-            let parts = rawMsg.split('|||');
+            let parts = rawMsg.split(this.divider);
 
             if (parts.length != 2)
                 throw Error("Malformed message: " + rawMsg);

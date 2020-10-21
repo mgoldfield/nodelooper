@@ -7,7 +7,7 @@ class Looper extends React.Component {
     constructor(props){
         super(props);
         this.loopBunch = new AudioLoopBunch();
-        this.loopBunch.initComms(this.handleInitLoops);
+        this.loopBunch.initComms(this.handleInitLoops, this);
         this.counter = 0;
         this.loops = [];
         this.state = {
@@ -33,24 +33,38 @@ class Looper extends React.Component {
 
     handleInitLoops = (loops) => {
         this.counter += loops.length - 1;
-
-
         for (const l of loops){
-            let onLoad = (loop) =>{
-                console.log("pushing loop...");
-                this.loops.push(<Loop
-                    key={l.metadata.M.id.S}
-                    id={l.metadata.M.id.S}
-                    name={l.metadata.M.name.S}
-                    recording={false}
-                    audioLoop={loop}
-                    handleToggleRecording={()=>null}
-                />);
-            };
-            if (l.LoopID !== 'xxxLOOPxxx')
-                this.loopBunch.loadLoop(l.audio.B, onLoad);
+            this.loadLoopFromDynamoData(l);
         }       
+    };
+
+    addNewLoop(key, id, name, recording, audioloop, handleToggleRecording){
+        let newloop = (<Loop
+            key={key}
+            id={id}
+            name={name}
+            recording={recording}
+            audioLoop={audioloop}
+            handleToggleRecording={handleToggleRecording}
+        />);
+        this.loopBunch.comms.handleLoop(newloop);
+        this.loops.push(newloop);        
     }
+
+    loadLoopFromDynamoData = (l) => {
+        let onLoad = (loop) =>{
+            console.log("pushing loop...");
+            this.addNewLoop(
+                l.metadata.M.id.S,
+                l.metadata.M.id.S,
+                l.metadata.M.name.S,
+                false,
+                loop,
+                () => null);
+        };
+        if (l.LoopID !== 'xxxLOOPxxx')
+            this.loopBunch.loadLoop(l.audio.B, onLoad);
+    };
 
     handleStop = (event=null, err=false) => {
         this.loopBunch.stop();
@@ -105,15 +119,13 @@ class Looper extends React.Component {
             }
         }else{
             let id = this.counter++;
-            this.loops.push(<Loop
-                key={id}
-                id={id}
-                name={'loop '.concat(id)}
-                recording={true}
-                audioLoop={this.loopBunch.prepareToRecord()}
-                handleToggleRecording={(f) => this.finishRecording = f}
-            />);
-
+            this.addNewLoop(
+                id,
+                id,
+                'loop '.concat(id),
+                true, 
+                this.loopBunch.prepareToRecord(),
+                (f) => this.finishRecording = f);
         }
         this.setState({'recording': !this.state.recording});
     };
@@ -171,15 +183,13 @@ class Looper extends React.Component {
         uploader.addEventListener('change', (e) => {
             let id = this.counter++;
             let onLoad = (loop) =>{
-                console.log("pushing loop...");
-                this.loops.push(<Loop
-                    key={id}
-                    id={id}
-                    name={uploader.files[0].name}
-                    recording={false}
-                    audioLoop={loop}
-                    handleToggleRecording={()=>null}
-                />);
+                this.addNewLoop(
+                    id,
+                    id,
+                    uploader.files[0].name,
+                    false,
+                    loop,
+                    () => null);
                 this.setState({'processing': false});
             };
             this.loopBunch.loadLoop(uploader.files[0], onLoad);

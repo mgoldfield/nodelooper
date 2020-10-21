@@ -143,7 +143,7 @@ let putTrack = (projectID, name, metadata, audio, q) => {
         putItem(params, function(err, data) {
             if (err) reject(err); 
             else {
-                let msg = new Message(q, metadata.toString(), 'newLoop');
+                let msg = new Message(q, JSON.stringify(metadata), 'newLoop');
                 msg.send().catch((err) => reject(err));
                 resolve(data);
             }

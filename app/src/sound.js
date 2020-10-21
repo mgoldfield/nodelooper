@@ -32,11 +32,11 @@ class AudioLoopBunch{
         this.getOffset = null;
     }
 
-    initComms(cb) {
+    initComms(cb, looper) {
         let params = new URLSearchParams(window.location.search),
             project_id = params.get('projectID');
 
-        this.comms = new Communication(project_id, cb);
+        this.comms = new Communication(project_id, cb, looper);
     }
 
     // we don't suspend audiocontext here because we're mostly using it in the app
@@ -131,6 +131,7 @@ class AudioLoopBunch{
             (newBuff) => {
                 this.recordingLoop.setBuffer(newBuff);
                 this.addLoop(this.recordingLoop);
+                this.comms.handleLoop(this.recordingLoop);
                 console.log(newBuff);
             }
         );
@@ -236,13 +237,20 @@ class AudioLoopBunch{
         downloadBlob('loop_mix.wav', bufferToWav(mix));
     }
 
-    addLoop(buff, cb){
+    addBuff(buff, cb, comms=true){
         let loop = new AudioLoop(this.getAudioContext);
         loop.buffer = buff;
+        this.addLoop(loop, comms);
+        cb(loop);
+    }
+
+    addLoop(loop, comms=false){
         this.audioLoops.push(loop);
         this.mergeOutOfDate = true;
-        cb(loop);
-    }    
+        if (comms){
+            this.comms.handleLoop(loop);
+        }
+    }
 
     loadLoop = (f, audioloop_cb) => {
         let reader = new FileReader();
@@ -250,7 +258,7 @@ class AudioLoopBunch{
             let buff;
             try {
                 buff = wavToPCM(event.target.result, this.getAudioContext());
-                this.addLoop(buff, audioloop_cb);
+                this.addBuff(buff, audioloop_cb);
             }catch (e){
                 alert(e.toString());
                 return;
@@ -387,6 +395,7 @@ class AudioLoop {
     }
 
     setName(name){
+        // toDo: no dupe names!!
         this.name = name;
         //toDo: transmit this to other users
     }

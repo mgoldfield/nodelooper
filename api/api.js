@@ -5,11 +5,11 @@ const require = createRequire(import.meta.url);
 const url = require('url');
 // set up express
 const express = require('express');
+const cors = require('cors')
 const app = express();
-const port = 3001;
-app.listen(port, () => {
-    console.log(`Listening at http://localhost:${port}`);
-});
+
+app.use(cors());
+app.listen(3001);
 
 //toDo: delete this test, put in real tests :P
 app.get('/test', (req, res) => {
