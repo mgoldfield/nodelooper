@@ -35,7 +35,7 @@ app.get('/loop', (req, res) => {
 app.get('/addtrack', (req, res) => {
     if (req.body.name === 'xxxLOOPxxx')
         throw Error('reserved name');
-    putTrack(req.body.projectID, req.body.name, req.body.metadata, req.body.audio, req.body.queue)
+    putTrack(req.body.projectID, req.body.name, req.body.metadata, req.body.audio, req.body.rabbitcreds)
     .catch((err) => {throw err});
     res.send('ok');
 });
