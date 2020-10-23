@@ -7,7 +7,13 @@ class Looper extends React.Component {
     constructor(props){
         super(props);
         this.loopBunch = new AudioLoopBunch();
-        this.loopBunch.initComms(this.handleInitLoops, this);
+
+        let qs = new URLSearchParams(window.location.search);
+        this.project_id = qs.get('projectID');
+        this.loopBunch.initComms(this)
+        .then(this.handleInitLoops)
+        .catch((e) => {console.log(e)}); // toDo: throw here when not testing
+
         this.counter = 0;
         this.loops = [];
         this.state = {
@@ -25,8 +31,6 @@ class Looper extends React.Component {
             'numLoops': this.loops.length,
             'processing': false,
         }
-
-
         // functions passed up from children  
         this.finishRecording = () => null;  
     }

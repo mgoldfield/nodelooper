@@ -1,6 +1,7 @@
 import { Communication } from './communicate.js';
 
 // toDo: break up sound.js into more files
+// toDo: make a parent class for loop and loop bunch which 
 
 class AudioLoopBunch{
     constructor(){
@@ -22,7 +23,6 @@ class AudioLoopBunch{
 
         this.ondevicechange = null;
         this.refreshAvailableDevices();
-        this.initComms();
 
         // toDo: is this working? 
         navigator.mediaDevices.ondevicechange = this.refreshAvailableDevices;
@@ -34,11 +34,11 @@ class AudioLoopBunch{
         this.getOffset = null;
     }
 
-    initComms(cb, looper) {
+    initComms(looper) {
         let params = new URLSearchParams(window.location.search),
             project_id = params.get('projectID');
-
-        this.comms = new Communication(project_id, cb, looper);
+        this.comms = new Communication(project_id, looper)
+        return this.comms.initProject();
     }
 
     // we don't suspend audiocontext here because we're mostly using it in the app
