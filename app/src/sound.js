@@ -1,5 +1,7 @@
 import { Communication } from './communicate.js';
 
+// toDo: break up sound.js into more files
+
 class AudioLoopBunch{
     constructor(){
         this.audioLoops=[];

@@ -13,32 +13,33 @@ class Communication {
         this.looper = looper;
         this.project_id = project_id;
         // get current loops
-        let callback = (response) => {
-            let json = '';
+        // let callback = (response) => {
+        //     let json = '';
 
-            //another chunk of data has been received, so append it to `str`
-            response.on('data', (chunk) => {
-                json += chunk;
-            });
+        //     //another chunk of data has been received, so append it to `str`
+        //     response.on('data', (chunk) => {
+        //         json += chunk;
+        //     });
 
-            //the whole response has been received, so we just print it out here
-            response.on('end', () => {
-                let data = JSON.parse(json);
-                this.rabbit_info = data.rabbitCreds;
-                for (const l of data.loops) {
-                    if (l.LoopID === this.LoopHeaderID){ // toDo: move xxxLOOPxxx to config
-                        this.rabbit_info['queue'] = l.metadata.M.queue.S;
-                        break;
-                    }
-                }
-                this.subscribeQueue();
-                handleLoops(data.loops);
-            });
-        }
-        http.get('http://' + config.api_url + '/loop?projectID=' + project_id, callback).end();        
+        //     //the whole response has been received, so we just print it out here
+        //     response.on('end', () => {
+        //         let data = JSON.parse(json);
+        //         this.rabbit_info = data.rabbitCreds;
+        //         for (const l of data.loops) {
+        //             if (l.LoopID === this.LoopHeaderID){ // toDo: move xxxLOOPxxx to config
+        //                 this.rabbit_info['queue'] = l.metadata.M.queue.S;
+        //                 break;
+        //             }
+        //         }
+        //         this.subscribeQueue();
+        //         handleLoops(data.loops);
+        //     });
+        // }
+        // http.get('http://' + config.api_url + '/loop?projectID=' + project_id, callback).end();        
     }
 
     rabbitUrl(user, pass){
+        return;
         return 'ampq://' + user + ':' + pass + '@' + config.rabbit.url + '/' + config.rabbit.vhost;
     }
 
@@ -56,7 +57,8 @@ class Communication {
         });
     }
 
-    handleMsg(msg) {     
+    handleMsg(msg) {   
+        return;  
         let parts = msg.split(this.msgDivider);
         if (parts.length !== 2)
             throw Error("malformed message");
@@ -77,6 +79,7 @@ class Communication {
     }
 
     handleNewLoop(data){
+        return;
         let loopData = JSON.parse(data);
         let callback = (response) => {
             let json = '';
@@ -97,6 +100,7 @@ class Communication {
     }
 
     sendMsg(msg) {
+        return;
         amqp.connect(this.rabbitUrl(this.rabbit_info.user, this.rabbit_info.pass), function(error0, connection) {
             if (error0) 
                 throw error0;
@@ -115,6 +119,7 @@ class Communication {
     }
 
     handleLoop(loop) {
+        return;
         this.sendMsg('N' + this.msgDivider + JSON.stringify({loopID:loop.state.name}));
     }
 }
