@@ -38,7 +38,7 @@ class WebSocketServer {
                 }
 
                 this.wss.handleUpgrade(request, socket, head, (ws) => {
-                    this.projects[client.project_id].sockets[client.user_id] = ws;
+                    this.projects.get(client.project_id).sockets.set(client.user_id, ws);
                     this.wss.emit('connection', ws, request, client);
                 });
             });
@@ -60,7 +60,7 @@ class WebSocketServer {
         let project_id = creds[0],
             user_id = creds[1];
 
-        if (this.projects.get(project_id) && this.projects.get(project_id).includes(user_id)) {
+        if (this.projects.get(project_id) && this.projects.get(project_id).users.includes(user_id)) {
             cont(null, {
                 project_id: creds[0],
                 user_id: creds[1]
@@ -69,11 +69,11 @@ class WebSocketServer {
     }
 
     register_project(project_id, expires){
-        this.projects[project_id] = {
+        this.projects.set(project_id, {
             'expires':expires,
             users: [],
             sockets: new Map(),
-        }
+        });
     }
 
     register_user(project_id){
@@ -82,7 +82,7 @@ class WebSocketServer {
             throw Error('unknown project: ' + project_id);
 
         let user_id = uuidv4();
-        this.projects[project_id].users.push(user_id);
+        this.projects.get(project_id).users.push(user_id);
         return user_id;
     }
 
@@ -90,7 +90,7 @@ class WebSocketServer {
         if (!this.projects.get(project_id)) 
             throw Error('unknown project: ' + project_id);
 
-        this.projects[project_id].sockets.forEach((value, key, map) => {
+        this.projects.get(project_id).sockets.forEach((value, key, map) => {
             if (key !== user_id)
                 value.send(msg.makeMsg());
         });

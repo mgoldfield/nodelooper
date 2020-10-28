@@ -15,17 +15,18 @@ AWS.config.getCredentials(function(err) {
 AWS.config.update({region: 'us-east-1'});
 // Create the DynamoDB service object
 // toDo: add exponential backoff to dynamo requests
+// toDo: class-ify
 var ddb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
 
 let expiresFromCurrentTime = () => Math.round((Date.now() + 86400) / 1000).toString();
 
 let putItem = (params, cont, debug=true) => {
-    if (debug) console.log("putItem \n%s", params);
+    if (debug) console.log("putItem \n%s", JSON.stringify(params));
     ddb.putItem(params, cont);
 }
 
 let query = (params, cont, debug=true) => {
-    if (debug) console.log("query: \n%s", params);
+    if (debug) console.log("query: \n%s", JSON.stringify(params));
     ddb.query(params, cont);
 }
 
@@ -34,16 +35,13 @@ let getProject = (id) => {
     return new Promise((resolve, reject) => {
         let params = {
             TableName: config.dynamodb.looper_table,
-            KeyConditionExpression: '#pj = :pjid',
-            ExpressionAttributeNames: {
-                '#pj': 'ProjectID',
-            },
+            KeyConditionExpression: 'ProjectID = :pjid',
             ExpressionAttributeValues: {
                 ":pjid": {S:id},
-            }
+            },
         };
         console.log("querying...");
-        this.query(params, (err, data) => {
+        query(params, (err, data) => {
             if(err) {
                 reject(err);
             }else{

@@ -27,7 +27,7 @@ app.get('/newsesh', (req, res) => {
     // toDo: block ddos here, maybe with browser fingerprinting
     newProject()
     .then((seshdata) => {
-        ws.register_project(seshdata.ProjectID, seshdata.expries);
+        ws.register_project(seshdata.ProjectID, seshdata.expires);
         res.send(seshdata);
     })
     .catch((err) => {throw err});
@@ -35,9 +35,9 @@ app.get('/newsesh', (req, res) => {
 
 app.get('/loop', (req, res) => {
     let qs = url.parse(req.url,true).query;
-    getProject(qs.projectID)
+    getProject(qs.ProjectID)
     .then((data) => {
-        let user_id = ws.register_user(qs.projectID)
+        let user_id = ws.register_user(qs.ProjectID)
         res.send({
             user: user_id,
             data: data,
@@ -49,15 +49,15 @@ app.get('/loop', (req, res) => {
 app.get('/addtrack', (req, res) => {
     if (req.body.name === config.newLoopIdentifier)
         throw Error('reserved name');
-    putTrack(req.body.projectID, req.body.userID, req.body.name, req.body.metadata, req.body.audio)
+    putTrack(req.body.ProjectID, req.body.userID, req.body.name, req.body.metadata, req.body.audio)
     .then((data) => {
-        ws.broadcast(req.body.projectID, req.body.userID, new Message(req.body.name, 'newLoop'));
+        ws.broadcast(req.body.ProjectID, req.body.userID, new Message(req.body.name, 'newLoop'));
     })
     .catch((err) => {throw err});
     res.send('ok');
 });
 
 app.get('/getTrack', (req, res) => {
-    getTrack(req.body.projectID, req.body.loopID)
+    getTrack(req.body.ProjectID, req.body.loopID)
     .then((data) => res.send(data));
 });
