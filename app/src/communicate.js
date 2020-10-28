@@ -26,8 +26,11 @@ class Communication {
 
                     //the whole response has been received, so we just print it out here
                     response.on('end', () => {
-                        let data = JSON.parse(json);
-                        resolve(data.loops);
+                        let loop_response = JSON.parse(json);
+                        this.socket = new WebSocket(config.ws_url, this.project_id + ":" + loop_response.user);
+                        this.socket.addEventListener('open', () => console.log("connection open"));
+                        this.socket.addEventListener('message', this.handleMsg);
+                        resolve(loop_response.data);
                     });
                 }
                 http.get('http://' + config.api_url + '/loop?projectID=' + this.project_id, callback).end();

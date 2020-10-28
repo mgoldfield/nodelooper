@@ -27,9 +27,5 @@ fetch('http://localhost:3001/newsesh')
 });
 
 
-if (false) {
-
-}
-
 
 

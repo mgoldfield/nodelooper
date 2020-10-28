@@ -19,13 +19,11 @@ class WebSocketServer {
         this.wss = new WebSocket.Server({ noServer: true });
         this.server = http.createServer();
 
-        this.wss.on('connection', function connection(ws, request, client) {
-            ws.on('message', function incoming(message) {
-                console.log('received: %s', message);
-                ws.send("echo: " + message);
+        this.wss.on('connection', (ws, request, client) => {
+            ws.on('message', (message) => {
+                console.log('broadcasting: %s to %s from %s', message, client.project_id, client.user_id);
+                this.broadcast(client.project_id, client.user_id, message);
             });
-
-            ws.send('connected/boop');
         });
 
         this.server.on('upgrade', (request, socket, head) => {
