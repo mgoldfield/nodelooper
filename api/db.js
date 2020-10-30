@@ -4,8 +4,9 @@ import { config } from './config-api.js';
 
 const require = createRequire(import.meta.url);
 
+const { Readable } = require("stream")
 const AWS = require('aws-sdk');
-AWS.config.getCredentials(function(err) {
+AWS.config.getCredentials((err) => {
     if (err) console.log(err.stack);
     else {
         console.log("Access key:", AWS.config.credentials.accessKeyId);
@@ -34,23 +35,23 @@ class DataAccess {
                 },
             };
             console.log("querying...");
-            this.query(params, (err, data) => {
+            this.ddb.query(params, (err, data) => {
                 if(err) {
                     reject(err);
                 }else{
                     try{
                         let found = false;
                         for (const i of data.Items){
-                            console.log("data item: %s", i.LoopID.S);
                             if (i.LoopID.S === config.newLoopIdentifier){
-                                // todo: retreive from s3
-                                resolve(data.Items);
                                 found = true;
-                                break;
+                            }else{
+                                i.audio = this.s3.retreiveAudio(i.s3loc.S);
                             }
                         }
                         if (!found)
                             reject(Error('Bad loop - no initial loop found...'));
+                        else 
+                            resolve(data.Items);
                     }catch (err){
                         console.log(err);
                         reject(err);
@@ -74,14 +75,16 @@ class DataAccess {
                 }],             
                 TableName: config.dynamodb.looper_table,
             };        
-            this.ddb.GetItem(params, function(err, data) {
+            this.ddb.getItem(params, (err, data) => {
                 if (err) reject(err)
                 else {
                     let records = data.Responses['looper-development'];
                     if (records.length === 0) {
                         reject('Loop does not exist');
                     }else{
-                        resolve(data.Responses['looper-development'][0]);
+                        let t = data.Responses['looper-development'][0];
+                        t.audio = this.s3.retreiveAudio(t.s3loc.S);
+                        resolve(t);
                     }
                 }
             });
@@ -91,7 +94,7 @@ class DataAccess {
     newProject = () => {
         return new Promise((resolve, reject) => {
             let ProjectID = uuidv4(),
-                expires = expiresFromCurrentTime();
+                expires = this.expiresFromCurrentTime();
             let params = {
                 TableName: config.dynamodb.looper_table,
                 Item: {
@@ -100,7 +103,7 @@ class DataAccess {
                     'expires': {N:expires},
                 },
             };
-            this.putItem(params, function(err, data) {
+            this.ddb.putItem(params, (err, data) => {
                 if (err) reject(err); // an error occurred
                 else resolve({
                     'ProjectID': ProjectID,
@@ -113,22 +116,27 @@ class DataAccess {
     putTrack = (projectID, name, metadata, audio) => {
         // store track in s3
         return new Promise((resolve, reject) => {
+            let s3loc = uuidv4(); // toDo: change this
             let params = {
                 TableName: config.dynamodb.looper_table,            
                 Item: {
                     'ProjectID': {S: projectID},
                     LoopID: {S: name},
-                    expires: {N: expiresFromCurrentTime()},
-                    audio: {M: audio},
+                    expires: {N: this.expiresFromCurrentTime()},
+                    's3loc': {S: s3loc},
                 },
             };
             if (Object.keys(metadata).length > 0){
                 params.Item['metadata'] = {M: metadata};
             }
 
-            this.putItem(params, function(err, data) {
-                if (err) reject(err); 
-                else resolve(data);
+            this.ddb.putItem(params, (err, data) => {
+                if (err) reject(err)
+                else {
+                    this.s3.storeAudio(s3loc, audio)
+                    .then(() =>resolve(data))
+                    .catch((err) => reject(err));
+                }
             });
         });
     };
@@ -136,24 +144,31 @@ class DataAccess {
 
 class Dynamo {
     ddb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
+    debug = true;
 
-    putItem = (params, cont, debug=false) => {
-        if (debug) console.log(JSON.stringify(params));
+    putItem = (params, cont) => {
+        if (this.debug) console.log(JSON.stringify(params));
         this.ddb.putItem(params, cont);
-    }
+    };
 
-    query = (params, cont, debug=true) => {
-        if (debug) console.log(JSON.stringify(params));
+    query = (params, cont) => {
+        if (this.debug) console.log(JSON.stringify(params));
         this.ddb.query(params, cont);
-    }
+    };
+
+    getItem = (params, cont) => {
+        if (this.debug) console.log(JSON.stringify(params));
+        this.ddb.GetItem(params, cont);
+    };
 }
 
 class S3 {
     s3 = new AWS.S3({apiVersion: '2006-03-01'});
+
     storeAudio(key, audio){
         return new Promise((resolve, reject) => {
-            var uploadParams = {Bucket: config.audioBucket, Key: key, Body: audio};
-            this.s3.upload (uploadParams, function (err, data) {
+            let uploadParams = {Bucket: config.audioBucket, Key: key, Body: JSON.stringify(audio)};
+            this.s3.upload (uploadParams, (err, data) => {
                 if (err) reject(err);
                 else resolve(data);
             });
@@ -162,8 +177,8 @@ class S3 {
 
     retreiveAudio(key){
         return new Promise((resolve, reject) => {
-            var params = {Bucket: config.audioBucket, Key: key};
-            this.s3.getObject(params, function(err, data) {
+            let params = {Bucket: config.audioBucket, Key: key};
+            this.s3.getObject(params, (err, data) => {
                 if (err) reject(err); // an error occurred
                 else resolve(data); 
             });

@@ -104,6 +104,9 @@ class Communication {
     }
 
     sendLoop(loop) { // send
+        console.log('float32 length: type: %s, length: %s', typeof(loop.buffer.getChannelData(0)), loop.buffer.getChannelData(0).length);
+        console.log('uint8 length: %s',(new Uint8Array(loop.buffer.getChannelData(0).buffer)).length);
+
         let dec = new TextDecoder();
         let postdata = JSON.stringify({
             'ProjectID': this.project_id,

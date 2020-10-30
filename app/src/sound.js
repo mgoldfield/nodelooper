@@ -265,8 +265,10 @@ class AudioLoopBunch{
 
     loadLoopFromDynamoData = (l, onLoad) => {    
         function b64toFloatArr(str){
-            var enc = new TextEncoder();
-            return new Float32Array(enc.encode(str).buffer);
+            var enc = new TextEncoder(),
+                uint8arr = enc.encode(str);
+            console.log('uint8 array length: %s', uint8arr.length);
+            return new Float32Array(uint8arr.buffer);
         }
 
         console.log(l);

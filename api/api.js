@@ -14,7 +14,7 @@ const ws = new WebSocketServer();
 const bodyParser = require('body-parser');
 const da = new DataAccess();
 
-app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.json({limit: '500mb'}));
 app.use(cors());
 app.listen(3001);
 

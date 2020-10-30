@@ -56,6 +56,7 @@ class Looper extends React.Component {
     }
 
     loadLoopFromDynamoData = (l) => {
+        // toDo: make a "loading" light
         let onLoad = (loop) =>{
             console.log("pushing loop...");
             this.addNewLoop(
