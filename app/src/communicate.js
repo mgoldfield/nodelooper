@@ -104,9 +104,6 @@ class Communication {
     }
 
     sendLoop(loop) { // send
-        console.log('float32 length: type: %s, length: %s', typeof(loop.buffer.getChannelData(0)), loop.buffer.getChannelData(0).length);
-        console.log('uint8 length: %s',(new Uint8Array(loop.buffer.getChannelData(0).buffer)).length);
-
         let dec = new TextDecoder();
         let postdata = JSON.stringify({
             'ProjectID': this.project_id,
@@ -117,10 +114,11 @@ class Communication {
                 'sampleRate': {N: loop.buffer.sampleRate.toString()},
                 'numChannels': {N: loop.buffer.numberOfChannels.toString()},
             },
-            'audio': {
-                L: {B: dec.decode(new Uint8Array(loop.buffer.getChannelData(0).buffer))},
-                R: {B: dec.decode(new Uint8Array(loop.buffer.getChannelData(1).buffer))},
-            },
+            // toDo: compress audio
+            'audio': JSON.stringify({
+                L: dec.decode(new Uint8Array(loop.buffer.getChannelData(0).buffer)),
+                R: dec.decode(new Uint8Array(loop.buffer.getChannelData(1).buffer)),
+            }),
 
         });
 

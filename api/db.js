@@ -35,7 +35,7 @@ class DataAccess {
                 },
             };
             console.log("querying...");
-            this.ddb.query(params, (err, data) => {
+            this.ddb.query(params, async (err, data) => {
                 if(err) {
                     reject(err);
                 }else{
@@ -45,7 +45,8 @@ class DataAccess {
                             if (i.LoopID.S === config.newLoopIdentifier){
                                 found = true;
                             }else{
-                                i.audio = this.s3.retreiveAudio(i.s3loc.S);
+                                // toDo - make this parallel
+                                i.audio = await this.s3.retreiveAudio(i.s3loc.S);
                             }
                         }
                         if (!found)
@@ -134,7 +135,7 @@ class DataAccess {
                 if (err) reject(err)
                 else {
                     this.s3.storeAudio(s3loc, audio)
-                    .then(() =>resolve(data))
+                    .then(() =>resolve())
                     .catch((err) => reject(err));
                 }
             });
@@ -180,7 +181,9 @@ class S3 {
             let params = {Bucket: config.audioBucket, Key: key};
             this.s3.getObject(params, (err, data) => {
                 if (err) reject(err); // an error occurred
-                else resolve(data); 
+                else {
+                    resolve(JSON.parse(data.Body.toString('utf-8'))); 
+                }
             });
         });
     }
