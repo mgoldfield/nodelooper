@@ -10,9 +10,10 @@ const url = require('url');
 const express = require('express');
 const cors = require('cors')
 const app = express();
-
 const ws = new WebSocketServer();
+const bodyParser = require('body-parser');
 
+app.use(bodyParser.json({limit: '50mb'}));
 app.use(cors());
 app.listen(3001);
 
@@ -35,6 +36,7 @@ app.get('/newsesh', (req, res) => {
 
 app.get('/loop', (req, res) => {
     let qs = url.parse(req.url,true).query;
+    console.log("ProjectID: %s", qs.ProjectID);
     getProject(qs.ProjectID)
     .then((data) => {
         let user_id = ws.register_user(qs.ProjectID)
@@ -46,10 +48,11 @@ app.get('/loop', (req, res) => {
     .catch((err => {console.log(err); throw err}));
 });
 
-app.get('/addtrack', (req, res) => {
+app.post('/addtrack', (req, res) => {
+    console.log('body: %s', req.body);
     if (req.body.name === config.newLoopIdentifier)
         throw Error('reserved name');
-    putTrack(req.body.ProjectID, req.body.userID, req.body.name, req.body.metadata, req.body.audio)
+    putTrack(req.body.ProjectID, req.body.name, req.body.metadata, req.body.audio)
     .then((data) => {
         ws.broadcast(req.body.ProjectID, req.body.userID, new Message(req.body.name, 'newLoop'));
     })

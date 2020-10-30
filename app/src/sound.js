@@ -34,9 +34,7 @@ class AudioLoopBunch{
         this.getOffset = null;
     }
 
-    initComms(looper) {
-        let params = new URLSearchParams(window.location.search),
-            project_id = params.get('projectID');
+    initComms(project_id, looper) {
         this.comms = new Communication(project_id, looper)
         return this.comms.initProject();
     }
@@ -54,7 +52,6 @@ class AudioLoopBunch{
 
     refreshAvailableDevices = async function() {
         let devices = await navigator.mediaDevices.enumerateDevices();
-        console.log(devices);
         this.availableDevices = devices.filter((d) => d.kind === 'audioinput');
 
         //toDo: fail gracefully here... catch in looper and display a message
@@ -133,7 +130,6 @@ class AudioLoopBunch{
             (newBuff) => {
                 this.recordingLoop.setBuffer(newBuff);
                 this.addLoop(this.recordingLoop);
-                this.comms.handleLoop(this.recordingLoop);
                 console.log(newBuff);
             }
         );
@@ -239,22 +235,20 @@ class AudioLoopBunch{
         downloadBlob('loop_mix.wav', bufferToWav(mix));
     }
 
-    addBuff(buff, cb, comms=true){
+    addBuff(buff, cb){
         let loop = new AudioLoop(this.getAudioContext);
         loop.buffer = buff;
-        this.addLoop(loop, comms);
+        this.addLoop(loop);
         cb(loop);
     }
 
-    addLoop(loop, comms=false){
+    addLoop(loop, sendLoop=true){
         this.audioLoops.push(loop);
         this.mergeOutOfDate = true;
-        if (comms){
-            this.comms.handleLoop(loop);
-        }
+        if (sendLoop) this.comms.sendLoop(loop);
     }
 
-    loadLoop = (f, audioloop_cb) => {
+    loadLoopFromDisk = (f, audioloop_cb) => {
         let reader = new FileReader();
         reader.onload = (event) => {
             let buff;
@@ -267,6 +261,26 @@ class AudioLoopBunch{
             }            
         }
         reader.readAsArrayBuffer(f);
+    }
+
+    loadLoopFromDynamoData = (l, onLoad) => {    
+        function b64toFloatArr(str){
+            var enc = new TextEncoder();
+            return new Float32Array(enc.encode(str).buffer);
+        }
+
+        console.log(l);
+        let newloop = new AudioLoop(this.getAudioContext),
+            newbuff = this.getAudioContext().createBuffer(
+                parseInt(l.metadata.M.numChannels.N),
+                parseInt(l.metadata.M.length.N),
+                parseInt(l.metadata.M.sampleRate.N));
+
+        newbuff.copyToChannel(0, b64toFloatArr(l.audio.M.L.B));
+        newbuff.copyToChannel(1, b64toFloatArr(l.audio.M.R.B));
+        newloop.buffer = newbuff;
+        newloop.name = l.name.S;
+        this.addLoop(newloop, false);
     }
 }
 

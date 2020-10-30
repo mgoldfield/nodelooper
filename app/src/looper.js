@@ -1,6 +1,7 @@
 import React from 'react';
 import {Button, DropDown, Slider, ProgressBar, LoopProgress, Instructions} from './controls.js';
 import AudioLoopBunch from './sound.js';
+import config from './config-app.js'
 
 
 class Looper extends React.Component {
@@ -9,10 +10,10 @@ class Looper extends React.Component {
         this.loopBunch = new AudioLoopBunch();
 
         let qs = new URLSearchParams(window.location.search);
-        this.project_id = qs.get('projectID');
-        this.loopBunch.initComms(this)
+        this.project_id = qs.get('ProjectID');
+        this.loopBunch.initComms(this.project_id, this)
         .then(this.handleInitLoops)
-        .catch((e) => {console.log(e)}); // toDo: throw here when not testing
+        .catch(e => {throw e}); // toDo: throw here when not testing
 
         this.counter = 0;
         this.loops = [];
@@ -51,7 +52,6 @@ class Looper extends React.Component {
             audioLoop={audioloop}
             handleToggleRecording={handleToggleRecording}
         />);
-        this.loopBunch.comms.handleLoop(newloop);
         this.loops.push(newloop);        
     }
 
@@ -66,8 +66,9 @@ class Looper extends React.Component {
                 loop,
                 () => null);
         };
-        if (l.LoopID !== 'xxxLOOPxxx')
-            this.loopBunch.loadLoop(l.audio.B, onLoad);
+        if (l.LoopID.S !== config.newLoopIdentifier){
+            this.loopBunch.loadLoopFromDynamoData(l, onLoad);
+        }
     };
 
     handleStop = (event=null, err=false) => {
@@ -196,7 +197,7 @@ class Looper extends React.Component {
                     () => null);
                 this.setState({'processing': false});
             };
-            this.loopBunch.loadLoop(uploader.files[0], onLoad);
+            this.loopBunch.loadLoopFromDisk(uploader.files[0], onLoad);
         });
         uploader.click();
     };

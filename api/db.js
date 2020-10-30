@@ -20,13 +20,13 @@ var ddb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
 
 let expiresFromCurrentTime = () => Math.round((Date.now() + 86400) / 1000).toString();
 
-let putItem = (params, cont, debug=true) => {
-    if (debug) console.log("putItem \n%s", JSON.stringify(params));
+let putItem = (params, cont, debug=false) => {
+    if (debug) console.log(JSON.stringify(params));
     ddb.putItem(params, cont);
 }
 
 let query = (params, cont, debug=true) => {
-    if (debug) console.log("query: \n%s", JSON.stringify(params));
+    if (debug) console.log(JSON.stringify(params));
     ddb.query(params, cont);
 }
 
@@ -50,6 +50,7 @@ let getProject = (id) => {
                     for (const i of data.Items){
                         console.log("data item: %s", i.LoopID.S);
                         if (i.LoopID.S === config.newLoopIdentifier){
+                            // todo: retreive from s3
                             resolve(data.Items);
                             found = true;
                             break;
@@ -67,6 +68,7 @@ let getProject = (id) => {
 };
 
 let getTrack = (pjid, lpid) => {
+    //toDo: retreive from s3
     return new Promise((resolve, reject) => {
         let params = {
             Key: [{
@@ -115,7 +117,8 @@ let newProject = () => {
     });
 };
 
-let putTrack = (projectID, name, metadata, audio, q) => {
+let putTrack = (projectID, name, metadata, audio) => {
+    // store track in s3
     return new Promise((resolve, reject) => {
         let params = {
             TableName: config.dynamodb.looper_table,            
@@ -123,10 +126,13 @@ let putTrack = (projectID, name, metadata, audio, q) => {
                 'ProjectID': {S: projectID},
                 LoopID: {S: name},
                 expires: {N: expiresFromCurrentTime()},
-                metadata: {M: metadata},
-                audio: {B: audio},
+                audio: {M: audio},
             },
         };
+        if (Object.keys(metadata).length > 0){
+            params.Item['metadata'] = {M: metadata};
+        }
+
         putItem(params, function(err, data) {
             if (err) reject(err); 
             else resolve(data);

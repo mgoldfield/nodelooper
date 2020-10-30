@@ -111,9 +111,9 @@ class Message {
     constructor(msg, type=null) {
         if (type){ // create message to send
             this.msg = msg;
-            if (!this.msgTypes.keys().includes(msgType))
-                throw Error("Unknown msg type to send: " + msgType);
-            this.type = msgTypes[type];
+            if (!Object.keys(this.msgTypes).includes(type))
+                throw Error("Unknown msg type to send: " + type);
+            this.type = this.msgTypes[type];
         }else{ // parse message received 
             let parts = rawMsg.split(this.divider);
 

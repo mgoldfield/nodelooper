@@ -27,13 +27,19 @@ class Communication {
                     //the whole response has been received, so we just print it out here
                     response.on('end', () => {
                         let loop_response = JSON.parse(json);
-                        this.socket = new WebSocket(config.ws_url, this.project_id + ":" + loop_response.user);
+                        // toDo: fail more gracefully here if the loop doesn't exist
+                        if (!loop_response) {
+                            reject(Error('loop does not exist'));
+                            return;
+                        }
+                        this.user = loop_response.user;
+                        this.socket = new WebSocket(config.ws_url, this.project_id + ":" + this.user);
                         this.socket.addEventListener('open', () => console.log("connection open"));
                         this.socket.addEventListener('message', this.handleMsg);
                         resolve(loop_response.data);
                     });
                 }
-                http.get('http://' + config.api_url + '/loop?projectID=' + this.project_id, callback).end();
+                http.get('http://' + config.api.url + ':' + config.api.port + '/loop?ProjectID=' + this.project_id, callback).end();
             }catch(e){
                 reject(e);
             }
@@ -60,32 +66,64 @@ class Communication {
         }
     }
 
-    handleNewLoop(data){
-        let loopData = JSON.parse(data);
-        let callback = (response) => {
-            let json = '';
-
-            //another chunk of data has been received, so append it to `str`
-            response.on('data', (chunk) => {
-                json += chunk;
+    postDataToApi(data, endpoint){
+        return new Promise((resolve, reject) => {
+            console.log("posting data length %s", data.length);
+            let options = {
+                hostname: config.api.url,
+                port: config.api.port,
+                path: '/' + endpoint,
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': data.length
+                }
+            };
+            let req = http.request(options, res => {
+                console.log(`statusCode: ${res.statusCode}`);
+                res.on('data', d => {
+                    resolve(d);
+                });
             });
 
-            //the whole response has been received, so we just print it out here
-            response.on('end', () => {
-                let loopData = JSON.parse(json);
-                this.looper.loadLoopFromDynamoData(loopData);
+            req.on('error', error => {
+                reject(error);
             });
-        }
-        http.get('http://' + config.api_url + '/loop?projectID=' + this.project_id + '&loopID=' + loopData.loopID.S, 
-            callback).end();        
+
+            req.write(data);
+            req.end();
+        });
+    }
+
+    handleRcvdLoop(data){  // get new loop received from other users
+
     }
 
     sendMsg(msg) {
-        return;
+        this.socket.send(msg);
     }
 
-    handleLoop(loop) {
-        return;
+    sendLoop(loop) { // send
+        let dec = new TextDecoder();
+        let postdata = JSON.stringify({
+            'ProjectID': this.project_id,
+            'userID': this.user,
+            'name': loop.name,
+            'metadata': {
+                'length': {N: loop.buffer.length.toString()},
+                'sampleRate': {N: loop.buffer.sampleRate.toString()},
+                'numChannels': {N: loop.buffer.numberOfChannels.toString()},
+            },
+            'audio': {
+                L: {B: dec.decode(new Uint8Array(loop.buffer.getChannelData(0).buffer))},
+                R: {B: dec.decode(new Uint8Array(loop.buffer.getChannelData(1).buffer))},
+            },
+
+        });
+
+        this.postDataToApi(postdata, 'addTrack')
+        .then((d) => console.log("got data %s", d))
+        .catch((e) => {throw(e)});
     }
 }
 
