@@ -11,10 +11,6 @@ class Looper extends React.Component {
 
         let qs = new URLSearchParams(window.location.search);
         this.project_id = qs.get('ProjectID');
-        this.loopBunch.initComms(this.project_id, this)
-        .then(this.handleInitLoops)
-        .catch(e => {throw e}); // toDo: throw here when not testing
-
         this.counter = 0;
         this.loops = [];
         this.state = {
@@ -30,14 +26,19 @@ class Looper extends React.Component {
             'gain': 1,
             'inputMonitoring': this.loopBunch.inputMonitoring,
             'numLoops': this.loops.length,
-            'processing': false,
+            'processing': true,
         }
+        this.loopBunch.initComms(this.project_id, this)
+        .then(this.handleInitLoops)
+        .catch(e => {throw e}); // toDo: throw here when not testing        
         // functions passed up from children  
         this.finishRecording = () => null;  
     }
 
     handleInitLoops = (loops) => {
         this.counter += loops.length - 1;
+        if (this.counter === 0) this.setState({'processing': false});
+        console.log("setting counter: %s", this.counter);
         for (const l of loops){
             this.loadLoopFromDynamoData(l);
         }       
@@ -58,14 +59,16 @@ class Looper extends React.Component {
     loadLoopFromDynamoData = (l) => {
         // toDo: make a "loading" light
         let onLoad = (loop) =>{
-            console.log("pushing loop...");
             this.addNewLoop(
-                l.metadata.M.id.S,
-                l.metadata.M.id.S,
-                l.metadata.M.name.S,
+                l.LoopID.S,
+                l.LoopID.S,
+                l.LoopID.S, // toDo - id different than name
                 false,
                 loop,
                 () => null);
+            if (this.loops.length === this.counter){
+                this.setState({'processing': false});
+            }
         };
         if (l.LoopID.S !== config.newLoopIdentifier){
             this.loopBunch.loadLoopFromDynamoData(l, onLoad);

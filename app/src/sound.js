@@ -264,15 +264,11 @@ class AudioLoopBunch{
     }
 
     loadLoopFromDynamoData = (l, onLoad) => {    
-        function b64toFloatArr(str){
-            let enc = new TextEncoder(),
-                uint8arr = enc.encode(str);
-
-            console.log('uint8arr length: %s %s', uint8arr.buffer instanceof ArrayBuffer, uint8arr.length);
-            let f32a = new Float32Array(uint8arr.buffer, 0, uint8arr.byteLength / 4); // toDo: confirm /4 is correct
+        function b64toFloatArr(to_encode){
+            let buf = Buffer.from(to_encode, 'base64');
+            let f32a = new Float32Array(buf.buffer); 
             return f32a;
         }
-        //console.log(l);
         let newloop = new AudioLoop(this.getAudioContext),
             newbuff = this.getAudioContext().createBuffer(
                 parseInt(l.metadata.M.numChannels.N),
@@ -280,12 +276,12 @@ class AudioLoopBunch{
                 parseInt(l.metadata.M.sampleRate.N));
 
         let audio = JSON.parse(l.audio);
-        console.log(audio);
         newbuff.copyToChannel(b64toFloatArr(audio.L), 0);
         newbuff.copyToChannel(b64toFloatArr(audio.R), 1);
         newloop.buffer = newbuff;
         newloop.name = l.LoopID.S;
         this.addLoop(newloop, false);
+        onLoad(newloop);
     }
 }
 

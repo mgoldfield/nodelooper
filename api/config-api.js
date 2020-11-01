@@ -7,7 +7,10 @@ let config = {
 	base_loop_url: 'localhost:3000',
 	base_api_url: 'localhost:3001',
 	newLoopIdentifier: 'xxxLOOPxxx',
-	audioBucket: 'loop-audio',
+	s3: {
+		audioBucket: 'loop-audio',
+		backoff_tries: 5,
+	},
 	websockets: {
 		url: 'localhost',
 		port: 8080

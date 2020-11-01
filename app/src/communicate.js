@@ -104,7 +104,10 @@ class Communication {
     }
 
     sendLoop(loop) { // send
-        let dec = new TextDecoder();
+        console.log('buffer length: %s', loop.buffer.length);
+        console.log('buffer channel length: %s', Buffer.from(loop.buffer.getChannelData(0).buffer).length);
+        console.log('encoded L: %s', Buffer.from(loop.buffer.getChannelData(0).buffer).toString('base64').length);
+        console.log('encoded R: %s', Buffer.from(loop.buffer.getChannelData(1).buffer).toString('base64').length);
         let postdata = JSON.stringify({
             'ProjectID': this.project_id,
             'userID': this.user,
@@ -115,10 +118,10 @@ class Communication {
                 'numChannels': {N: loop.buffer.numberOfChannels.toString()},
             },
             // toDo: compress audio
-            'audio': JSON.stringify({
-                L: dec.decode(new Uint8Array(loop.buffer.getChannelData(0).buffer)),
-                R: dec.decode(new Uint8Array(loop.buffer.getChannelData(1).buffer)),
-            }),
+            'audio': {
+                L: Buffer.from(loop.buffer.getChannelData(0).buffer).toString('base64'),
+                R: Buffer.from(loop.buffer.getChannelData(1).buffer).toString('base64'),
+            },
 
         });
 

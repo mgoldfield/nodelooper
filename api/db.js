@@ -145,30 +145,32 @@ class DataAccess {
 
 class Dynamo {
     ddb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
-    debug = true;
+    debug = (config.env === 'DEV');
 
     putItem = (params, cont) => {
-        if (this.debug) console.log(JSON.stringify(params));
+        if (this.debug) console.log(params);
         this.ddb.putItem(params, cont);
     };
 
     query = (params, cont) => {
-        if (this.debug) console.log(JSON.stringify(params));
+        if (this.debug) console.log(params);
         this.ddb.query(params, cont);
     };
 
     getItem = (params, cont) => {
-        if (this.debug) console.log(JSON.stringify(params));
+        if (this.debug) console.log(params);
         this.ddb.GetItem(params, cont);
     };
 }
 
 class S3 {
     s3 = new AWS.S3({apiVersion: '2006-03-01'});
+    debug = (config.env === 'DEV');
 
     storeAudio(key, audio){
         return new Promise((resolve, reject) => {
-            let uploadParams = {Bucket: config.audioBucket, Key: key, Body: JSON.stringify(audio)};
+            let uploadParams = {Bucket: config.s3.audioBucket, Key: key, Body: JSON.stringify(audio)};
+            if (this.debug) console.log(uploadParams);
             this.s3.upload (uploadParams, (err, data) => {
                 if (err) reject(err);
                 else resolve(data);
@@ -176,13 +178,23 @@ class S3 {
         });
     }
 
-    retreiveAudio(key){
+    retreiveAudio(key, tries=0){
         return new Promise((resolve, reject) => {
-            let params = {Bucket: config.audioBucket, Key: key};
+            let params = {Bucket: config.s3.audioBucket, Key: key};
+            if (this.debug) console.log(params);
             this.s3.getObject(params, (err, data) => {
-                if (err) reject(err); // an error occurred
+                if (err) {
+                    if (err.code == 'NoSuchKey' && tries < config.s3.backoff_tries) {
+                        console.log('retrying %s', params);
+                        setTimeout(
+                            () => this.retreiveAudio(key, tries + 1).then(d => resolve(d)).catch(e=>reject(e)),
+                            (2**tries) * 1000);
+                    }else{
+                        reject(err); // an error occurred
+                    }
+                }
                 else {
-                    resolve(JSON.parse(data.Body.toString('utf-8'))); 
+                    resolve(data.Body.toString('utf-8')); 
                 }
             });
         });
