@@ -301,7 +301,7 @@ class Looper extends React.Component {
                         </div>
                     </div>
                     <div className='userStatusBar'>
-                        <p> this will be users and status... </p>
+                        {/* toDo: add user indicators here */}
                         <ChatWindow sendChat={(line) => {this.loopBunch.comms.sendChat(line)}}
                             exposeUpdateChat={(f => this.updateChat = f)}/>
                     </div>

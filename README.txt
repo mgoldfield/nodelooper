@@ -1,3 +1,13 @@
+Usage:
+
+local: 
+0. run `npm install` in both the `app` and `api` directories
+1. In the `api` directory, run `./startLocal.sh`
+2. In the `app` directory, run `npm start`
+3. navgate to the api url 'localhost:3001/newsesh' to start a loop, and copy the link you are redirected to to share the loop
+
+
+
 To Do:
 - more latency futzing - especially remove quant and see whats happening when I'm trimming stuff off of the back of the loop.  I think I'm probably trimming too much off the back?  
 - snap to beat in main progress bar

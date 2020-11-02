@@ -8,6 +8,7 @@ let config = {
     newLoopIdentifier:'xxxLOOPxxx',
     msgDivider:'|||',
     audioBucket: 'loop-audio',
+    lossyCompress: false,
 };
 
 export default config;

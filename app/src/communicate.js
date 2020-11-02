@@ -1,8 +1,7 @@
 import config from './config-app.js'
+import {bufferToMp3} from './format_tools.js'
 
 const http = require('http');
-// toDo: aac with const Fdkaac = require("node-fdkaac").Fdkaac
-
 
 class Communication {
     msgDivider = '|||';
@@ -131,7 +130,7 @@ class Communication {
     }
 
     sendLoop(loop) { // send
-        let postdata = JSON.stringify({
+        let postdata = {
             'ProjectID': this.project_id,
             'userID': this.user,
             'name': loop.name,
@@ -140,13 +139,24 @@ class Communication {
                 'sampleRate': {N: loop.buffer.sampleRate.toString()},
                 'numChannels': {N: loop.buffer.numberOfChannels.toString()},
             },
-            // toDo: compress audio
-            'audio': {
+        };
+
+        if (config.lossyCompress) {
+            console.log("compressing...")
+            postdata.audio = {
+                format:'mp3',
+                data: bufferToMp3(loop.buffer),
+            }
+            console.log(postdata)
+        }else{
+            postdata.audio = {
+                format:'raw',
                 L: Buffer.from(loop.buffer.getChannelData(0).buffer).toString('base64'),
                 R: Buffer.from(loop.buffer.getChannelData(1).buffer).toString('base64'),
-            },
+            };
+        }
 
-        });
+        postdata = JSON.stringify(postdata);
 
         this.postDataToApi(postdata, 'addTrack')
         .then((d) => {
