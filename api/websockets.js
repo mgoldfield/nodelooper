@@ -91,14 +91,16 @@ class WebSocketServer {
         }
     }
 
-    register_user(project_id){
+    register_user(project_id, user_id=null){
         // toDo: expire logins after 1 day... user dynamo somehow? 
         if (!this.projects.get(project_id)) 
             throw Error('unknown project: ' + project_id);
 
-        let user_id = uuidv4();
-        this.projects.get(project_id).users.push(user_id);
-        this.db.registerUser(project_id, user_id);
+        if (!user_id){
+            user_id = uuidv4();
+            this.db.registerUser(project_id, user_id);
+        }
+        this.projects.get(project_id).users.push(user_id);       
         return user_id;
     }
 

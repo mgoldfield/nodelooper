@@ -29,7 +29,7 @@ app.get('/newsesh', (req, res) => {
     da.newProject()
     .then((seshdata) => {
         ws.register_project(seshdata.ProjectID, seshdata.expires);
-        res.send(seshdata);
+        res.redirect('http://' + config.base_loop_url + '?ProjectID=' + seshdata.ProjectID);
     })
     .catch((err) => {throw err});
 });
