@@ -74,7 +74,6 @@ class Communication {
     }
 
     handleRcvdChat = (msg) => {
-        console.log("updating chat....")
         this.looper.updateChat(msg);
     }
 

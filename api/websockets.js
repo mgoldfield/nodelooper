@@ -1,7 +1,7 @@
 import { config } from './config-api.js'
 import { createRequire } from 'module';
 import { v4 as uuidv4 } from 'uuid';
-
+import { SocketHelpers } from './db.js';
 const require = createRequire(import.meta.url);
 const express = require('express');
 const http = require('http'); // toDo: security - https
@@ -16,7 +16,11 @@ class WebSocketServer {
     projects = new Map();
     // toDo: repopulate from dynamo on server restart
 
+    db = new SocketHelpers();
+
     constructor() {
+        this.populateProjects();
+
         this.app = express();
         this.app.use(cors());
         this.server = this.app.listen(config.websockets.port); 
@@ -47,6 +51,15 @@ class WebSocketServer {
         });
     }
 
+    populateProjects() {
+        this.db.getLiveProjects().then((db_proj)=>{
+            for (const p of db_proj) {
+                this.register_project(p.projectid.S, p.expires.N);
+                this.register_user(p.projectid.S, p.id.S)
+            }
+        })
+    }
+
     authenticate(request, cont, debug=true) {
         if (debug) console.log('request: %s \n\n', request, request.headers);
         let err = null,
@@ -69,11 +82,13 @@ class WebSocketServer {
     }
 
     register_project(project_id, expires){
-        this.projects.set(project_id, {
-            'expires':expires,
-            users: [],
-            sockets: new Map(),
-        });
+        if (!this.projects.get(project_id)){
+            this.projects.set(project_id, {
+                'expires':expires,
+                users: [],
+                sockets: new Map(),
+            });
+        }
     }
 
     register_user(project_id){
@@ -83,6 +98,7 @@ class WebSocketServer {
 
         let user_id = uuidv4();
         this.projects.get(project_id).users.push(user_id);
+        this.db.registerUser(project_id, user_id);
         return user_id;
     }
 

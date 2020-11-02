@@ -18,12 +18,11 @@ if (config.env == 'DEV') AWS.config.logger = console;
 // toDo: add exponential backoff to dynamo requests
 
 
+let expiresFromCurrentTime = () => Math.round((Date.now() + 86400) / 1000).toString();
 
 class DataAccess {
     ddb = new Dynamo();
     s3 = new S3();
-
-    expiresFromCurrentTime = () => Math.round((Date.now() + 86400) / 1000).toString();
 
     getProject = (id) => {
         // no need to sanitize because we're not parsing the data...
@@ -91,7 +90,7 @@ class DataAccess {
     newProject = () => {
         return new Promise((resolve, reject) => {
             let ProjectID = uuidv4(),
-                expires = this.expiresFromCurrentTime();
+                expires = expiresFromCurrentTime();
             let params = {
                 TableName: config.dynamodb.looper_table,
                 Item: {
@@ -119,7 +118,7 @@ class DataAccess {
                 Item: {
                     'ProjectID': {S: projectID},
                     LoopID: {S: name},
-                    expires: {N: this.expiresFromCurrentTime()},
+                    expires: {N: expiresFromCurrentTime()},
                     's3loc': {S: s3loc},
                 },
             };
@@ -137,6 +136,41 @@ class DataAccess {
             });
         });
     };
+}
+
+
+class SocketHelpers {
+    ddb = new Dynamo();
+
+    registerUser(pjid, uid){
+        return new Promise( (resolve, reject) => {
+            let params = {
+                TableName: config.dynamodb.socket_ids,
+                Item: {
+                    projectid: {S: pjid},
+                    id: {S: uid},
+                    expires: {N: expiresFromCurrentTime()},
+                }
+            }
+            this.ddb.putItem(params, (err, data) => {
+                if (err) reject(err)
+                else resolve(data)
+            });
+        });
+    }
+
+    getLiveProjects(){
+        return new Promise ((resolve, reject) => {
+            let params = {
+                TableName: config.dynamodb.socket_ids,
+            }
+            this.ddb.scan(params, (err, data) => {
+                if (err) reject(err)
+                else resolve(data.Items)
+            })
+        })
+    }
+
 }
 
 class Dynamo {
@@ -161,6 +195,10 @@ class Dynamo {
 
         this.ddb.getItem(params, backoff_cont);
     };
+
+    scan = (params, cont) => {
+        this.ddb.scan(params, cont);
+    }
 }
 
 class S3 {
@@ -199,4 +237,4 @@ class S3 {
 }
 
 
-export {DataAccess};
+export {DataAccess, SocketHelpers};

@@ -1,7 +1,7 @@
 let config = {
 	dynamodb: {
 		looper_table: 'looper-development',
-		rabbit_ttls: 'looper-rabbit',
+		socket_ids: 'msg-groups',
 		backoff_tries: 5,
 	},
 	env: 'DEV',

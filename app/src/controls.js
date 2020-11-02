@@ -211,9 +211,7 @@ class ChatWindow extends React.Component {
     }
 
     updateChat = (line) => {
-        console.log('really updating chat... %s,', line)
         this.setState({'chat': this.state.chat.concat([<div key={this.state.chat.length}>{line}</div>])});
-        console.log(this.state.chat);
     }
 
     submitChat = (event) => {
