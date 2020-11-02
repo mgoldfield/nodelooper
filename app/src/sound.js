@@ -35,8 +35,10 @@ class AudioLoopBunch{
     }
 
     initComms(project_id, looper) {
-        this.comms = new Communication(project_id, looper)
-        return this.comms.initProject();
+        return new Promise( (resolve, reject) => {
+            this.comms = new Communication(project_id, looper);
+            this.comms.initProject().then(d => resolve(d)).catch(e => reject(e));
+        });
     }
 
     // we don't suspend audiocontext here because we're mostly using it in the app
@@ -275,7 +277,9 @@ class AudioLoopBunch{
                 parseInt(l.metadata.M.length.N),
                 parseInt(l.metadata.M.sampleRate.N));
 
-        let audio = JSON.parse(l.audio);
+        console.log("l.audio:");
+        console.log(l.audio);
+        let audio = JSON.parse(l.audio)
         newbuff.copyToChannel(b64toFloatArr(audio.L), 0);
         newbuff.copyToChannel(b64toFloatArr(audio.R), 1);
         newloop.buffer = newbuff;

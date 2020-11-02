@@ -5,13 +5,12 @@ import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
 const url = require('url');
-
-// set up express
 const express = require('express');
 const cors = require('cors')
+const bodyParser = require('body-parser');
+
 const app = express();
 const ws = new WebSocketServer();
-const bodyParser = require('body-parser');
 const da = new DataAccess();
 
 app.use(bodyParser.json({limit: '500mb'}));
@@ -61,7 +60,7 @@ app.post('/addtrack', (req, res) => {
     res.send('ok');
 });
 
-app.get('/getTrack', (req, res) => {
-    da.getTrack(req.body.ProjectID, req.body.loopID)
+app.post('/getTrack', (req, res) => {
+    da.getTrack(req.body.ProjectID, req.body.LoopID)
     .then((data) => res.send(data));
 });

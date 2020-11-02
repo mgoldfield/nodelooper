@@ -1,6 +1,7 @@
 import config from './config-app.js'
 
-let http = require('http');
+const http = require('http');
+// toDo: aac with const Fdkaac = require("node-fdkaac").Fdkaac
 
 
 class Communication {
@@ -17,6 +18,11 @@ class Communication {
         return new Promise((resolve, reject) => {
             try{
                 let callback = (response) => {
+                    if (response.statusCode !== 200){
+                        reject(Error('Bad status code: ' + response.statusCode));
+                        return;
+                    }
+
                     let json = '';
 
                     //another chunk of data has been received, so append it to `str`
@@ -46,10 +52,11 @@ class Communication {
         });
     }
 
-    handleMsg(msg) {   
-        let parts = msg.split(this.msgDivider);
+    handleMsg = (msg) => {
+        console.log(msg.data);
+        let parts = msg.data.split(this.msgDivider);
         if (parts.length !== 2)
-            throw Error("malformed message");
+            throw Error("malformed message " + parts.toString());
 
         let headers = parts[0],
             body = parts[1];
@@ -58,7 +65,7 @@ class Communication {
             console.log(msg);
         }else if (headers === 'N'){ // new loop
             console.log(msg);
-            this.handleNewLoop(body);
+            this.handleRcvdLoop(body);
         }else if (headers === 'R'){ // rename loop 
             console.log(msg);
         }else{
@@ -68,7 +75,6 @@ class Communication {
 
     postDataToApi(data, endpoint){
         return new Promise((resolve, reject) => {
-            console.log("posting data length %s", data.length);
             let options = {
                 hostname: config.api.url,
                 port: config.api.port,
@@ -81,9 +87,12 @@ class Communication {
             };
             let req = http.request(options, res => {
                 console.log(`statusCode: ${res.statusCode}`);
+                let response_data = '';
                 res.on('data', d => {
-                    resolve(d);
+                    response_data += d;
                 });
+
+                res.on('end', () => resolve(response_data));
             });
 
             req.on('error', error => {
@@ -95,8 +104,18 @@ class Communication {
         });
     }
 
-    handleRcvdLoop(data){  // get new loop received from other users
-
+    handleRcvdLoop(loop_id){  // get new loop received from other users
+        let postdata = JSON.stringify({
+            ProjectID: this.project_id,
+            LoopID: loop_id,
+        });
+        this.postDataToApi(postdata, 'getTrack')
+        .then((l) => {
+            l = JSON.parse(l);
+            this.looper.counter++;
+            this.looper.setState({'processing': true});
+            this.looper.loadLoopFromDynamoData(l); 
+        });
     }
 
     sendMsg(msg) {
@@ -104,10 +123,6 @@ class Communication {
     }
 
     sendLoop(loop) { // send
-        console.log('buffer length: %s', loop.buffer.length);
-        console.log('buffer channel length: %s', Buffer.from(loop.buffer.getChannelData(0).buffer).length);
-        console.log('encoded L: %s', Buffer.from(loop.buffer.getChannelData(0).buffer).toString('base64').length);
-        console.log('encoded R: %s', Buffer.from(loop.buffer.getChannelData(1).buffer).toString('base64').length);
         let postdata = JSON.stringify({
             'ProjectID': this.project_id,
             'userID': this.user,
@@ -126,8 +141,9 @@ class Communication {
         });
 
         this.postDataToApi(postdata, 'addTrack')
-        .then((d) => console.log("got data %s", d))
-        .catch((e) => {throw(e)});
+        .then((d) => {
+            console.log("got data %s", d);
+        }).catch((e) => {throw(e)});
     }
 }
 

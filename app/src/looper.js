@@ -38,7 +38,6 @@ class Looper extends React.Component {
     handleInitLoops = (loops) => {
         this.counter += loops.length - 1;
         if (this.counter === 0) this.setState({'processing': false});
-        console.log("setting counter: %s", this.counter);
         for (const l of loops){
             this.loadLoopFromDynamoData(l);
         }       

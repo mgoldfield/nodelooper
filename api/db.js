@@ -14,6 +14,7 @@ AWS.config.getCredentials((err) => {
 });
 
 AWS.config.update({region: 'us-east-1'});
+if (config.env == 'DEV') AWS.config.logger = console;
 // toDo: add exponential backoff to dynamo requests
 
 
@@ -42,6 +43,7 @@ class DataAccess {
                     try{
                         let found = false;
                         for (const i of data.Items){
+                            console.log(i);
                             if (i.LoopID.S === config.newLoopIdentifier){
                                 found = true;
                             }else{
@@ -66,27 +68,21 @@ class DataAccess {
         //toDo: retreive from s3
         return new Promise((resolve, reject) => {
             let params = {
-                Key: [{
-                    'ProjectID': {
-                        S: pjid,
-                    }, 
-                    'LoopID': {
-                        S: lpid,
-                    },
-                }],             
-                TableName: config.dynamodb.looper_table,
-            };        
+                Key: {
+                    ProjectID: { S: pjid },
+                    LoopID: { S: lpid }
+                },
+                TableName: 'looper-development',
+                ConsistentRead: true,
+            }; 
             this.ddb.getItem(params, (err, data) => {
                 if (err) reject(err)
                 else {
-                    let records = data.Responses['looper-development'];
-                    if (records.length === 0) {
-                        reject('Loop does not exist');
-                    }else{
-                        let t = data.Responses['looper-development'][0];
-                        t.audio = this.s3.retreiveAudio(t.s3loc.S);
-                        resolve(t);
-                    }
+                    let t = data.Item;
+                    this.s3.retreiveAudio(t.s3loc.S).then((audio) => {
+                        t.audio = audio;
+                        resolve(JSON.stringify(t));
+                    }).catch((e) => reject(e));
                 }
             });
         });
@@ -145,32 +141,34 @@ class DataAccess {
 
 class Dynamo {
     ddb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
-    debug = (config.env === 'DEV');
 
     putItem = (params, cont) => {
-        if (this.debug) console.log(params);
         this.ddb.putItem(params, cont);
     };
 
     query = (params, cont) => {
-        if (this.debug) console.log(params);
         this.ddb.query(params, cont);
     };
 
-    getItem = (params, cont) => {
-        if (this.debug) console.log(params);
-        this.ddb.GetItem(params, cont);
+    getItem = (params, cont, tries=0) => {
+        let backoff_cont = (err, data) => {
+            if (!data && tries < config.dynamodb.backoff_tries){
+                setTimeout(() => this.getItem(params, cont, tries + 1), (2**tries) * 1000);
+            }else{
+                cont(err, data);
+            }
+        }
+
+        this.ddb.getItem(params, backoff_cont);
     };
 }
 
 class S3 {
     s3 = new AWS.S3({apiVersion: '2006-03-01'});
-    debug = (config.env === 'DEV');
 
     storeAudio(key, audio){
         return new Promise((resolve, reject) => {
             let uploadParams = {Bucket: config.s3.audioBucket, Key: key, Body: JSON.stringify(audio)};
-            if (this.debug) console.log(uploadParams);
             this.s3.upload (uploadParams, (err, data) => {
                 if (err) reject(err);
                 else resolve(data);
@@ -181,7 +179,6 @@ class S3 {
     retreiveAudio(key, tries=0){
         return new Promise((resolve, reject) => {
             let params = {Bucket: config.s3.audioBucket, Key: key};
-            if (this.debug) console.log(params);
             this.s3.getObject(params, (err, data) => {
                 if (err) {
                     if (err.code == 'NoSuchKey' && tries < config.s3.backoff_tries) {

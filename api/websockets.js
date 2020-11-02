@@ -3,10 +3,11 @@ import { createRequire } from 'module';
 import { v4 as uuidv4 } from 'uuid';
 
 const require = createRequire(import.meta.url);
-
-// toDo: security - https
-const http = require('http');
+const express = require('express');
+const http = require('http'); // toDo: security - https
+const cors = require('cors');
 const WebSocket = require('ws');
+
 
 class WebSocketServer {
 
@@ -16,13 +17,16 @@ class WebSocketServer {
     // toDo: repopulate from dynamo on server restart
 
     constructor() {
+        this.app = express();
+        this.app.use(cors());
+        this.server = this.app.listen(config.websockets.port); 
         this.wss = new WebSocket.Server({ noServer: true });
-        this.server = http.createServer();
 
         this.wss.on('connection', (ws, request, client) => {
-            ws.on('message', (message) => {
-                console.log('broadcasting: %s to %s from %s', message, client.project_id, client.user_id);
-                this.broadcast(client.project_id, client.user_id, message);
+            ws.on('message', (msg) => {
+                let parsed_msg = new Message(msg);
+                console.log('broadcasting: %s to %s from %s', parsed_msg, client.project_id, client.user_id);
+                this.broadcast(client.project_id, client.user_id, parsed_msg);
             });
         });
 
@@ -41,8 +45,6 @@ class WebSocketServer {
                 });
             });
         });
-
-        this.server.listen(config.websockets.port);
     }
 
     authenticate(request, cont, debug=true) {
@@ -115,11 +117,11 @@ class Message {
                 throw Error("Unknown msg type to send: " + type);
             this.type = this.msgTypes[type];
         }else{ // parse message received 
-            let parts = rawMsg.split(this.divider);
+            let parts = msg.split(this.divider);
 
             if (parts.length != 2)
                 throw Error("Malformed message: " + rawMsg);
-            if (!this.msgTypes.values().includes(parts[0]))
+            if (!Object.values(this.msgTypes).includes(parts[0]))
                 throw Error("Unknown msg type received: " + parts[0]);
 
             this.type = parts[0];

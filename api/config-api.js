@@ -2,6 +2,7 @@ let config = {
 	dynamodb: {
 		looper_table: 'looper-development',
 		rabbit_ttls: 'looper-rabbit',
+		backoff_tries: 5,
 	},
 	env: 'DEV',
 	base_loop_url: 'localhost:3000',
