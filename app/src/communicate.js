@@ -53,7 +53,6 @@ class Communication {
     }
 
     handleMsg = (msg) => {
-        console.log(msg.data);
         let parts = msg.data.split(this.msgDivider);
         if (parts.length !== 2)
             throw Error("malformed message " + parts.toString());
@@ -63,6 +62,7 @@ class Communication {
 
         if (headers === 'C'){ // chat
             console.log(msg);
+            this.handleRcvdChat(body);
         }else if (headers === 'N'){ // new loop
             console.log(msg);
             this.handleRcvdLoop(body);
@@ -71,6 +71,15 @@ class Communication {
         }else{
             throw Error("malformed message: " + msg);
         }
+    }
+
+    handleRcvdChat = (msg) => {
+        console.log("updating chat....")
+        this.looper.updateChat(msg);
+    }
+
+    sendChat = (msg) => {
+        this.socket.send('C' + this.msgDivider + msg);
     }
 
     postDataToApi(data, endpoint){

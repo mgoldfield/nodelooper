@@ -54,6 +54,28 @@ body {
     flex-direction: column
 }
 
+.chatbox {
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.chatname {
+    margin: 5px;
+}
+
+.chat {
+    margin: 5px;
+    width: 170px;
+    height: 300px;
+    overflow: scroll;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+}
+
 .looper {
     margin-left: 25px;
     margin-right:25px;

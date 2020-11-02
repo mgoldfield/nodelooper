@@ -199,4 +199,52 @@ class Instructions extends React.Component {
 }
 
 
-export {Button, DropDown, Slider, ProgressBar, LoopProgress, Instructions};
+class ChatWindow extends React.Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            'name':'your name',
+            'value': '',
+            'chat': [],
+        };
+        this.props.exposeUpdateChat(this.updateChat);
+    }
+
+    updateChat = (line) => {
+        console.log('really updating chat... %s,', line)
+        this.setState({'chat': this.state.chat.concat([<div key={this.state.chat.length}>{line}</div>])});
+        console.log(this.state.chat);
+    }
+
+    submitChat = (event) => {
+        if(event.keyCode === 13) {
+            let line = this.state.name + ':  ' + this.state.value;
+            this.updateChat(line);
+            this.props.sendChat(line);
+            this.setState({'value': ''});
+        }
+    };
+
+    typing = (event) => {this.setState({'value': event.target.value});};
+    updateName = (event) => {this.setState({'name': event.target.value});};
+
+    render() {
+        return (
+            <div className="chatbox">
+                <div className="chatname">
+                    <input type='text' className='inputFont'
+                        value={this.state.name} onChange={this.updateName}
+                    />
+                </div>
+                <div id="chat" className="chat inputFont">{this.state.chat}</div>
+                <div className="chatInput">
+                    <input type='text' id='chatInput' className=''
+                        value={this.state.value} onChange={this.typing} 
+                        onKeyDown={this.submitChat} size='25'/>
+                </div>
+            </div>
+        );
+    }
+}
+
+export {Button, DropDown, Slider, ProgressBar, LoopProgress, Instructions, ChatWindow};

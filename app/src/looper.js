@@ -1,5 +1,11 @@
 import React from 'react';
-import {Button, DropDown, Slider, ProgressBar, LoopProgress, Instructions} from './controls.js';
+import {Button, 
+    DropDown, 
+    Slider, 
+    ProgressBar, 
+    LoopProgress, 
+    Instructions, 
+    ChatWindow} from './controls.js';
 import AudioLoopBunch from './sound.js';
 import config from './config-app.js'
 
@@ -296,13 +302,8 @@ class Looper extends React.Component {
                     </div>
                     <div className='userStatusBar'>
                         <p> this will be users and status... </p>
-                        <p> this will be users and status... </p>
-                        <p> this will be users and status... </p>
-                        <p> this will be users and status... </p>
-                        <p> this will be users and status... </p>
-                        <p> this will be users and status... </p>
-                        <p> this will be users and status... </p>
-                        <p> this will be users and status... </p>
+                        <ChatWindow sendChat={(line) => {this.loopBunch.comms.sendChat(line)}}
+                            exposeUpdateChat={(f => this.updateChat = f)}/>
                     </div>
                 </div>
             </div>
