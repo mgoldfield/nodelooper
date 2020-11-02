@@ -92,6 +92,7 @@ class WebSocketServer {
     }
 
     register_user(project_id, user_id=null){
+        // toDo: I think we only need to store projects on the backend
         // toDo: expire logins after 1 day... user dynamo somehow? 
         if (!this.projects.get(project_id)) 
             throw Error('unknown project: ' + project_id);
