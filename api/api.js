@@ -52,7 +52,14 @@ app.post('/addtrack', (req, res) => {
     console.log('body: %s', req.body);
     if (req.body.name === config.newLoopIdentifier)
         throw Error('reserved name');
-    da.putTrack(req.body.ProjectID, req.body.name, req.body.metadata, req.body.audio)
+    let pdata = ws.projects.get(req.body.ProjectID);
+    if (!pdata) {throw Error('project not found: ' + req.body.ProjectID)}
+
+    da.putTrack(req.body.ProjectID, 
+        req.body.name, 
+        req.body.metadata, 
+        req.body.audio, 
+        pdata.expires)
     .then((data) => {
         ws.broadcast(req.body.ProjectID, req.body.userID, new Message(req.body.name, 'newLoop'));
     })

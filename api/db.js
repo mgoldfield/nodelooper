@@ -18,7 +18,7 @@ if (config.env == 'DEV') AWS.config.logger = console;
 // toDo: add exponential backoff to dynamo requests
 
 
-let expiresFromCurrentTime = () => Math.round((Date.now() + 86400) / 1000).toString();
+let expiresFromCurrentTime = () => (Math.round(Date.now() / 1000) + 86400).toString();
 
 class DataAccess {
     ddb = new Dynamo();
@@ -109,7 +109,7 @@ class DataAccess {
         });
     };
 
-    putTrack = (projectID, name, metadata, audio) => {
+    putTrack = (projectID, name, metadata, audio, expires) => {
         // store track in s3
         return new Promise((resolve, reject) => {
             let s3loc = uuidv4(); // toDo: change this
@@ -118,7 +118,7 @@ class DataAccess {
                 Item: {
                     'ProjectID': {S: projectID},
                     LoopID: {S: name},
-                    expires: {N: expiresFromCurrentTime()},
+                    expires: {N: expires},
                     's3loc': {S: s3loc},
                 },
             };
@@ -142,14 +142,14 @@ class DataAccess {
 class SocketHelpers {
     ddb = new Dynamo();
 
-    registerUser(pjid, uid){
+    registerUser(pjid, uid, expires){
         return new Promise( (resolve, reject) => {
             let params = {
                 TableName: config.dynamodb.socket_ids,
                 Item: {
                     projectid: {S: pjid},
                     id: {S: uid},
-                    expires: {N: expiresFromCurrentTime()},
+                    expires: {N: expires},
                 }
             }
             this.ddb.putItem(params, (err, data) => {

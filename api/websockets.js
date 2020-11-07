@@ -49,6 +49,8 @@ class WebSocketServer {
                 });
             });
         });
+
+        setInterval(this.garbage_collection, 3600000); // garbage collect every hour - 3600000 is 1 hr in ms
     }
 
     populateProjects() {
@@ -99,7 +101,7 @@ class WebSocketServer {
 
         if (!user_id){
             user_id = uuidv4();
-            this.db.registerUser(project_id, user_id);
+            this.db.registerUser(project_id, user_id, this.projects.get(project_id).expires);
         }
         this.projects.get(project_id).users.push(user_id);       
         return user_id;
@@ -113,6 +115,15 @@ class WebSocketServer {
             if (key !== user_id)
                 value.send(msg.makeMsg());
         });
+    }
+
+    garbage_collection = () => {
+        this.projects.forEach((value, key, map) => {
+            if (parseInt(value.expires) * 1000 < Date.now()){
+                value.sockets.forEach((v, k, m) => v.terminate());
+                map.delete(key);
+            }
+        })
     }
 
     destroy_project(project_id){
