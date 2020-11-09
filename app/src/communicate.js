@@ -129,7 +129,7 @@ class Communication {
         this.socket.send(msg);
     }
 
-    sendLoop(loop) { // send
+    sendLoop = async (loop) => { // send
         let postdata = {
             'ProjectID': this.project_id,
             'userID': this.user,
@@ -145,9 +145,9 @@ class Communication {
             console.log("compressing...")
             postdata.audio = {
                 format:'mp3',
-                data: bufferToMp3(loop.buffer),
+                data: await bufferToMp3(loop.buffer),
             }
-            console.log(postdata)
+            console.log(postdata);
         }else{
             postdata.audio = {
                 format:'raw',

@@ -1,12 +1,37 @@
 const lamejs = require("lamejs");
 
+function downloadBlob(filename, blob){
+    let tmp = document.createElement('a');
+    tmp.style = "display: none";
+    document.body.appendChild(tmp);
+    let url = window.URL.createObjectURL(blob);
+    tmp.href = url;
+    tmp.download = filename;
+    tmp.click();
+    //document.body.removeChild(tmp);
+    //setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+}
+
+function float32_to_int16(f32){
+    function convert(n) {
+        let v = n < 0 ? n * 32768 : n * 32767;       // convert in range [-32768, 32767]
+        return Math.max(-32768, Math.min(32768, v)); // clamp
+    }
+
+    let retArr = new Int16Array(f32.length);
+
+    for (let i=0; i < f32.length; i++)
+        retArr[i] = convert(f32[i]);
+    return retArr;
+}
+
 let bufferToMp3 = (buff) => {
     return new Promise(async (resolve, reject) => {
         let mp3encoder = new lamejs.Mp3Encoder(2, 44100, 128);
         let mp3Data = [];
 
-        let left = buff.getChannelData(0); 
-        let right = buff.getChannelData(1);
+        let left = float32_to_int16(buff.getChannelData(0)); 
+        let right = float32_to_int16(buff.getChannelData(1));
         let sampleBlockSize = 1152; //can be anything but make it a multiple of 576 to make encoders life easier
 
         for (let i = 0; i < buff.length; i += sampleBlockSize) {
@@ -17,22 +42,21 @@ let bufferToMp3 = (buff) => {
                 mp3Data.push(mp3buf);
             }
         }
-        var mp3buf = mp3encoder.flush();   //finish writing mp3
+        let mp3buf = mp3encoder.flush();   //finish writing mp3
 
         if (mp3buf.length > 0) {
             mp3Data.push(mp3buf);
         }
 
-        let blob = new Blob(mp3Data);
-        resolve(blob.toString('base64'));
+        let blob = new Blob(mp3Data),
+            arrbuff = await blob.arrayBuffer(),
+            ret_buff = Buffer.from(arrbuff);
+
+       //downloadBlob('new.mp3', blob);
+
+        resolve(ret_buff.toString('base64'));
     });
 };
-
-let mp3ToBuffer = (buff) => {
-    return new Promise((resolve, reject) => {
-        return
-    });
-}
 
 function debugWav(view){
     console.log("RIFF - dec:%s, hex:%s", view.getUint32(0, true).toString(), view.getUint32(0, true).toString(16));
@@ -176,4 +200,4 @@ function bufferToWav(buff, debug=false) {
     return new Blob([newBuff], {type: "audio/wav"});
 }
 
-export {bufferToWav, bufferToMp3, wavToBuffer, mp3ToBuffer}
+export {bufferToWav, bufferToMp3, wavToBuffer, downloadBlob}

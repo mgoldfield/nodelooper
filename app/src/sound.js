@@ -1,5 +1,5 @@
 import { Communication } from './communicate.js';
-import { bufferToWav, wavToBuffer, mp3ToBuffer } from './format_tools.js';
+import { bufferToWav, wavToBuffer, downloadBlob } from './format_tools.js';
 
 // toDo: break up sound.js into more files
 // toDo: make a parent class for loop and loop bunch which 
@@ -266,7 +266,7 @@ class AudioLoopBunch{
         reader.readAsArrayBuffer(f);
     }
 
-    loadLoopFromDynamoData = (l, onLoad) => {    
+    loadLoopFromDynamoData = async (l, onLoad) => {    
         function b64toFloatArr(to_encode){
             let buf = Buffer.from(to_encode, 'base64');
             let f32a = new Float32Array(buf.buffer); 
@@ -286,8 +286,9 @@ class AudioLoopBunch{
             newbuff.copyToChannel(b64toFloatArr(audio.R), 1);
             newloop.buffer = newbuff;          
         }else if (audio.format === 'mp3'){
-            let buf = Buffer.from(audio.data, 'base64');
-            newloop.buffer = mp3ToBuffer(buf);
+            let tmpbuf = Buffer.from(audio.data, 'base64');
+            let ac = new AudioContext();
+            newloop.buffer = await ac.decodeAudioData(tmpbuf.buffer);
         }else{
             throw Error('unknown audio type: ' + audio.format);
         }
@@ -601,21 +602,6 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
         this.source.stop();
         this.source.disconnect();
     }
-}
-
-
-//// helper methods ///// 
-
-function downloadBlob(filename, blob){
-    let tmp = document.createElement('a');
-    tmp.style = "display: none";
-    document.body.appendChild(tmp);
-    let url = window.URL.createObjectURL(blob);
-    tmp.href = url;
-    tmp.download = filename;
-    tmp.click();
-    //document.body.removeChild(tmp);
-    //setTimeout(() => window.URL.revokeObjectURL(url), 1000);
 }
 
 
