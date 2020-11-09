@@ -133,7 +133,7 @@ class AudioLoopBunch{
             (newBuff) => {
                 this.recordingLoop.setBuffer(newBuff);
                 this.addLoop(this.recordingLoop);
-                console.log(newBuff);
+                //console.log(newBuff);
             }
         );
     }

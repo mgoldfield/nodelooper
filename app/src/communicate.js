@@ -142,13 +142,11 @@ class Communication {
         };
 
         if (config.lossyCompress) {
-            console.log("compressing...")
             postdata.audio = {
                 format:'mp3',
                 data: await bufferToMp3(loop.buffer),
                 length: loop.buffer.length
             }
-            console.log(postdata);
         }else{
             postdata.audio = {
                 format:'raw',
@@ -159,10 +157,7 @@ class Communication {
 
         postdata = JSON.stringify(postdata);
 
-        this.postDataToApi(postdata, 'addTrack')
-        .then((d) => {
-            console.log("got data %s", d);
-        }).catch((e) => {throw(e)});
+        this.postDataToApi(postdata, 'addTrack').catch((e) => {throw(e)});
     }
 }
 
