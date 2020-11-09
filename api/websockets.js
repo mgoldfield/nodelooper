@@ -44,13 +44,13 @@ class WebSocketServer {
                 }
 
                 this.wss.handleUpgrade(request, socket, head, (ws) => {
-                    this.projects.get(client.project_id).sockets.set(client.user_id, ws);
+                    this.projects.get(client.project_id).sockets.set(client.user_id, {'socket':ws, 'lastUse':Date.now()});
                     this.wss.emit('connection', ws, request, client);
                 });
             });
         });
 
-        setInterval(this.garbage_collection, 3600000); // garbage collect every hour - 3600000 is 1 hr in ms
+        setInterval(this.garbage_collection, config.websockets.timeout); 
     }
 
     populateProjects() {
@@ -113,15 +113,25 @@ class WebSocketServer {
 
         this.projects.get(project_id).sockets.forEach((value, key, map) => {
             if (key !== user_id)
-                value.send(msg.makeMsg());
+                value.socket.send(msg.makeMsg());
+                value.lastUse = Date.now();
+
         });
     }
 
     garbage_collection = () => {
+        console.log("garbage collecting...");
         this.projects.forEach((value, key, map) => {
             if (parseInt(value.expires) * 1000 < Date.now()){
-                value.sockets.forEach((v, k, m) => v.terminate());
-                map.delete(key);
+                value.sockets.forEach((v, k, m) => v.socket.terminate());
+                map.delete(key); // delete project if expired
+            }else{
+                value.sockets.forEach((v, k, m) => {
+                    if (Date.now() - v.lastUse > config.websockets.timeout){
+                        v.socket.terminate();
+                        m.delete(k); // delete socket if timed out, but leave project
+                    }
+                })
             }
         })
     }
