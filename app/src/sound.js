@@ -283,15 +283,16 @@ class AudioLoopBunch{
 
         if (audio.format === 'raw'){
             newbuff.copyToChannel(b64toFloatArr(audio.L), 0);
-            newbuff.copyToChannel(b64toFloatArr(audio.R), 1);
-            newloop.buffer = newbuff;          
+            newbuff.copyToChannel(b64toFloatArr(audio.R), 1);          
         }else if (audio.format === 'mp3'){
-            let tmpbuf = Buffer.from(audio.data, 'base64');
-            let ac = new AudioContext();
-            newloop.buffer = await ac.decodeAudioData(tmpbuf.buffer);
+            let tmpbuf = Buffer.from(audio.data, 'base64'),
+                tmpAudioBuf = await this.getAudioContext().decodeAudioData(tmpbuf.buffer);
+            newbuff.copyToChannel(tmpAudioBuf.getChannelData(0), 0); // trims to correct length
+            newbuff.copyToChannel(tmpAudioBuf.getChannelData(1), 1);
         }else{
             throw Error('unknown audio type: ' + audio.format);
         }
+        newloop.buffer = newbuff;
         this.addLoop(newloop, false);
         onLoad(newloop);                  
     }
