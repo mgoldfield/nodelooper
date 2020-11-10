@@ -145,7 +145,6 @@ class Communication {
             postdata.audio = {
                 format:'mp3',
                 data: await bufferToMp3(loop.buffer),
-                length: loop.buffer.length
             }
         }else{
             postdata.audio = {
