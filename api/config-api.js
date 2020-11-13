@@ -4,9 +4,13 @@ let config = {
 		socket_ids: 'msg-groups',
 		backoff_tries: 5,
 	},
+	aws:{
+		region: 'us-east-1',
+		role: 'arn:aws:iam::101444218054:instance-profile/loopmagic-server',
+	},
 	env: 'DEV',
 	base_loop_url: 'localhost:3000',
-	base_api_url: 'localhost:3001',
+	base_api_url: 'localhost:3000/api',
 	newLoopIdentifier: 'xxxLOOPxxx',
 	s3: {
 		audioBucket: 'loop-audio',

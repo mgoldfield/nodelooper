@@ -31,6 +31,7 @@ class Communication {
 
                     //the whole response has been received, so we just print it out here
                     response.on('end', () => {
+                        console.log(json);
                         let loop_response = JSON.parse(json);
                         // toDo: fail more gracefully here if the loop doesn't exist
                         if (!loop_response) {
@@ -44,7 +45,7 @@ class Communication {
                         resolve(loop_response.data);
                     });
                 }
-                http.get('http://' + config.api.url + ':' + config.api.port + '/loop?ProjectID=' + this.project_id, callback).end();
+                http.get('http://' + config.api.url + ':' + config.api.port + config.api.path + '/loop?ProjectID=' + this.project_id, callback).end();
             }catch(e){
                 reject(e);
             }
@@ -83,7 +84,7 @@ class Communication {
             let options = {
                 hostname: config.api.url,
                 port: config.api.port,
-                path: '/' + endpoint,
+                path: config.api.path + '/' + endpoint,
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
