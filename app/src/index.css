@@ -212,7 +212,7 @@ body {
 
 .unavail {
     text-decoration: line-through;
-    opacity: 50%;
+    opacity: .5;
 }
 
 .flashing {
