@@ -1,7 +1,8 @@
 FROM node:12
 
 # build module layer
-COPY ./package*.json ./
+COPY ./package.json ./
+COPY ./package-lock.json ./
 RUN npm ci
 COPY . .
 
