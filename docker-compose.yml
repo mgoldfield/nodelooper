@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  api:
+    image: api
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY    
+    ports:
+      - "3001:3001"
+      - "8080:8080"
+  app:
+    image: app
+    ports: 
+      - "3000:80"

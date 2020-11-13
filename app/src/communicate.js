@@ -60,13 +60,11 @@ class Communication {
             body = parts[1];
 
         if (headers === 'C'){ // chat
-            console.log(msg);
+            //console.log(msg);
             this.handleRcvdChat(body);
         }else if (headers === 'N'){ // new loop
-            console.log(msg);
+            //console.log(msg);
             this.handleRcvdLoop(body);
-        }else if (headers === 'R'){ // rename loop 
-            console.log(msg);
         }else{
             throw Error("malformed message: " + msg);
         }

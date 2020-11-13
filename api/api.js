@@ -19,9 +19,7 @@ app.listen(3001);
 
 //toDo: delete this test, put in real tests :P
 app.get('/test', (req, res) => {
-    da.getProject('testproject')
-    .then((data) => res.send(data))
-    .catch((err) => {console.log(stack); throw err;});
+    res.send("boop");
 });
 
 app.get('/newsesh', (req, res) => {
