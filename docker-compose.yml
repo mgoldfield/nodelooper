@@ -11,4 +11,4 @@ services:
   app:
     build: ./app
     ports: 
-      - "3000:80"
+      - "80:80"  # change this to __port__:80 to change the port on local machine

@@ -2,10 +2,10 @@ let config = {
     env: 'DEV',
     api:{
         url: 'localhost',
-        port: 3000,
-        path: '/api'
+        port: 80,
+        path: ''
     },
-    ws_url:'ws://localhost:3000/ws',
+    ws_url:'ws://localhost/ws',
     newLoopIdentifier:'xxxLOOPxxx',
     msgDivider:'|||',
     audioBucket: 'loop-audio',
