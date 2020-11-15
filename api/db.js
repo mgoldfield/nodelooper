@@ -7,27 +7,10 @@ const require = createRequire(import.meta.url);
 const { Readable } = require("stream")
 const AWS = require('aws-sdk');
 AWS.config.update({region: config.aws.region});
-
-var sts = new AWS.STS();
-console.log('attempting to assume aws role...')
-sts.assumeRole({
-    RoleArn: config.aws.role,
-    RoleSessionName: 'awssdk'
-}, function(err, data) {
-    if (err) { // an error occurred
-        console.log('Cannot assume role, attempting to get local credentials');
-        AWS.config.getCredentials((err) => {
-            if (err) console.log(err.stack);
-            else {
-                console.log("Access key:", AWS.config.credentials.accessKeyId);
-            }
-        });
-    } else { // successful response
-        AWS.config.update({
-            accessKeyId: data.Credentials.AccessKeyId,
-            secretAccessKey: data.Credentials.SecretAccessKey,
-            sessionToken: data.Credentials.SessionToken
-        });
+AWS.config.getCredentials((err) => {
+    if (err) console.log(err.stack);
+    else {
+        console.log("Access key:", AWS.config.credentials.accessKeyId);
     }
 });
 
