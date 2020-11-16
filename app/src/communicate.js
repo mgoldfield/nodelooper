@@ -2,6 +2,7 @@ import config from './config-app.js'
 import {bufferToMp3} from './format_tools.js'
 
 const http = require('http');
+const https = require('https');
 
 class Communication {
     msgDivider = '|||';
@@ -11,6 +12,14 @@ class Communication {
     constructor(project_id, looper) {
         this.looper = looper;
         this.project_id = project_id;
+    }
+
+    get this.getHttp(){
+        if (config.env === 'PROD'){
+            return https;
+        }else{
+            return http;
+        }
     }
 
     initProject() {
@@ -45,7 +54,7 @@ class Communication {
                         resolve(loop_response.data);
                     });
                 }
-                http.get('http://' + config.api.url + ':' + config.api.port + config.api.path + '/loop?ProjectID=' + this.project_id, callback).end();
+                this.getHttp.get(config.api.url + ':' + config.api.port + config.api.path + '/loop?ProjectID=' + this.project_id, callback).end();
             }catch(e){
                 reject(e);
             }
@@ -91,7 +100,7 @@ class Communication {
                 'Content-Length': data.length
                 }
             };
-            let req = http.request(options, res => {
+            let req = this.getHttp.request(options, res => {
                 console.log(`statusCode: ${res.statusCode}`);
                 let response_data = '';
                 res.on('data', d => {
