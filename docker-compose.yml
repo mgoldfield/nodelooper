@@ -13,3 +13,6 @@ services:
     ports: 
       - "80:80"  # change this to __port__:80 to change the port on local machine
       - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/lib/letsencrypt:/var/lib/letsencrypt
