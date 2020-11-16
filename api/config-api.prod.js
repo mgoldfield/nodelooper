@@ -8,8 +8,8 @@ let config = {
 		region: 'us-east-1',
 		role: 'arn:aws:iam::101444218054:instance-profile/loopmagic-server',
 	},
-	env: 'DEV',
-	base_loop_url: '/project',
+	env: 'PROD',
+	base_loop_url: 'loopmagic.live/project',
 	base_api_url: 'loopmagic.live',
 	newLoopIdentifier: 'xxxLOOPxxx',
 	s3: {
