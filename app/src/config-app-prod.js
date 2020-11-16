@@ -2,7 +2,7 @@ let config = {
     env: 'PROD',
     api:{
         url: 'loopmagic.live',
-        port: 80,
+        port: 443,
         path: ''
     },
     ws_url:'ws://loopmagic.live/ws',
