@@ -5,7 +5,7 @@ let config = {
         port: 443,
         path: ''
     },
-    ws_url:'ws://loopmagic.live/ws',
+    ws_url:'wss://loopmagic.live/ws',
     newLoopIdentifier:'xxxLOOPxxx',
     msgDivider:'|||',
     audioBucket: 'loop-audio',
