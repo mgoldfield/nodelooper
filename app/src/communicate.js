@@ -14,7 +14,7 @@ class Communication {
         this.project_id = project_id;
     }
 
-    get this.getHttp(){
+    get getHttp(){
         if (config.env === 'PROD'){
             return https;
         }else{
