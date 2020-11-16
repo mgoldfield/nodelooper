@@ -10,7 +10,13 @@ local:
 
 
 ec2:
-launch instance with correct ami role
+launch instance with correct ami role (currently using m5.large)
+open ports 80 and 443
 edit app/config-app.js and api/config-api.js and change "localhost" to the ip of the server (will make this automated eventually...)
-follow this to install docker: https://gist.github.com/npearce/6f3c7826c7499587f00957fee62f8ee9
+install docker and docker compose (use instructions on docker website)
 run `sudo docker-compose up --build -d`
+
+
+for updating certs:
+    install nginx locally and run certbot steps
+    copy everything in /etc/letsencrypt to s3://looper-config/ssl/
