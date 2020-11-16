@@ -54,7 +54,10 @@ class Communication {
                         resolve(loop_response.data);
                     });
                 }
-                this.getHttp.get(config.api.url + ':' + config.api.port + config.api.path + '/loop?ProjectID=' + this.project_id, callback).end();
+                let url = ((config.env==='PROD') ? 'https://' : 'http://');
+                url += config.api.url + ':' + config.api.port + config.api.path;
+                url += '/loop?ProjectID=' + this.project_id
+                this.getHttp.get(url, callback).end();
             }catch(e){
                 reject(e);
             }
