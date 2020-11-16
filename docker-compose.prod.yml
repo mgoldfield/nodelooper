@@ -1,0 +1,19 @@
+version: "3.8"
+services:
+  api:
+    build: 
+      context: ./api
+      dockerfile: Dockerfile.prod
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY    
+    expose:
+      - "3001"
+      - "8080"
+  app:
+    build: ./app
+    ports: 
+      - "80:80"  # change this to __port__:80 to change the port on local machine
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
