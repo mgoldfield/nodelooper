@@ -42,6 +42,15 @@ app.get('/', (req, res) =>{
     }).catch((e)=>{throw e});
 });
 
+app.get('/faq', (req, res) =>{
+    getStaticHtml('html/faq.html')
+    .then((page) => {
+        res.type('html');
+        res.send(page.replace('APIURL', config.base_api_url));        
+    }).catch((e)=>{throw e});
+});
+
+
 app.get('/newsesh', (req, res) => {
     da.newProject()
     .then((seshdata) => {
