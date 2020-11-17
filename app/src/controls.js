@@ -229,6 +229,7 @@ class ChatWindow extends React.Component {
     render() {
         return (
             <div className="chatbox">
+                <div className="chatTitle">-- chat --</div>
                 <div className="chatname">
                     <input type='text' className='inputFont'
                         value={this.state.name} onChange={this.updateName}

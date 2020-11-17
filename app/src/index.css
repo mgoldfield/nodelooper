@@ -72,6 +72,16 @@ body {
     justify-content: center;
     align-items: center;
 }
+.chatTitle {
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 13px;
+    font-weight: bold;
+
+}
 
 .chatname {
     margin: 5px;
