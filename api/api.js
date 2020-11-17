@@ -6,10 +6,11 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const url = require('url');
 const express = require('express');
-const cors = require('cors')
 const bodyParser = require('body-parser');
 const fs = require('fs');
-
+let cors = null;
+if (config.env === 'DEV')
+    cors = require('cors');
 const app = express();
 const ws = new WebSocketServer();
 const da = new DataAccess();
@@ -25,6 +26,7 @@ app.get('/test', (req, res) => {
 app.get('/', (req, res) =>{
     fs.readFile('html/front-page.html', 'utf8', function(err, page) {
         if (err) throw err;
+        res.type('html');
         res.send(page.replace('APIURL', config.base_api_url));
     });    
 });

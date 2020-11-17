@@ -18,7 +18,7 @@ if (config.env == 'DEV') AWS.config.logger = console;
 // toDo: add exponential backoff to dynamo requests
 
 
-let expiresFromCurrentTime = () => (Math.round(Date.now() / 1000) + 86400).toString();
+let expiresFromCurrentTime = () => (Math.round(Date.now() / 1000) + 432000).toString();  // 5 days
 
 class DataAccess {
     ddb = new Dynamo();
