@@ -9,14 +9,15 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 let cors = null;
-if (config.env === 'DEV')
+if (config.env === 'DEV'){
     cors = require('cors');
+    app.use(cors()); // toDo: is this needed    
+}
 const app = express();
 const ws = new WebSocketServer();
 const da = new DataAccess();
 
 app.use(bodyParser.json({limit: '500mb'}));
-app.use(cors()); // toDo: is this needed
 app.listen(3001);
 
 app.get('/test', (req, res) => {
