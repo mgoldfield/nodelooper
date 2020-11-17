@@ -18,7 +18,7 @@ body {
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
-    margin-top: 50px;
+    margin-top: 35px;
 }
 
 .mainHeader {
@@ -32,6 +32,7 @@ body {
 .title {
     font-size: 30px;
     font-weight: bold;
+    margin-top: 10px;
 }
 
 .subtitle {
@@ -390,4 +391,30 @@ body {
     margin: 10px;
     width: 550px;
     text-align: center;
+}
+
+.support {
+    margin: 15px;
+    text-align: right;
+    font-family: "Courier New", Courier, monospace;
+    font-weight: bold;   
+    width: 200px; 
+}
+
+.support a {
+    text-decoration: none;
+    color: black;
+}
+
+.backHome {
+    margin: 15px;
+    text-align: left;
+    font-family: "Courier New", Courier, monospace;
+    font-weight: bold;  
+    width: 200px;
+}
+
+.backHome a {
+    text-decoration: none;
+    color:black;
 }

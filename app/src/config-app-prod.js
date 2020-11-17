@@ -5,6 +5,7 @@ let config = {
         port: 443,
         path: ''
     },
+    full_api_url:'https://loopmagic.live/',
     ws_url:'wss://loopmagic.live/ws',
     newLoopIdentifier:'xxxLOOPxxx',
     msgDivider:'|||',

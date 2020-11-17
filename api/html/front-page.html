@@ -33,10 +33,12 @@
       }
 
       .titleBar {
-        margin-top: 100px;
+        margin-top: 75px;
         display: flex;
-        flex-direction: row;
-        justify-content: space-around;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 450px;
+        align-items: center;
       }
 
       .fftext {
@@ -63,7 +65,10 @@
       .newProject {
         border: 1px solid black;
         margin: 10px;
-        padding: 3px;
+        padding-left: 5px;
+        padding-right: 5px;
+        padding-top: 2px;
+        padding-bottom: 2px;
         font-size: 18px;
         display: flex;
         align-items: center;
@@ -102,7 +107,6 @@
   <body>
     <div class="main">
       <div class="titleBar">
-        <div class="faq fftext"><a href="APIURL/faq">f.a.q.</a></div>
         <div class="titleBox">
           <div class="title fftext"><span style="color:#b3ffff">l</span><span style="color:#80ffff">o</span><span style="color:#4dffff">o</span><span style="color:#4dffff">p</span><span style="color:#00e6e6">m</span><span style="color:#00b3b3">a</span><span style="color:#008080">g</span><span style="color:#004d4d">i</span><span style="color:#003333">c</span><span style="color:#001a1a">!</span></div>
           <div class="newProject fftext"><a href="APIURL/newsesh">new project</a></div>
@@ -110,6 +114,7 @@
             requires <a href="https://www.mozilla.org/firefox/download/thanks/">firefox v80+</a>
           </div>
         </div>
+        <div class="faq fftext"><a href="APIURL/faq">f.a.q.</a></div>        
         <div class="supportBox">
           <a href="https://www.patreon.com/mgoldfield">
             <div class="support fftext">support this project</div>

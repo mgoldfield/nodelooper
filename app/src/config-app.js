@@ -5,6 +5,7 @@ let config = {
         port: 80,
         path: ''
     },
+    full_api_url:'http://localhost/',
     ws_url:'ws://localhost/ws',
     newLoopIdentifier:'xxxLOOPxxx',
     msgDivider:'|||',
