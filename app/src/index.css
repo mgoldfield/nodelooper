@@ -21,10 +21,21 @@ body {
     margin-top: 50px;
 }
 
-.title {
+.mainHeader {
     font-family: "Courier New", Courier, monospace;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;       
+}
+
+.title {
     font-size: 30px;
     font-weight: bold;
+}
+
+.subtitle {
+    font-size: 12px;
 }
 
 .instructions {

@@ -283,7 +283,10 @@ class Looper extends React.Component {
             <div className='pageContainer'>
                 <div className='headerContainer'>
                     <span className='backHome'>home</span>
-                    <span className='title'>loop magic!</span>
+                    <div className='mainHeader'>
+                        <span className='title'>loop magic!</span>
+                        <span className='subtitle'>requires <a href="https://www.mozilla.org/firefox/download/thanks/">firefox v80+</a></span>
+                    </div>
                     <span className='support'>support this project</span>
                 </div>
                 <div className='bodyContainer'>
