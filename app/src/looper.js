@@ -304,6 +304,12 @@ class Looper extends React.Component {
                         <div className='loops'>
                             <ul className='loopList'>{this.loops}</ul>
                         </div>
+
+                        <div className='initText'>
+                            <div className='initTextLine'>press "rec" and then "play" to record your first loop</div>
+                            <div className='initTextLine'>share the url of this project with anyone you want to collaborate with, or use it to come back to this project another day.</div>
+                            <div className='initTextLine'>projects persist for 5 days - don't forget to download yours before then!</div>
+                        </div>
                     </div>
                     <div className='userStatusBar'>
                         {/* toDo: add user indicators here */}

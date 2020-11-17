@@ -38,7 +38,7 @@ app.get('/', (req, res) =>{
     getStaticHtml('html/front-page.html')
     .then((page) => {
         res.type('html');
-        res.send(page.replace('APIURL', config.base_api_url));        
+        res.send(page.replace(/APIURL/g, config.base_api_url));        
     }).catch((e)=>{throw e});
 });
 
@@ -46,7 +46,7 @@ app.get('/faq', (req, res) =>{
     getStaticHtml('html/faq.html')
     .then((page) => {
         res.type('html');
-        res.send(page.replace('APIURL', config.base_api_url));        
+        res.send(page.replace(/APIURL/g, config.base_api_url));        
     }).catch((e)=>{throw e});
 });
 

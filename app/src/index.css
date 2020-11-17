@@ -375,3 +375,19 @@ body {
     font-family: "Courier New", Courier, monospace;
 }
 
+.initText {
+    font-size: 12px;
+    font-family: "Courier New", Courier, monospace;
+    display: flex;
+    flex-direction: column;
+    background-color: gainsboro;    
+    justify-content: center;
+    align-items: center;
+    padding-top:40px;
+}
+
+.initTextLine {
+    margin: 10px;
+    width: 550px;
+    text-align: center;
+}
