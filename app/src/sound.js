@@ -546,7 +546,7 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
         this.getAudioContext = getAudioContext;
         this.tempo = 60;
         this.bpm = 4;
-        this.countIn = true;
+        this.countIn = false;
         this.clicking = true;
 
         this.initBuff();
