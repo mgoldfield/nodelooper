@@ -4,18 +4,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { SocketHelpers } from './db.js';
 const require = createRequire(import.meta.url);
 const express = require('express');
-const http = require('http'); // toDo: security - https
+const http = require('http'); 
 const cors = require('cors');
 const WebSocket = require('ws');
 
 
 class WebSocketServer {
 
-    // toDo: garbage collection
-
     projects = new Map();
-    // toDo: repopulate from dynamo on server restart
-
     db = new SocketHelpers();
 
     constructor() {
@@ -94,8 +90,6 @@ class WebSocketServer {
     }
 
     register_user(project_id, user_id=null){
-        // toDo: I think we only need to store projects on the backend
-        // toDo: expire logins after 1 day... user dynamo somehow? 
         if (!this.projects.get(project_id)) 
             throw Error('unknown project: ' + project_id);
 
@@ -134,10 +128,6 @@ class WebSocketServer {
                 })
             }
         })
-    }
-
-    destroy_project(project_id){
-        // toDo
     }
 }
 

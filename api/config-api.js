@@ -9,8 +9,8 @@ let config = {
 		role: 'arn:aws:iam::101444218054:instance-profile/loopmagic-server',
 	},
 	env: 'DEV',
-	base_loop_url: 'localhost/project',
-	base_api_url: 'localhost',
+	base_loop_url: 'http://localhost/project',
+	base_api_url: 'http://localhost:3001',
 	newLoopIdentifier: 'xxxLOOPxxx',
 	s3: {
 		audioBucket: 'loop-audio',

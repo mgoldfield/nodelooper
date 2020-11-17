@@ -8,26 +8,32 @@ const url = require('url');
 const express = require('express');
 const cors = require('cors')
 const bodyParser = require('body-parser');
+const fs = require('fs');
 
 const app = express();
 const ws = new WebSocketServer();
 const da = new DataAccess();
 
 app.use(bodyParser.json({limit: '500mb'}));
-app.use(cors());
+app.use(cors()); // toDo: is this needed
 app.listen(3001);
 
-//toDo: delete this test, put in real tests :P
 app.get('/test', (req, res) => {
     res.send("boop");
 });
 
+app.get('/', (req, res) =>{
+    fs.readFile('html/front-page.html', 'utf8', function(err, page) {
+        if (err) throw err;
+        res.send(page.replace('APIURL', config.base_api_url));
+    });    
+});
+
 app.get('/newsesh', (req, res) => {
-    // toDo: block ddos here, maybe with browser fingerprinting
     da.newProject()
     .then((seshdata) => {
         ws.register_project(seshdata.ProjectID, seshdata.expires);
-        res.redirect('http://' + config.base_loop_url + '?ProjectID=' + seshdata.ProjectID);
+        res.redirect(config.base_loop_url + '?ProjectID=' + seshdata.ProjectID);
     })
     .catch((err) => {throw err});
 });

@@ -8,7 +8,6 @@ class Communication {
     msgDivider = '|||';
     LoopHeaderID = 'xxxLOOPxxx';
 
-    // toDo: https!!!
     constructor(project_id, looper) {
         this.looper = looper;
         this.project_id = project_id;

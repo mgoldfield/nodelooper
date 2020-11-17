@@ -36,8 +36,7 @@ class Looper extends React.Component {
         }
         this.loopBunch.initComms(this.project_id, this)
         .then(this.handleInitLoops)
-        .catch(e => {throw e}); // toDo: throw here when not testing        
-        // functions passed up from children  
+        .catch(e => {throw e});      
         this.finishRecording = () => null;  
     }
 
