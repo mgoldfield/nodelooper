@@ -10,8 +10,9 @@ let config = {
 	},
 	env: 'DEV',
 	base_loop_url: 'http://localhost/project',
-	base_api_url: 'http://localhost:3001',
+	base_api_url: 'http://localhost',
 	newLoopIdentifier: 'xxxLOOPxxx',
+	project_persist: 432000,
 	s3: {
 		audioBucket: 'loop-audio',
 		backoff_tries: 5,

@@ -413,6 +413,7 @@ class AudioLoop {
         this.looping = true;
 
         this.name = null;
+        this.id = null;
 
         this.gainNode = this.getAudioContext().createGain();
         this.updateProgress = null; // set in looper when creating loop progress bar
@@ -425,7 +426,6 @@ class AudioLoop {
     }
 
     setName(name){
-        // toDo: no dupe names!!
         this.name = name;
         //toDo: transmit this to other users
     }

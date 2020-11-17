@@ -8,6 +8,7 @@ import {Button,
     ChatWindow} from './controls.js';
 import AudioLoopBunch from './sound.js';
 import config from './config-app.js'
+import { v4 as uuidv4 } from 'uuid';
 
 
 class Looper extends React.Component {
@@ -66,7 +67,7 @@ class Looper extends React.Component {
             this.addNewLoop(
                 l.LoopID.S,
                 l.LoopID.S,
-                l.LoopID.S, // toDo - id different than name
+                l.metadata.M.name.S,
                 false,
                 loop,
                 () => null);
@@ -132,9 +133,10 @@ class Looper extends React.Component {
             }
         }else{
             let id = this.counter++;
+            let lid = uuidv4();
             this.addNewLoop(
-                id,
-                id,
+                lid,
+                lid,
                 'loop '.concat(id),
                 true, 
                 this.loopBunch.prepareToRecord(),
@@ -194,11 +196,12 @@ class Looper extends React.Component {
 
         document.body.appendChild(uploader);
         uploader.addEventListener('change', (e) => {
-            let id = this.counter++;
+            this.counter++;
+            let lid = uuidv4()
             let onLoad = (loop) =>{
                 this.addNewLoop(
-                    id,
-                    id,
+                    lid,
+                    lid,
                     uploader.files[0].name,
                     false,
                     loop,
@@ -327,9 +330,11 @@ class Loop extends React.Component {
             'recording': props.recording,
             'hasBuffer': !!this.audioLoop.buffer,
             'maxRepeats': this.audioLoop.maxRepeats,
+            'id': props.id,
         }
 
         this.audioLoop.setName(props.name);
+        this.audioLoop.id = props.id;
         
         this.props.handleToggleRecording(() => this.setState({'recording': false}));
     }

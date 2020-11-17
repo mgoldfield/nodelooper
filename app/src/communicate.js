@@ -143,8 +143,9 @@ class Communication {
         let postdata = {
             'ProjectID': this.project_id,
             'userID': this.user,
-            'name': loop.name,
+            'name': loop.id,
             'metadata': {
+                'name': {S:loop.name},
                 'length': {N: loop.buffer.length.toString()},
                 'sampleRate': {N: loop.buffer.sampleRate.toString()},
                 'numChannels': {N: loop.buffer.numberOfChannels.toString()},

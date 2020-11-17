@@ -8,28 +8,38 @@ const url = require('url');
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
+const app = express();
+const ws = new WebSocketServer();
+const da = new DataAccess();
 let cors = null;
 if (config.env === 'DEV'){
     cors = require('cors');
     app.use(cors()); // toDo: is this needed    
 }
-const app = express();
-const ws = new WebSocketServer();
-const da = new DataAccess();
 
 app.use(bodyParser.json({limit: '500mb'}));
 app.listen(3001);
+
+
+function getStaticHtml(filename){
+    return new Promise((resolve, reject) => {
+        fs.readFile(filename, 'utf8', function(err, page) {
+            if (err) reject(err)
+            else resolve(page);
+        });        
+    })
+}
 
 app.get('/test', (req, res) => {
     res.send("boop");
 });
 
 app.get('/', (req, res) =>{
-    fs.readFile('html/front-page.html', 'utf8', function(err, page) {
-        if (err) throw err;
+    getStaticHtml('html/front-page.html')
+    .then((page) => {
         res.type('html');
-        res.send(page.replace('APIURL', config.base_api_url));
-    });    
+        res.send(page.replace('APIURL', config.base_api_url));        
+    }).catch((e)=>{throw e});
 });
 
 app.get('/newsesh', (req, res) => {
@@ -56,7 +66,6 @@ app.get('/loop', (req, res) => {
 });
 
 app.post('/addtrack', (req, res) => {
-    console.log('body: %s', req.body);
     if (req.body.name === config.newLoopIdentifier)
         throw Error('reserved name');
     let pdata = ws.projects.get(req.body.ProjectID);

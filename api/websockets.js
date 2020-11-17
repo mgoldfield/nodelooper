@@ -58,8 +58,7 @@ class WebSocketServer {
         })
     }
 
-    authenticate(request, cont, debug=true) {
-        if (debug) console.log('request: %s \n\n', request, request.headers);
+    authenticate(request, cont) {
         let err = null,
             creds = request.headers['sec-websocket-protocol'];
 
@@ -95,7 +94,8 @@ class WebSocketServer {
 
         if (!user_id){
             user_id = uuidv4();
-            this.db.registerUser(project_id, user_id, this.projects.get(project_id).expires);
+            this.db.registerUser(project_id, user_id, this.projects.get(project_id).expires)
+            .catch((e) => {throw e});
         }
         this.projects.get(project_id).users.push(user_id);       
         return user_id;
