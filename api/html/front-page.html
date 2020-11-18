@@ -30,28 +30,27 @@
       .main {
         display:flex;
         flex-direction: column;
+        font-family: "Courier New", Courier, monospace;        
       }
 
       .titleBar {
-        margin-top: 75px;
+        margin-top: 140px;
+        margin-bottom: 50px;
         display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 450px;
-        align-items: center;
-      }
-
-      .fftext {
-        font-family: "Courier New", Courier, monospace;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: flex-start;
       }
 
       .faq {
+        width: 300px;
         font-weight: bold;
         font-size: 18px;
         margin: 15px;
       }
 
       .titleBox {
+        width: 300px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -97,9 +96,40 @@
       }
 
       .whySupport {
-        font-weight: 12px;
-        width: 400px;
+        font-size: 14px;
+        width: 300px;
       }
+
+      .aotw {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-top: 80px;
+      }
+
+      .aotw_title {
+        font-style: italic;
+        text-decoration: underline;
+      }
+
+      .aotw_body {
+        margin-top: 45px;
+      }
+
+      .aotw_item {
+      }
+
+      .aotw_blurb {
+        font-size: 13px;
+        margin: 10px;
+      }
+
+      .aotw_blurb a {
+        color: black;
+        text-decoration: underline;
+      }
+
     </style>
 
 
@@ -107,24 +137,39 @@
   <body>
     <div class="main">
       <div class="titleBar">
+        <div class="faq fftext"><a href="APIURL/faq">f.a.q.</a></div>                
         <div class="titleBox">
           <div class="title fftext"><span style="color:#b3ffff">l</span><span style="color:#80ffff">o</span><span style="color:#4dffff">o</span><span style="color:#4dffff">p</span><span style="color:#00e6e6">m</span><span style="color:#00b3b3">a</span><span style="color:#008080">g</span><span style="color:#004d4d">i</span><span style="color:#003333">c</span><span style="color:#001a1a">!</span></div>
           <div class="newProject fftext"><a href="APIURL/newsesh">new project</a></div>
           <div class='requires fftext'>
             requires <a href="https://www.mozilla.org/firefox/download/thanks/">firefox v80+</a>
           </div>
+
+          <div class="aotw">
+            <div class="aotw_title">album of the week</div>
+            <div class="aotw_body">
+              <div class="aotw_item">
+                <a href="https://www.sarahjarosz.com/"><img src="https://www.sarahjarosz.com/dist/images/world-on-the-ground.jpg"></a>
+
+                <div class="aotw_blurb">
+                I've been listening to this album for pretty much a month straight.  Sarah Jaroz is a virtuoso on stringed instruments and has a voice that is honest and rich.  Also playing with <a href="https://www.imwithherband.com/">I'm with Her</a>, she stands on the shoulders of the fiddle melting pot fostered by <a href="https://www.brucemolsky.com/">Bruce Molsky</a>, <a href="https://www.alasdairfraser.com/">Alasdiar Fraser</a> and later <a href="https://www.christhile.com/">Chris Thile</a>, while continuing to blaze her own path. <br/>
+                - matt 11/17/2020
+                </div>
+
+                
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="faq fftext"><a href="APIURL/faq">f.a.q.</a></div>        
         <div class="supportBox">
           <a href="https://www.patreon.com/mgoldfield">
             <div class="support fftext">support this project</div>
             <div class="whySupport fftext">
-              Help keep this project online and free! 
+              help keep this project online and free! 
             </div>
           </a>
         </div>
       </div>
-
     </div>
   </body>
 </html>
