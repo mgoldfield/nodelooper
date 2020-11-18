@@ -379,6 +379,12 @@ class Recorder {
         buffer.copyFromChannel(trimmedAudio, 0, trimFromFront);
         trimmedAudio = trimmedAudio.slice(samplesToTrim); // trim from back
 
+        // linear fade in over .2 seconds
+        let fade_len = .2 * buffer.sampleRate;
+        for (let i = 0; i < fade_len; i ++){
+            trimmedAudio[i] = trimmedAudio[i] * i * (1 / fade_len);
+        }
+
         if (this.quantize && (quantUnit > 0)){
             let remainder = targetLength % quantUnit;
 
