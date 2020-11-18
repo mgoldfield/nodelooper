@@ -41,9 +41,3 @@ for updating certs:
 ./api/db.js:        //toDo: retreive from s3
 ./api/db.js:            let s3loc = uuidv4(); // toDo: change this
 
-
-tomorrow: 
-- latency without quant
-- album of the week
-
-

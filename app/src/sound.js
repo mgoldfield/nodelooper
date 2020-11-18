@@ -328,10 +328,10 @@ class Recorder {
                     let stopTime = this.bunch.getAudioContext().currentTime;
                     this.bunch.stop();
                     stream.getTracks().forEach((track) => track.stop());
-                    //console.log("stopTime: %s, playTime: %s, 2xl: %s, total: %s", stopTime, playTime, (2 * this.bunch.getAudioContext().outputLatency), stopTime - playTime - (2 * this.bunch.getAudioContext().outputLatency))
+                    //console.log("stopTime: %s, playTime: %s, ol: %s, total: %s", stopTime, playTime, (this.bunch.getAudioContext().outputLatency), stopTime - playTime - (2 * this.bunch.getAudioContext().outputLatency))
                     let newBuff = await this.handleChunks(audioChunks, 
                         // toDo: examine assumptions about outputLatency
-                        stopTime - playTime - (2 * this.bunch.getAudioContext().outputLatency),
+                        stopTime - playTime,
                         quantUnit);
                     onSuccess(newBuff);
                 }catch(e){
@@ -370,6 +370,8 @@ class Recorder {
         // first we trim to target length from the beginning
         // then we add or trim from the end to quantize if qantized is set to true
 
+        //console.log("targetlength: %s, tl2: %s, ol: %s", targetLength, tl2 - (2 * this.bunch.getAudioContext().outputLatency), this.bunch.getAudioContext().outputLatency);
+        targetLength = targetLength - (2 * this.bunch.getAudioContext().outputLatency);
         let samplesToTrim = buffer.length - Math.round(targetLength * buffer.sampleRate);
         let trimmedAudio = new Float32Array(buffer.length);
         let trimFromFront = 2 * this.bunch.getAudioContext().outputLatency * buffer.sampleRate;
