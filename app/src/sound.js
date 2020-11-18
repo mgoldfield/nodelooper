@@ -332,6 +332,7 @@ class Recorder {
                     let newBuff = await this.handleChunks(audioChunks, 
                         // toDo: examine assumptions about outputLatency
                         stopTime - playTime,
+                        this.bunch.getAudioContext().outputLatency, // something fishy is happening - gotta record this here.
                         quantUnit);
                     onSuccess(newBuff);
                 }catch(e){
@@ -356,27 +357,27 @@ class Recorder {
         });;
     }
 
-    handleChunks = async function(audioChunks, targetLength, quantUnit){
+    handleChunks = async function(audioChunks, targetLength, latency, quantUnit){
         const blob = new Blob(audioChunks, {'type' : 'audio/ogg; codecs=opus'});
         let buffer = await this.bunch.getAudioContext().decodeAudioData(await blob.arrayBuffer());
         if ((buffer.length / buffer.sampleRate) > config.limits.length){
             alert("You have exceeded the maximum length of " + config.limits.length + " seconds per buffer :(");
             throw Error("buffer too long");
         }
-        return this.trimAndQuantizeAudio(buffer, targetLength, quantUnit);
+        return this.trimAndQuantizeAudio(buffer, targetLength, latency, quantUnit);
     };       
 
-    trimAndQuantizeAudio(buffer, targetLength, quantUnit){
+    trimAndQuantizeAudio(buffer, targetLength, latency, quantUnit){
         // first we trim to target length from the beginning
         // then we add or trim from the end to quantize if qantized is set to true
 
-        //console.log("targetlength: %s, tl2: %s, ol: %s", targetLength, tl2 - (2 * this.bunch.getAudioContext().outputLatency), this.bunch.getAudioContext().outputLatency);
-        targetLength = targetLength - (2 * this.bunch.getAudioContext().outputLatency);
+        targetLength = targetLength - (2 * latency);
         let samplesToTrim = buffer.length - Math.round(targetLength * buffer.sampleRate);
         let trimmedAudio = new Float32Array(buffer.length);
-        let trimFromFront = 2 * this.bunch.getAudioContext().outputLatency * buffer.sampleRate;
+        let trimFromFront = 0;
+        trimFromFront = 2 * latency * buffer.sampleRate;
         buffer.copyFromChannel(trimmedAudio, 0, trimFromFront);
-        trimmedAudio = trimmedAudio.slice(samplesToTrim);
+        trimmedAudio = trimmedAudio.slice(samplesToTrim); // trim from back
 
         if (this.quantize && (quantUnit > 0)){
             let remainder = targetLength % quantUnit;
