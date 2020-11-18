@@ -21,6 +21,10 @@ let config = {
 		url: 'localhost',
 		port: 8080,
 		timeout: 900000, // 15 minutes in milliseconds
+	},
+	max:{
+		loops: 50,
+		length: 600, // 10 minutes	
 	}
 }
 

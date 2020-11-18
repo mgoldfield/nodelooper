@@ -88,8 +88,7 @@ class Looper extends React.Component {
             this.loops.pop();
         }else{
             if (this.state.recording){
-                if (this.state.playing){
-                    this.finishRecording();
+                if (this.state.playing && this.finishRecording() < config.max.length){
                     this.setState({'numLoops': this.loops.length});
                 }else{
                     this.loopBunch.unprepareToRecord();
@@ -133,6 +132,10 @@ class Looper extends React.Component {
                 this.finishRecording = null;
             }
         }else{
+            if (this.counter >= config.max.loops){
+                alert("You have exceeded maximum loops per project :(");
+                return;
+            }
             let id = this.counter++;
             let lid = uuidv4();
             this.addNewLoop(
@@ -189,6 +192,11 @@ class Looper extends React.Component {
     };
 
     loadLoop = () => {
+        if (this.counter >= config.max.loops){
+            alert("You have exceeded maximum loops per project :(");
+            return;
+        }
+
         this.setState({'processing': true});
         let uploader = document.createElement('input');
         uploader.type = 'file';
@@ -218,7 +226,7 @@ class Looper extends React.Component {
         console.log(this.loops);
         console.log("deleting %s", id)
         this.setState({'processing': true});
-        this.loops = this.loops.filter(l => l.key != id);
+        this.loops = this.loops.filter(l => l.key !== id);
         this.loopBunch.deleteLoop(id, broadcast);
         this.setState({'processing': false});
     }
@@ -351,7 +359,10 @@ class Loop extends React.Component {
 
         this.audioLoop.setName(props.name);
         this.audioLoop.id = props.id;
-        this.props.handleToggleRecording(() => this.setState({'recording': false}));
+        this.props.handleToggleRecording(() => {
+            this.setState({'recording': false});
+            return this.audioLoop.length;
+        });
         this.deleteLoop = () => this.props.handleDelete(props.id);
     }
 
