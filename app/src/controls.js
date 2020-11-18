@@ -211,12 +211,13 @@ class ChatWindow extends React.Component {
     }
 
     updateChat = (line) => {
-        this.setState({'chat': this.state.chat.concat([<div key={this.state.chat.length}>{line}</div>])});
+        // this is kinda gross...
+        this.setState({'chat': this.state.chat.concat([<div key={this.state.chat.length}><b>{line.split(':')[0]}:</b>{line.split(':')[1]}</div>])});
     }
 
     submitChat = (event) => {
         if(event.keyCode === 13) {
-            let line = this.state.name + ':  ' + this.state.value;
+            let line = this.state.name + ': ' + this.state.value;
             this.updateChat(line);
             this.props.sendChat(line);
             this.setState({'value': ''});
