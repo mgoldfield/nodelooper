@@ -88,6 +88,23 @@ class DataAccess {
         });
     };
 
+    deleteTrack = (pjid, lpid) => {
+        //toDo: retreive from s3
+        return new Promise((resolve, reject) => {
+            let params = {
+                Key: {
+                    ProjectID: { S: pjid },
+                    LoopID: { S: lpid }
+                },
+                TableName: 'looper-development',
+            }; 
+            this.ddb.deleteItem(params, (err, data) => {
+                if (err) reject(err)
+                else resolve('ok');
+            });
+        });
+    };
+
     newProject = () => {
         return new Promise((resolve, reject) => {
             let ProjectID = uuidv4(),
@@ -187,7 +204,7 @@ class Dynamo {
 
     getItem = (params, cont, tries=0) => {
         let backoff_cont = (err, data) => {
-            if (!data && tries < config.dynamodb.backoff_tries){
+            if (err && tries < config.dynamodb.backoff_tries){
                 setTimeout(() => this.getItem(params, cont, tries + 1), (2**tries) * 1000);
             }else{
                 cont(err, data);
@@ -196,6 +213,19 @@ class Dynamo {
 
         this.ddb.getItem(params, backoff_cont);
     };
+
+    deleteItem = (params, cont, tries=0) => {
+        let backoff_cont = (err, data) => {
+            if (err && tries < config.dynamodb.backoff_tries){
+                setTimeout(() => this.deleteItem(params, cont, tries + 1), (2**tries) * 1000);
+            }else{
+                cont(err, data);
+            }
+        }
+
+        this.ddb.deleteItem(params, backoff_cont);
+        // toDo: delete from s3 too... not worrying about this now since it autodeletes
+    };    
 
     scan = (params, cont) => {
         this.ddb.scan(params, cont);

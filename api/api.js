@@ -92,6 +92,21 @@ app.post('/addtrack', (req, res) => {
     res.send('ok');
 });
 
+app.post('/deleteTrack', (req, res) => {
+    if (req.body.name === config.newLoopIdentifier)
+        throw Error('reserved name');
+
+    let pdata = ws.projects.get(req.body.ProjectID);
+    if (!pdata) {throw Error('project not found: ' + req.body.ProjectID)}
+
+    da.deleteTrack(req.body.ProjectID, req.body.LoopID)
+    .then((data) => {
+        ws.broadcast(req.body.ProjectID, req.body.userID, new Message(req.body.LoopID, 'deleteLoop'));
+    })
+    .catch((err) => {throw err});
+    res.send('ok');
+});
+
 app.post('/getTrack', (req, res) => {
     da.getTrack(req.body.ProjectID, req.body.LoopID)
     .then((data) => res.send(data));

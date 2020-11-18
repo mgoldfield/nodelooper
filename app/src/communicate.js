@@ -77,6 +77,8 @@ class Communication {
         }else if (headers === 'N'){ // new loop
             //console.log(msg);
             this.handleRcvdLoop(body);
+        }else if (headers === 'D'){ // delete loop
+            this.looper.deleteLoop(body, false);
         }else{
             throw Error("malformed message: " + msg);
         }
@@ -166,8 +168,15 @@ class Communication {
         }
 
         postdata = JSON.stringify(postdata);
-
         this.postDataToApi(postdata, 'addTrack').catch((e) => {throw(e)});
+    }
+
+    deleteLoop(id) {
+        let postdata = JSON.stringify({
+            ProjectID: this.project_id,
+            LoopID: id,
+        });
+        this.postDataToApi(postdata, 'deleteTrack');      
     }
 }
 

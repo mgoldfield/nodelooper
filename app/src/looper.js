@@ -57,6 +57,7 @@ class Looper extends React.Component {
             recording={recording}
             audioLoop={audioloop}
             handleToggleRecording={handleToggleRecording}
+            handleDelete={this.deleteLoop}
         />);
         this.loops.push(newloop);        
     }
@@ -213,6 +214,15 @@ class Looper extends React.Component {
         uploader.click();
     };
 
+    deleteLoop = (id, broadcast=true) => {
+        console.log(this.loops);
+        console.log("deleting %s", id)
+        this.setState({'processing': true});
+        this.loops = this.loops.filter(l => l.key != id);
+        this.loopBunch.deleteLoop(id, broadcast);
+        this.setState({'processing': false});
+    }
+
     renderMainBar(){
         return (
             <div className='mainMasterLoop'> 
@@ -341,8 +351,8 @@ class Loop extends React.Component {
 
         this.audioLoop.setName(props.name);
         this.audioLoop.id = props.id;
-        
         this.props.handleToggleRecording(() => this.setState({'recording': false}));
+        this.deleteLoop = () => this.props.handleDelete(props.id);
     }
 
     handleMute = () => {
@@ -395,6 +405,10 @@ class Loop extends React.Component {
                     toggled={this.state.muted} avail={this.state.hasBuffer}/>
                 <Button name='loop' onClick={this.download} 
                     toggled={this.state.looping} avail={this.state.hasBuffer && !this.state.playing}/>
+
+                <Button name='delete' onClick={this.deleteLoop} 
+                    toggled={false} avail={!this.state.recording}/>                    
+
                 <Button name="down load" onClick={this.download}
                     toggled={false} avail={this.state.hasBuffer} />
                 <span className='maxReps'>

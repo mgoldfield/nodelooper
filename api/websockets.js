@@ -136,6 +136,7 @@ class Message {
         chat: 'C',
         newLoop: 'N',
         renameLoop: 'R',
+        deleteLoop: 'D',
     };
 
     divider = '|||';

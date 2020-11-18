@@ -296,6 +296,11 @@ class AudioLoopBunch{
         this.addLoop(newloop, false);
         onLoad(newloop);                  
     }
+
+    deleteLoop(id, broadcast){
+        this.audioLoops = this.audioLoops.filter(l => l.id !== id)
+        if (broadcast) this.comms.deleteLoop(id);
+    }
 }
 
 
