@@ -94,7 +94,7 @@ body {
     height: 300px;
     overflow: scroll;
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     background-color: white;
 }
 

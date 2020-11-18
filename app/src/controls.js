@@ -212,7 +212,7 @@ class ChatWindow extends React.Component {
 
     updateChat = (line) => {
         // this is kinda gross...
-        this.setState({'chat': this.state.chat.concat([<div key={this.state.chat.length}><b>{line.split(':')[0]}:</b>{line.split(':')[1]}</div>])});
+        this.setState({'chat': [<div key={this.state.chat.length}><b>{line.split(':')[0]}:</b>{line.split(':')[1]}</div>].concat(this.state.chat)});
     }
 
     submitChat = (event) => {
