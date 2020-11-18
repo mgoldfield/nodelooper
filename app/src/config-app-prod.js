@@ -11,6 +11,10 @@ let config = {
     msgDivider:'|||',
     audioBucket: 'loop-audio',
     lossyCompress: true,
+    limits:{
+        loops: 50,
+        length: 600, // 10 minutes  
+    },    
 };
 
 export default config;

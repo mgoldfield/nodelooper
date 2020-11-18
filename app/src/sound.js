@@ -1,5 +1,6 @@
 import { Communication } from './communicate.js';
 import { bufferToWav, wavToBuffer, downloadBlob } from './format_tools.js';
+import config from './config-app.js'
 
 // toDo: break up sound.js into more files
 // toDo: make a parent class for loop and loop bunch which 
@@ -358,6 +359,10 @@ class Recorder {
     handleChunks = async function(audioChunks, targetLength, quantUnit){
         const blob = new Blob(audioChunks, {'type' : 'audio/ogg; codecs=opus'});
         let buffer = await this.bunch.getAudioContext().decodeAudioData(await blob.arrayBuffer());
+        if ((buffer.length / buffer.sampleRate) > config.limits.length){
+            alert("You have exceeded the maximum length of " + config.limits.length + " seconds per buffer :(");
+            throw Error("buffer too long");
+        }
         return this.trimAndQuantizeAudio(buffer, targetLength, quantUnit);
     };       
 

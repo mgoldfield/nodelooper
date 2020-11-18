@@ -88,7 +88,8 @@ class Looper extends React.Component {
             this.loops.pop();
         }else{
             if (this.state.recording){
-                if (this.state.playing && this.finishRecording() < config.max.length){
+                if (this.state.playing){
+                    this.finishRecording();
                     this.setState({'numLoops': this.loops.length});
                 }else{
                     this.loopBunch.unprepareToRecord();
@@ -132,7 +133,7 @@ class Looper extends React.Component {
                 this.finishRecording = null;
             }
         }else{
-            if (this.counter >= config.max.loops){
+            if (this.counter >= config.limits.loops){
                 alert("You have exceeded maximum loops per project :(");
                 return;
             }
@@ -192,7 +193,7 @@ class Looper extends React.Component {
     };
 
     loadLoop = () => {
-        if (this.counter >= config.max.loops){
+        if (this.counter >= config.limits.loops){
             alert("You have exceeded maximum loops per project :(");
             return;
         }
@@ -359,10 +360,7 @@ class Loop extends React.Component {
 
         this.audioLoop.setName(props.name);
         this.audioLoop.id = props.id;
-        this.props.handleToggleRecording(() => {
-            this.setState({'recording': false});
-            return this.audioLoop.length;
-        });
+        this.props.handleToggleRecording(() => this.setState({'recording': false}));
         this.deleteLoop = () => this.props.handleDelete(props.id);
     }
 
