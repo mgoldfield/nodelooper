@@ -65,7 +65,19 @@ class Communication {
         });
     }
 
+    handlePing = () => {
+        if (this.last_ping && Date.now() - this.last_ping > 60000){
+            window.location.reload();
+        } 
+        this.last_ping = Date.now();
+    }
+
     handleMsg = (msg) => {
+        if (msg.data === 'ping'){  // for some reason it doesn't fire an event on a 'ping'...?
+            this.handlePing();
+            return;
+        }
+
         let parts = msg.data.split(this.msgDivider);
         if (parts.length !== 2)
             throw Error("malformed message " + parts.toString());

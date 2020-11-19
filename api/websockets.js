@@ -18,7 +18,6 @@ class WebSocketServer {
         this.populateProjects();
 
         this.app = express();
-        this.app.use(cors());
         this.server = this.app.listen(config.websockets.port); 
         this.wss = new WebSocket.Server({ noServer: true });
 
@@ -47,6 +46,7 @@ class WebSocketServer {
         });
 
         setInterval(this.garbage_collection, config.websockets.timeout); 
+        setInterval(this.ping_sockets, 30000); // ping every 30 seconds
     }
 
     populateProjects() {
@@ -130,6 +130,14 @@ class WebSocketServer {
                     }
                 })
             }
+        })
+    };
+
+    ping_sockets = () => {
+        this.projects.forEach((pv, pk, pm) => {
+            pv.sockets.forEach((sv, sk, sm) => {
+                sv.socket.send("ping");
+            })
         })
     }
 }

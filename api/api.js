@@ -11,11 +11,6 @@ const fs = require('fs');
 const app = express();
 const ws = new WebSocketServer();
 const da = new DataAccess();
-let cors = null;
-if (config.env === 'DEV'){
-    cors = require('cors');
-    app.use(cors()); // toDo: is this needed    
-}
 
 app.use(bodyParser.json({limit: '500mb'}));
 app.listen(3001);
