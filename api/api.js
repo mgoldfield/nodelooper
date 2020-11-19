@@ -51,7 +51,7 @@ app.get('/stats', (req, res) =>{
         total_active_projects: ap.length,
         active_projects: ap,
     };
-    res.send(JSON.stringify(stats));
+    res.send(stats);
 })
 
 app.get('/', (req, res) =>{
