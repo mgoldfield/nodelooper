@@ -48,13 +48,14 @@ class DataAccess {
                                 found = true;
                             }else{
                                 // toDo - make this parallel
-                                i.audio = await this.s3.retreiveAudio(i.s3loc.S);
+                                i.audio = await this.s3.retreiveAudio(i.s3loc.S);   
                             }
                         }
+                        let chat = await this.getChat(id);
                         if (!found)
                             reject(Error('Bad loop - no initial loop found...'));
                         else 
-                            resolve(data.Items);
+                            resolve({'loopData': data.Items, 'chat': chat.Items});
                     }catch (err){
                         console.log(err);
                         reject(err);
@@ -154,6 +155,26 @@ class DataAccess {
             });
         });
     };
+
+    getChat = (projectID) => {
+        return new Promise((resolve, reject) => {
+            let params = {
+                TableName: config.dynamodb.chat_table,
+                KeyConditionExpression: 'ProjectID = :pjid',
+                ExpressionAttributeValues: {
+                    ":pjid": {S:projectID},
+                },
+                //ProjectionExpression: 'msg, timestamp',
+            };    
+
+            console.log("getting chat:....");
+            console.log(params);
+            this.ddb.query(params, async (err, data) => {
+                if (err) reject(err)
+                else resolve(data);
+            });       
+        })
+    }
 }
 
 
@@ -189,6 +210,26 @@ class SocketHelpers {
         })
     }
 
+    putChat(projectID, expires, msg) {
+        // store track in s3
+        return new Promise((resolve, reject) => {
+            let params = {
+                TableName: config.dynamodb.chat_table,            
+                Item: {
+                    'ProjectID': {S: projectID},
+                    timestamp: {N: Date.now().toString()},
+                    expires: {N: expires},
+                    'msg': {S: msg},
+                },
+            };
+            this.ddb.putItem(params, (err, data) => {
+                if (err) reject(err)
+                else {
+                    resolve(data);
+                }
+            });
+        });
+    };      
 }
 
 class Dynamo {

@@ -105,6 +105,9 @@ class WebSocketServer {
         if (!this.projects.get(project_id)) 
             throw Error('unknown project: ' + project_id);
 
+        if (msg.type == 'C')
+            this.db.putChat(project_id, this.projects.get(project_id).expires, msg.makeMsg());
+
         this.projects.get(project_id).sockets.forEach((value, key, map) => {
             if (key !== user_id)
                 value.socket.send(msg.makeMsg());

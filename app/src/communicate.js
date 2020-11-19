@@ -39,7 +39,6 @@ class Communication {
 
                     //the whole response has been received, so we just print it out here
                     response.on('end', () => {
-                        console.log(json);
                         let loop_response = JSON.parse(json);
                         // toDo: fail more gracefully here if the loop doesn't exist
                         if (!loop_response) {
@@ -50,7 +49,10 @@ class Communication {
                         this.socket = new WebSocket(config.ws_url, this.project_id + ":" + this.user);
                         this.socket.addEventListener('open', () => console.log("connection open"));
                         this.socket.addEventListener('message', this.handleMsg);
-                        resolve(loop_response.data);
+                        for (const c of loop_response.data.chat){ // toDo: make this less brittle
+                            this.handleRcvdChat(c.msg.S.split(this.msgDivider)[1]);                        
+                        }
+                        resolve(loop_response.data.loopData);
                     });
                 }
                 let url = ((config.env==='PROD') ? 'https://' : 'http://');
@@ -105,7 +107,6 @@ class Communication {
                 }
             };
             let req = this.getHttp.request(options, res => {
-                console.log(`statusCode: ${res.statusCode}`);
                 let response_data = '';
                 res.on('data', d => {
                     response_data += d;
