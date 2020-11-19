@@ -34,6 +34,26 @@ app.get('/test', (req, res) => {
     res.send("boop");
 });
 
+app.get('/stats', (req, res) =>{
+    let ts = 0;
+    ws.projects.forEach((v, k, m) => ts += v.sockets.size);
+
+    let ap = [];
+    ws.projects.forEach((v, k, m) => {
+        if (v.sockets.size > 0){
+            ap.push(k);
+        }
+    });
+
+    let stats = {
+        total_projects: ws.projects.size,
+        total_active_sockets: ts, 
+        total_active_projects: ap.length,
+        active_projects: ap,
+    };
+    res.send(JSON.stringify(stats));
+})
+
 app.get('/', (req, res) =>{
     getStaticHtml('html/front-page.html')
     .then((page) => {
