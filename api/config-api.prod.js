@@ -3,6 +3,7 @@ let config = {
 		looper_table: 'looper-development',
 		socket_ids: 'msg-groups',
 		backoff_tries: 5,
+		chat_table: 'loopmagic-chat',
 	},
 	aws:{
 		region: 'us-east-1',
