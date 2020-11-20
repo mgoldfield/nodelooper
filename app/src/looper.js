@@ -293,6 +293,8 @@ class Looper extends React.Component {
                         updater = {(f) => this.loopBunch.updateProgressBar = f}
                         getVal = {(f) => this.loopBunch.getOffset = f}
                         onChange = {() => null}
+                        secondsPerBeat = {this.loopBunch.clickTrack.secondsPerBeat}
+                        quantize = {this.state.quantize}
                     />
                 </div>                        
             </div>
