@@ -294,6 +294,9 @@ class AudioLoopBunch{
             throw Error('unknown audio type: ' + audio.format);
         }
         newloop.buffer = newbuff;
+        newloop.maxRepeats = parseInt(l.metadata.M.maxRepeats.N);
+        newloop.delayedStart = parseFloat(l.metadata.M.delayedStart.N);
+
         this.addLoop(newloop, false);
         onLoad(newloop);                  
     }
@@ -349,7 +352,7 @@ class Recorder {
             this.mediaRecorder.addEventListener("start", () => {
                 playTime = this.bunch.playLoops(this.bunch.getOffset());                
             });
-            this.mediaRecorder.start(this.chunkSize);
+            this.mediaRecorder.start();
         })
         .catch((error) => {
             console.log(error);
@@ -418,7 +421,6 @@ class Recorder {
 class AudioLoop {
     constructor(getAudioContext){
         this.getAudioContext = getAudioContext;
-        this.chunkSize = 5000
         this.buffer = null;
         this.source = null;
         this.mediaRecorder = null;

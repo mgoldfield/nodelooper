@@ -41,6 +41,7 @@ class Communication {
                     response.on('end', () => {
                         let loop_response = JSON.parse(json);
                         // toDo: fail more gracefully here if the loop doesn't exist
+
                         if (!loop_response) {
                             reject(Error('loop does not exist'));
                             return;
@@ -119,6 +120,10 @@ class Communication {
                 }
             };
             let req = this.getHttp.request(options, res => {
+                if (res.statusCode != 200){
+                    console.log("post data status code: %s", res.statusCode);
+                    reject("bad status code from api");
+                }
                 let response_data = '';
                 res.on('data', d => {
                     response_data += d;
@@ -164,6 +169,8 @@ class Communication {
                 'length': {N: loop.buffer.length.toString()},
                 'sampleRate': {N: loop.buffer.sampleRate.toString()},
                 'numChannels': {N: loop.buffer.numberOfChannels.toString()},
+                'maxRepeats': {N: loop.maxRepeats.toString()},
+                'delayedStart': {N: loop.delayedStart.toString()},
             },
         };
 
