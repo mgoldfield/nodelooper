@@ -229,7 +229,27 @@ class SocketHelpers {
                 }
             });
         });
-    };      
+    };
+
+    updateMetadata(data){
+        return new Promise((resolve, reject) => {
+            let params = {
+                TableName: config.dynamodb.looper_table,
+                Key: {
+                    ProjectID: {S: data.ProjectID},
+                    LoopID: {S: data.LoopID},
+                },
+                UpdateExpression: "set metadata = :m",
+                ExpressionAttributeValues: {
+                    ":m": {M: data.metadata}
+                }
+            }
+            this.ddb.updateItem(params, (err, data) => {
+                if (err) reject(err)
+                else resolve(data)
+            })
+        })
+    }
 }
 
 class Dynamo {
@@ -243,6 +263,8 @@ class Dynamo {
         this.ddb.query(params, cont);
     };
 
+
+    // toDo: standardize/modularize exponential backoff
     getItem = (params, cont, tries=0) => {
         let backoff_cont = (err, data) => {
             if (err && tries < config.dynamodb.backoff_tries){
@@ -271,6 +293,19 @@ class Dynamo {
     scan = (params, cont) => {
         this.ddb.scan(params, cont);
     }
+
+    updateItem = (params, cont, tries=0) => {
+        let backoff_cont = (err, data) => {
+            if (err && tries < config.dynamodb.backoff_tries){
+                console.log(err);
+                setTimeout(() => this.updateItem(params, cont, tries + 1), (2**tries) * 1000);
+            }else{
+                cont(err, data);
+            }
+        }
+
+        this.ddb.updateItem(params, backoff_cont);
+    };  
 }
 
 class S3 {

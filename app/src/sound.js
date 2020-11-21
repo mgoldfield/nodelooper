@@ -105,7 +105,7 @@ class AudioLoopBunch{
 
 
     prepareToRecord(){
-        this.recordingLoop = new AudioLoop(this.getAudioContext);
+        this.recordingLoop = new AudioLoop(this.getAudioContext, this.comms);
         return this.recordingLoop;
     }
 
@@ -240,7 +240,7 @@ class AudioLoopBunch{
     }
 
     addBuff(buff, cb){
-        let loop = new AudioLoop(this.getAudioContext);
+        let loop = new AudioLoop(this.getAudioContext, this.comms);
         loop.buffer = buff;
         this.addLoop(loop);
         cb(loop);
@@ -267,20 +267,18 @@ class AudioLoopBunch{
         reader.readAsArrayBuffer(f);
     }
 
-    loadLoopFromDynamoData = async (l, onLoad) => {    
+    loadLoopFromDynamoData = async (l, onLoad) => {  
         function b64toFloatArr(to_encode){
             let buf = Buffer.from(to_encode, 'base64');
             let f32a = new Float32Array(buf.buffer); 
             return f32a;
         }
-
         let audio = JSON.parse(l.audio),
-            newloop = new AudioLoop(this.getAudioContext),
+            newloop = new AudioLoop(this.getAudioContext, this.comms),
             newbuff = this.getAudioContext().createBuffer(
                 parseInt(l.metadata.M.numChannels.N),
                 parseInt(l.metadata.M.length.N),
                 parseInt(l.metadata.M.sampleRate.N));
-        newloop.name = l.LoopID.S;
 
         if (audio.format === 'raw'){
             newbuff.copyToChannel(b64toFloatArr(audio.L), 0);
@@ -294,8 +292,7 @@ class AudioLoopBunch{
             throw Error('unknown audio type: ' + audio.format);
         }
         newloop.buffer = newbuff;
-        newloop.maxRepeats = parseInt(l.metadata.M.maxRepeats.N);
-        newloop.delayedStart = parseFloat(l.metadata.M.delayedStart.N);
+        newloop.updateMetadata(l.metadata.M);
 
         this.addLoop(newloop, false);
         onLoad(newloop);                  
@@ -304,6 +301,15 @@ class AudioLoopBunch{
     deleteLoop(id, broadcast){
         this.audioLoops = this.audioLoops.filter(l => l.id !== id)
         if (broadcast) this.comms.deleteLoop(id);
+    }
+
+    updateMetadata(data){
+        for (const l of this.audioLoops){
+            if (l.id === data.LoopID){
+                l.updateMetadata(data.metadata);
+                break;
+            }
+        }
     }
 }
 
@@ -419,8 +425,9 @@ class Recorder {
 
 
 class AudioLoop {
-    constructor(getAudioContext){
+    constructor(getAudioContext, comms){
         this.getAudioContext = getAudioContext;
+        this.comms = comms;
         this.buffer = null;
         this.source = null;
         this.mediaRecorder = null;
@@ -439,11 +446,55 @@ class AudioLoop {
         this.gainNode = this.getAudioContext().createGain();
         this.updateProgress = null; // set in looper when creating loop progress bar
 
-        this.redraw = () => null;
+        this.redraw = null;
     }
 
     get length(){
         return this.buffer.length / this.buffer.sampleRate;
+    }
+
+    getMetadata() {
+        return {
+            maxRepeats: {N:this.maxRepeats.toString()},
+            delayedStart: {N: this.delayedStart.toString()},
+            muted: {BOOL:this.muted},
+            looping: {BOOL: this.looping},
+            name: {S: this.name},
+            gain: {N: (this.muted ? this.formerGain : this.gainNode.gain.value).toString()},
+            length: {N: this.buffer.length.toString()},
+            sampleRate: {N: this.buffer.sampleRate.toString()},
+            numChannels: {N: this.buffer.numberOfChannels.toString()},            
+        };
+    }
+
+    broadcastMetadata = () => {
+        this.comms.broadcastMetadata(this.id, this.getMetadata());
+    }
+
+    updateMetadata(metadata){
+        this.maxRepeats = parseInt(metadata.maxRepeats.N);
+        this.delayedStart = parseFloat(metadata.delayedStart.N);
+        this.muted = metadata.muted.BOOL;
+        this.looping = metadata.looping.BOOL;
+        this.name = metadata.name.S;
+        let gainval = Math.round(parseFloat(metadata.gain.N) * 100) / 100; 
+
+        if (this.muted){
+            this.formerGain = gainval;
+            this.setGain(0.0);
+        }else{
+            this.setGain(gainval)
+        }
+
+        if (this.redraw) {
+            this.redraw({
+                'maxRepeats': this.maxRepeats,
+                'muted': this.muted,
+                'looping': this.looping,
+                'name': this.name,
+                'gain': gainval,
+            });
+        }
     }
 
     setName(name){

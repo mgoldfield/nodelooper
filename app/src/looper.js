@@ -110,7 +110,6 @@ class Looper extends React.Component {
             this.setState({'playing': !this.state.playing});
             if (this.state.recording){
                 this.loopBunch.record(() => { // onEarlyStop
-                    console.log("early stop called");
                     this.handleStop(null, "earlyStop");
                 });
             }else{
@@ -224,8 +223,6 @@ class Looper extends React.Component {
     };
 
     deleteLoop = (id, broadcast=true) => {
-        console.log(this.loops);
-        console.log("deleting %s", id)
         this.setState({'processing': true});
         this.loops = this.loops.filter(l => l.key !== id);
         this.loopBunch.deleteLoop(id, broadcast);
@@ -280,6 +277,7 @@ class Looper extends React.Component {
                         name='tempo' min='30' max='200' 
                         value={this.state.tempo} 
                         onChange={this.handleTempo}
+                        showVal={true}
                     />
                     <Slider 
                         name='master gain' min='0' max='10' 
@@ -372,16 +370,31 @@ class Loop extends React.Component {
             'muted': this.audioLoop.muted,
             'gain': this.audioLoop.gainNode.gain.value,
         });
+        this.audioLoop.broadcastMetadata();
     };
 
     handleLoop = () => {
         this.audioLoop.toggleLoop();
         this.setState({'looping': this.audioLoop.looping});
+        this.audioLoop.broadcastMetadata();
     };
 
     handleGain = (e) => {
+        let onSliderEnd = () => {
+            if (this.gainChanging == this.state.gain){
+                this.audioLoop.broadcastMetadata();
+                this.gainChanging = null;
+            }else{
+                this.gainChanging = this.state.gain;
+                setTimeout(() => onSliderEnd(), 200);
+            }
+        }
+
         this.setState({'gain': e.target.value});
         this.audioLoop.setGain(e.target.value);
+        if (!this.gainChanging){
+            onSliderEnd();
+        }
     }
 
     download = () => {
@@ -404,7 +417,7 @@ class Loop extends React.Component {
             <div className="loopControls">
                 <div className={(this.state.recording) ? 'recordingDot' : 'dot'} />
                 <input type='text' className='inputFont loopName maxRepsInput'
-                    value={this.state.name} onChange={this.setName}
+                    value={this.state.name} onChange={this.setName} onBlur={this.audioLoop.broadcastMetadata}
                 />
                 <Slider 
                     name='gain' min='0' max='10' 
@@ -414,7 +427,7 @@ class Loop extends React.Component {
                 />  
                 <Button name='mute' onClick={this.handleMute} 
                     toggled={this.state.muted} avail={this.state.hasBuffer}/>
-                <Button name='loop' onClick={this.download} 
+                <Button name='loop' onClick={this.handleLoop} 
                     toggled={this.state.looping} avail={this.state.hasBuffer && !this.state.playing}/>
 
                 <Button name='delete' onClick={this.deleteLoop} 
@@ -426,7 +439,8 @@ class Loop extends React.Component {
                     reps
                     <input type='text' className='maxRepsInput' 
                         value={this.state.maxRepeats === 0 ? "" : this.state.maxRepeats} 
-                        size='3' maxsize='3' onChange={this.handleMaxRepeats}/>
+                        size='3' maxsize='3' onChange={this.handleMaxRepeats}
+                        onBlur={this.audioLoop.broadcastMetadata}/>
                 </span>
             </div>
             <LoopProgress update={(f) => this.audioLoop.updateProgress = f} />

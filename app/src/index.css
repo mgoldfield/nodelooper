@@ -249,7 +249,8 @@ body {
     display: inline-flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;    
+    align-items: center;  
+    padding-bottom: 15px;  
 }
 
 .sliderValBox {

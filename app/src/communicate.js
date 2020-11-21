@@ -94,6 +94,9 @@ class Communication {
             this.handleRcvdLoop(body);
         }else if (headers === 'D'){ // delete loop
             this.looper.deleteLoop(body, false);
+        }else if (headers === 'UM'){// update metadata
+            this.looper.loopBunch.updateMetadata(
+                JSON.parse(body));
         }else{
             throw Error("malformed message: " + msg);
         }
@@ -152,7 +155,8 @@ class Communication {
             this.looper.counter++;
             this.looper.setState({'processing': true});
             this.looper.loadLoopFromDynamoData(l); 
-        });
+            console.log("received new loop");
+        }).catch((e) => {throw e});
     }
 
     sendMsg(msg) {
@@ -164,14 +168,7 @@ class Communication {
             'ProjectID': this.project_id,
             'userID': this.user,
             'name': loop.id,
-            'metadata': {
-                'name': {S:loop.name},
-                'length': {N: loop.buffer.length.toString()},
-                'sampleRate': {N: loop.buffer.sampleRate.toString()},
-                'numChannels': {N: loop.buffer.numberOfChannels.toString()},
-                'maxRepeats': {N: loop.maxRepeats.toString()},
-                'delayedStart': {N: loop.delayedStart.toString()},
-            },
+            'metadata': loop.getMetadata(),
         };
 
         if (config.lossyCompress) {
@@ -189,6 +186,15 @@ class Communication {
 
         postdata = JSON.stringify(postdata);
         this.postDataToApi(postdata, 'addTrack').catch((e) => {throw(e)});
+    }
+
+    broadcastMetadata(id, metadata){
+        let data = JSON.stringify({
+            ProjectID: this.project_id,
+            LoopID: id,
+            metadata: metadata
+        });
+        this.socket.send('UM' + this.msgDivider + data);
     }
 
     deleteLoop(id) {

@@ -24,8 +24,13 @@ class WebSocketServer {
         this.wss.on('connection', (ws, request, client) => {
             ws.on('message', (msg) => {
                 let parsed_msg = new Message(msg);
-                console.log('broadcasting: %s to %s from %s', parsed_msg, client.project_id, client.user_id);
                 this.broadcast(client.project_id, client.user_id, parsed_msg);
+                console.log("got message: ")
+                console.log(msg);
+                if (parsed_msg.type === 'UM'){
+                    console.log('updating metadata in db...')
+                    this.db.updateMetadata(JSON.parse(parsed_msg.msg));
+                }
             });
         });
 
@@ -148,6 +153,7 @@ class Message {
         newLoop: 'N',
         renameLoop: 'R',
         deleteLoop: 'D',
+        updateMetadata: 'UM'
     };
 
     divider = '|||';

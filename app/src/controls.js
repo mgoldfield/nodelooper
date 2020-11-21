@@ -83,14 +83,22 @@ class Slider extends React.Component {
         this.state = {'value':this.props.value};
     }
 
-    onChange(event){
-        return;
+    onChange = (e) => {
+        this.setState({'value':e.target.value});
+        this.props.onChange(e)
+    }
+
+    showVal = () => {
+        if (this.props.showVal) 
+            return Math.round(this.state.value * 100) / 100
+        else 
+            return " "
     }
 
     render() {
         return (
             <div className='slider'>
-                <div className='sliderTitle'>{this.props.name}</div>
+                <div className='sliderTitle'>{this.props.name} {this.showVal()}</div>
                 <input 
                     className='sliderInput'
                     type='range' 
@@ -98,12 +106,9 @@ class Slider extends React.Component {
                     max={this.props.max}
                     value={this.state.value}
                     step={(this.props.step) ? this.props.step : 1}
-                    onChange={this.props.onChange}
+                    onChange={this.onChange}
                     onInput={(e) => this.setState({'value':e.target.value})}
                 />
-                <span className='sliderValBox'>
-                    {this.state.value}
-                </span>
             </div>
 
         );
