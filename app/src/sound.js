@@ -455,15 +455,15 @@ class AudioLoop {
 
     getMetadata() {
         return {
-            maxRepeats: {N:this.maxRepeats.toString()},
-            delayedStart: {N: this.delayedStart.toString()},
+            maxRepeats: {N:this.maxRepeats.toString() ?? ""},
+            delayedStart: {N: this.delayedStart.toString() ?? ""},
             muted: {BOOL:this.muted},
             looping: {BOOL: this.looping},
-            name: {S: this.name},
+            name: {S: this.name ?? ""},
             gain: {N: (this.muted ? this.formerGain : this.gainNode.gain.value).toString()},
-            length: {N: this.buffer.length.toString()},
-            sampleRate: {N: this.buffer.sampleRate.toString()},
-            numChannels: {N: this.buffer.numberOfChannels.toString()},            
+            length: {N: this.buffer.length.toString() ?? ""},
+            sampleRate: {N: this.buffer.sampleRate.toString() ?? ""},
+            numChannels: {N: this.buffer.numberOfChannels.toString() ?? ""},            
         };
     }
 

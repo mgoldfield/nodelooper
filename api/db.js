@@ -37,6 +37,7 @@ class DataAccess {
             };
             console.log("querying...");
             this.ddb.query(params, async (err, data) => {
+                console.log(JSON.stringify(data));
                 if(err) {
                     reject(err);
                 }else{
@@ -54,8 +55,9 @@ class DataAccess {
                         let chat = await this.getChat(id);
                         if (!found)
                             reject(Error('Bad loop - no initial loop found...'));
-                        else 
+                        else {
                             resolve({'loopData': data.Items, 'chat': chat.Items});
+                        }
                     }catch (err){
                         console.log(err);
                         reject(err);
