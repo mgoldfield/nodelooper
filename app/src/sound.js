@@ -450,7 +450,9 @@ class AudioLoop {
     }
 
     get length(){
-        return this.buffer.length / this.buffer.sampleRate;
+        if (this.buffer)
+            return this.buffer.length / this.buffer.sampleRate;
+        return 0;
     }
 
     getMetadata() {

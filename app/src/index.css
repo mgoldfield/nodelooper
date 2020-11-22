@@ -385,7 +385,7 @@ body {
     background-color: gainsboro;    
     justify-content: center;
     align-items: center;
-    padding-top:40px;
+    padding-top:20px;
 }
 
 .initTextLine {
@@ -418,4 +418,31 @@ body {
 .backHome a {
     text-decoration: none;
     color:black;
+}
+
+.loadingBox {
+    display: flex;
+    flex-direction: column;
+    background-color: gainsboro;    
+    justify-content: center;
+    align-items: center;    
+    padding-top: 10px;       
+}
+
+.loading {
+    font-family: "Courier New", Courier, monospace;
+    font-weight: bold;
+    font-size: 14px;
+    width: 125px; 
+    text-align: center;
+}
+
+.loadingoff {
+    visibility: hidden;
+}
+
+.loadingon {
+    animation-name: flashRed;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
 }

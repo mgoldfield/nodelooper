@@ -59,6 +59,7 @@ class Looper extends React.Component {
             handleToggleRecording={handleToggleRecording}
             handleDelete={this.deleteLoop}
         />);
+        this.setProgressBarMax(audioloop.length);
         this.loops.push(newloop);        
     }
 
@@ -89,6 +90,7 @@ class Looper extends React.Component {
         }else{
             if (this.state.recording){
                 if (this.state.playing){
+                    this.setState({'processing': true});
                     this.finishRecording();
                     this.setState({'numLoops': this.loops.length});
                 }else{
@@ -229,6 +231,10 @@ class Looper extends React.Component {
         this.setState({'processing': false});
     }
 
+    getLoadingClasses = () => {
+        return 'loading ' + (this.state.processing ? 'loadingon' : 'loadingoff');
+    }
+
     renderMainBar(){
         return (
             <div className='mainMasterLoop'> 
@@ -293,6 +299,7 @@ class Looper extends React.Component {
                         onChange = {() => null}
                         secondsPerBeat = {this.loopBunch.clickTrack.secondsPerBeat}
                         quantize = {this.state.quantize}
+                        setMax = {(f) => this.setProgressBarMax = f}
                     />
                 </div>                        
             </div>
@@ -322,6 +329,10 @@ class Looper extends React.Component {
 
                         <div className='loops'>
                             <ul className='loopList'>{this.loops}</ul>
+                        </div>
+
+                        <div className="loadingBox">
+                            <div className={this.getLoadingClasses()}>...loading...</div>
                         </div>
 
                         <div className='initText'>

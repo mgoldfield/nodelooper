@@ -176,6 +176,7 @@ class Communication {
                 format:'mp3',
                 data: await bufferToMp3(loop.buffer),
             }
+            this.looper.setState({'processing': false});
         }else{
             postdata.audio = {
                 format:'raw',
