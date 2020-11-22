@@ -468,7 +468,8 @@ class AudioLoop {
     }
 
     broadcastMetadata = () => {
-        this.comms.broadcastMetadata(this.id, this.getMetadata());
+        if (this.buffer)
+            this.comms.broadcastMetadata(this.id, this.getMetadata());
     }
 
     updateMetadata(metadata){
