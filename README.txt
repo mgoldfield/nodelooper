@@ -42,8 +42,6 @@ for updating certs:
 
 
 
-wrap chat horiz
-indicagte who recorded each loop
 labels for devices don't populate if perms arent already there
 input mon delay...
 received new loop doesn't do it right - s3 is outpacing it 

@@ -147,12 +147,11 @@ class DataAccess {
                 params.Item['metadata'] = {M: metadata};
             }
 
-            this.ddb.putItem(params, (err, data) => {
+            this.ddb.putItem(params, async (err, data) => {
                 if (err) reject(err)
                 else {
-                    this.s3.storeAudio(s3loc, audio)
-                    .then(() =>resolve())
-                    .catch((err) => reject(err));
+                    await this.s3.storeAudio(s3loc, audio);
+                    resolve();
                 }
             });
         });
