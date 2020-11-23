@@ -32,7 +32,6 @@ for updating certs:
 ./app/src/sound.js:        // toDo: is this working? 
 ./app/src/sound.js:        //toDo: fail gracefully here... catch in looper and display a message
 ./app/src/sound.js:                        // toDo: examine assumptions about outputLatency
-./app/src/sound.js:        // toDo: no dupe names!!
 ./app/src/sound.js:        //toDo: transmit this to other users
 ./app/src/sound.js:        //toDo: is this the right thing to do with outputLatency?
 ./app/src/sound.js:    initBuff(){ //toDo: make a higher pitched click for the count-in
@@ -41,3 +40,10 @@ for updating certs:
 ./api/db.js:        //toDo: retreive from s3
 ./api/db.js:            let s3loc = uuidv4(); // toDo: change this
 
+
+
+wrap chat horiz
+indicagte who recorded each loop
+labels for devices don't populate if perms arent already there
+input mon delay...
+received new loop doesn't do it right - s3 is outpacing it 

@@ -96,6 +96,7 @@ body {
     display: flex;
     flex-direction: column-reverse;
     background-color: white;
+    word-wrap: break-word;
 }
 
 .looper {
