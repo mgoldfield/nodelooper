@@ -68,6 +68,7 @@ class Communication {
 
     handlePing = () => {
         if (this.last_ping && Date.now() - this.last_ping > 60000){
+            alert("Server connection lost :(. Reloading page to regain connection...");
             window.location.reload();
         } 
         this.last_ping = Date.now();
