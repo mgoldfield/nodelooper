@@ -169,21 +169,82 @@ class ProgressBar extends React.Component {
 
 
 class LoopProgress extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         this.state = {
             'progress': 0, // percent
+            'buffer': this.props.audioLoop.buffer,
         };
-
-        this.props.update((p) => this.setState({'progress':p}));
+        this.canvasRef = React.createRef(null);
     }
 
     render() {
         return (
             <div className="loopProgress">
-                <span className="loopProgressBar" style={{flex:this.state.progress}} />
+                <canvas className="loopProgressWaveform" ref={this.canvasRef}></canvas>
+                <span className="loopProgressBar" style={{width: 100*this.state.progress + '%'}} />
             </div>
         );
+    }
+
+    componentDidMount() {
+        const canvas = this.canvasRef.current;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        this.drawWaveform();
+        this.props.audioLoop.onProgress = p => this.setState({progress: p});
+        this.props.audioLoop.onNewBuffer = b => this.setState({buffer: b});
+    }
+
+    componentWillUnmount() {
+        this.props.audioLoop.onProgress = null;
+        this.props.audioLoop.onNewBuffer = null;
+    }
+
+    componentDidUpdate() {
+        this.drawWaveform();
+    }
+
+    drawWaveform() {
+        const buffer = this.state.buffer;
+        if (!buffer) return;
+        if (buffer === this.renderedBuffer) return;
+
+        this.renderedBuffer = buffer;
+
+        const canvas = this.canvasRef.current;
+        const context = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const mid = height / 2;
+        const samples = buffer.getChannelData(0); // TODO stereo
+        const framesPerPoint = Math.max(samples.length / width, 1);
+        const pixelStride = Math.max(width / samples.length, 1);
+        context.clearRect(0, 0, width, height);
+        context.beginPath();
+        context.moveTo(0, mid);
+        let prevY = 0;
+        for (   let x = pixelStride / 2, frame = 0;
+                x < width;
+                x += pixelStride, frame += framesPerPoint) {
+            let min = null, max = null;
+            for (let i = 0; i < framesPerPoint; i++) {
+                const val = samples[Math.round(frame + i)];
+                if (min === null || val < min) min = val;
+                if (max === null || val > max) max = val;
+            }
+            let y;
+            if (min === null) y = max;
+            else if (max === null) y = min;
+            else if (prevY < 0) y = max;
+            else y = min;
+            context.lineTo(x, y*mid + mid);
+            prevY = y;
+        }
+        context.strokeStyle = 'blue';
+        context.lineWidth = 2;
+        context.stroke();
     }
 }
 

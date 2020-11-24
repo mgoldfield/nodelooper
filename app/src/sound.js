@@ -241,7 +241,7 @@ class AudioLoopBunch{
 
     addBuff(buff, cb){
         let loop = new AudioLoop(this.getAudioContext, this.comms);
-        loop.buffer = buff;
+        loop.setBuffer(buff);
         this.addLoop(loop);
         cb(loop);
     }
@@ -291,7 +291,7 @@ class AudioLoopBunch{
         }else{
             throw Error('unknown audio type: ' + audio.format);
         }
-        newloop.buffer = newbuff;
+        newloop.setBuffer(newbuff);
         newloop.updateMetadata(l.metadata.M);
 
         this.addLoop(newloop, false);
@@ -444,7 +444,8 @@ class AudioLoop {
         this.id = null;
 
         this.gainNode = this.getAudioContext().createGain();
-        this.updateProgress = null; // set in looper when creating loop progress bar
+        this.onProgress = null;     // set by LoopProgress component
+        this.onNewBuffer = null;    // ditto
 
         this.redraw = null;
     }
@@ -511,7 +512,8 @@ class AudioLoop {
 
     setBuffer(buff){
         this.buffer = buff;
-        this.redraw({'hasBuffer': true});                
+        if (this.onNewBuffer) this.onNewBuffer(buff);
+        if (this.redraw) this.redraw({'hasBuffer': true});                
     }
 
     play(contextTime, offset=0){
@@ -549,16 +551,16 @@ class AudioLoop {
 
     startLoopProgressBar(startTime, offset){
         if (!this.playing){
-            this.updateProgress(0);
+            this.onProgress(0);
             return;
         }
 
         let currPlayTime = this.getAudioContext().currentTime - startTime + offset;
         if (currPlayTime > 0){
             if (this.looping)
-                this.updateProgress(currPlayTime % this.length / this.length);
+                this.onProgress(currPlayTime % this.length / this.length);
             else
-                this.updateProgress(Math.min(currPlayTime / this.length, 1));
+                this.onProgress(Math.min(currPlayTime / this.length, 1));
         }
         
         setTimeout(() => {this.startLoopProgressBar(startTime, offset)}, 250);

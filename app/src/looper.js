@@ -7,7 +7,7 @@ import {Button,
     Instructions, 
     ChatWindow} from './controls.js';
 import AudioLoopBunch from './sound.js';
-import config from './config-app.js'
+import config from './config-app.js';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -454,7 +454,7 @@ class Loop extends React.Component {
                         onBlur={this.audioLoop.broadcastMetadata}/>
                 </span>
             </div>
-            <LoopProgress update={(f) => this.audioLoop.updateProgress = f} />
+            <LoopProgress audioLoop={this.audioLoop}/>
             </li>
         );
     }
