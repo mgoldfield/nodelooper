@@ -555,7 +555,7 @@ class AudioLoop {
             return;
         }
 
-        let currPlayTime = this.getAudioContext().currentTime - startTime + offset;
+        let currPlayTime = this.getAudioContext().currentTime - startTime + offset + 0.25;
         if (currPlayTime > 0){
             if (this.looping)
                 this.onProgress(currPlayTime % this.length / this.length);
