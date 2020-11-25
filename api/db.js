@@ -118,6 +118,7 @@ class DataAccess {
                     'ProjectID': {S: ProjectID},
                     'LoopID': {S:config.newLoopIdentifier},
                     'expires': {N:expires},
+                    'metadata': {M: {tempo:{N:'60'}}}
                 },
             };
             this.ddb.putItem(params, (err, data) => {
@@ -245,6 +246,8 @@ class SocketHelpers {
                     ":m": {M: data.metadata}
                 }
             }
+            console.log(params);
+            console.log(JSON.stringify(params));
             this.ddb.updateItem(params, (err, data) => {
                 if (err) reject(err)
                 else resolve(data)

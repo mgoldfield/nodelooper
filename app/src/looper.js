@@ -77,7 +77,9 @@ class Looper extends React.Component {
                 this.setState({'processing': false});
             }
         };
-        if (l.LoopID.S !== config.newLoopIdentifier){
+        if (l.LoopID.S === config.newLoopIdentifier){
+            this.updateMetadata(l.metadata.M);
+        }else{
             this.loopBunch.loadLoopFromDynamoData(l, onLoad);
         }
     };
@@ -168,15 +170,15 @@ class Looper extends React.Component {
         this.loopBunch.clickTrack.countIn = !this.loopBunch.clickTrack.countIn;
     };
 
-    handleTempo = (e) => {
-        // toDo: don't allow tempo change during play if quantized
-        this.setState({'tempo': e.target.value});
-        this.loopBunch.clickTrack.setTempo(e.target.value);
+    handleTempo = (v) => {
+        this.setState({'tempo': v});
+        this.loopBunch.clickTrack.setTempo(v);
     };
 
-    handleMaster = (e) => {
-        this.setState({'gain': e.target.value});
-        this.loopBunch.gainNode.gain.setValueAtTime(e.target.value, this.loopBunch.getAudioContext().currentTime);
+
+    handleMaster = (v) => {
+        this.setState({'gain': v});
+        this.loopBunch.gainNode.gain.setValueAtTime(v, this.loopBunch.getAudioContext().currentTime);
     };
 
     handleBpm = (e) => {
@@ -192,6 +194,26 @@ class Looper extends React.Component {
     handleInputChange = (e) => {
         this.loopBunch.device = e.target.value;
     };
+
+    updateMetadata = (data) => {
+        if (data.LoopID == config.newLoopIdentifier){
+            if (data.metadata.tempo){ // backwards compatability
+                let tempo = parseInt(data.metadata.tempo.N);
+                this.setState({'tempo': tempo});
+                this.loopBunch.clickTrack.setTempo(tempo);
+                this.updateTempoSlider(tempo);
+            }
+        }else{
+            this.loopBunch.updateMetadata(data);
+        }
+    }
+
+    broadcastMetadata = () => {
+        let metadata = {
+            tempo: {N: this.state.tempo.toString()},
+        }
+        this.loopBunch.comms.broadcastMetadata(config.newLoopIdentifier, metadata);
+    }    
 
     loadLoop = () => {
         if (this.counter >= config.limits.loops){
@@ -284,6 +306,8 @@ class Looper extends React.Component {
                         value={this.state.tempo} 
                         onChange={this.handleTempo}
                         showVal={true}
+                        updateVal={f => this.updateTempoSlider = f}
+                        broadcast={this.broadcastMetadata}
                     />
                     <Slider 
                         name='master gain' min='0' max='10' 
@@ -390,22 +414,9 @@ class Loop extends React.Component {
         this.audioLoop.broadcastMetadata();
     };
 
-    handleGain = (e) => {
-        let onSliderEnd = () => {
-            if (this.gainChanging == this.state.gain){
-                this.audioLoop.broadcastMetadata();
-                this.gainChanging = null;
-            }else{
-                this.gainChanging = this.state.gain;
-                setTimeout(() => onSliderEnd(), 200);
-            }
-        }
-
-        this.setState({'gain': e.target.value});
-        this.audioLoop.setGain(e.target.value);
-        if (!this.gainChanging){
-            onSliderEnd();
-        }
+    handleGain = (v) => {
+        this.setState({'gain': v});
+        this.audioLoop.setGain(v);
     }
 
     download = () => {
@@ -436,6 +447,7 @@ class Loop extends React.Component {
                     onChange={this.handleGain}
                     step="0.01"
                     updateVal={f => this.audioLoop.updateGain = f}
+                    broadcast={this.audioLoop.broadcastMetadata}
                 />  
                 <Button name='mute' onClick={this.handleMute} 
                     toggled={this.state.muted} avail={this.state.hasBuffer}/>

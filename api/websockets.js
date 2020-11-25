@@ -25,10 +25,7 @@ class WebSocketServer {
             ws.on('message', (msg) => {
                 let parsed_msg = new Message(msg);
                 this.broadcast(client.project_id, client.user_id, parsed_msg);
-                console.log("got message: ")
-                console.log(msg);
                 if (parsed_msg.type === 'UM'){
-                    console.log('updating metadata in db...')
                     this.db.updateMetadata(JSON.parse(parsed_msg.msg));
                 }
             });

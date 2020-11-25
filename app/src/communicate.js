@@ -88,16 +88,14 @@ class Communication {
             body = parts[1];
 
         if (headers === 'C'){ // chat
-            //console.log(msg);
             this.handleRcvdChat(body);
         }else if (headers === 'N'){ // new loop
-            //console.log(msg);
             this.handleRcvdLoop(body);
         }else if (headers === 'D'){ // delete loop
             this.looper.deleteLoop(body, false);
         }else if (headers === 'UM'){// update metadata
-            this.looper.loopBunch.updateMetadata(
-                JSON.parse(body));
+            let new_data = JSON.parse(body);
+            this.looper.updateMetadata(new_data);
         }else{
             throw Error("malformed message: " + msg);
         }

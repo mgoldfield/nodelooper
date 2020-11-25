@@ -77,7 +77,6 @@ app.get('/newsesh', (req, res) => {
 
 app.get('/loop', (req, res) => {
     let qs = url.parse(req.url,true).query;
-    console.log("ProjectID: %s", qs.ProjectID);
     da.getProject(qs.ProjectID)
     .then((data) => {
         let user_id = ws.register_user(qs.ProjectID)
@@ -100,7 +99,7 @@ app.post('/addtrack', (req, res) => {
         req.body.metadata, 
         req.body.audio, 
         pdata.expires)
-    .then((data) => {
+    .then(() => {
         ws.broadcast(req.body.ProjectID, req.body.userID, new Message(req.body.name, 'newLoop'));
     })
     .catch((err) => {throw err});

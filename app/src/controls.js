@@ -97,6 +97,25 @@ class Slider extends React.Component {
             return " "
     }
 
+    handleChange = (e) => {
+        let onSliderEnd = () => { // this is so it doesn't fire a bazillion change events per slide
+            if (this.changingVal == this.state.value){
+                if (this.props.broadcast)
+                    this.props.broadcast();
+                this.changingVal = null;
+            }else{
+                this.changingVal = this.state.value;
+                setTimeout(() => onSliderEnd(), 200);
+            }
+        }
+
+        this.setState({'value': e.target.value});
+        this.props.onChange(e.target.value);
+        if (!this.changingVal){
+            onSliderEnd();
+        }
+    }
+
     render() {
         return (
             <div className='slider'>
@@ -108,7 +127,7 @@ class Slider extends React.Component {
                     max={this.props.max}
                     value={this.state.value}
                     step={(this.props.step) ? this.props.step : 1}
-                    onChange={this.onChange}
+                    onChange={this.handleChange}
                     onInput={(e) => this.setState({'value':e.target.value})}
                 />
             </div>
