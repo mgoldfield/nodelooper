@@ -78,7 +78,10 @@ class Looper extends React.Component {
             }
         };
         if (l.LoopID.S === config.newLoopIdentifier){
-            this.updateMetadata(l.metadata.M);
+            this.updateMetadata({
+                LoopID: l.LoopID.S,
+                metadata: l.metadata,
+            });
         }else{
             this.loopBunch.loadLoopFromDynamoData(l, onLoad);
         }
@@ -196,9 +199,9 @@ class Looper extends React.Component {
     };
 
     updateMetadata = (data) => {
-        if (data.LoopID == config.newLoopIdentifier){
-            if (data.metadata.tempo){ // backwards compatability
-                let tempo = parseInt(data.metadata.tempo.N);
+        if (data.LoopID === config.newLoopIdentifier){
+            if (data.metadata.M.tempo){ // backwards compatability
+                let tempo = parseInt(data.metadata.M.tempo.N);
                 this.setState({'tempo': tempo});
                 this.loopBunch.clickTrack.setTempo(tempo);
                 this.updateTempoSlider(tempo);
@@ -209,9 +212,7 @@ class Looper extends React.Component {
     }
 
     broadcastMetadata = () => {
-        let metadata = {
-            tempo: {N: this.state.tempo.toString()},
-        }
+        let metadata = {M: {tempo: {N: this.state.tempo.toString()},}};
         this.loopBunch.comms.broadcastMetadata(config.newLoopIdentifier, metadata);
     }    
 
@@ -442,7 +443,7 @@ class Loop extends React.Component {
                     value={this.state.name} onChange={this.setName} onBlur={this.audioLoop.broadcastMetadata}
                 />
                 <Slider 
-                    name='gain' min='0' max='10' 
+                    name='gain' min='0' max='3' 
                     value={this.state.gain} 
                     onChange={this.handleGain}
                     step="0.01"
