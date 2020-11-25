@@ -81,6 +81,8 @@ class Slider extends React.Component {
     constructor(props){
         super(props);
         this.state = {'value':this.props.value};
+        if (this.props.updateVal)
+            this.props.updateVal((v) => this.setState({'value':v}));
     }
 
     onChange = (e) => {

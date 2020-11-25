@@ -444,10 +444,12 @@ class AudioLoop {
         this.id = null;
 
         this.gainNode = this.getAudioContext().createGain();
+
         this.onProgress = null;     // set by LoopProgress component
         this.onNewBuffer = null;    // ditto
-
         this.redraw = null;
+        this.updateGain = null;     // set by React Loop
+
     }
 
     get length(){
@@ -498,6 +500,8 @@ class AudioLoop {
                 'name': this.name,
                 'gain': gainval,
             });
+
+            this.updateGain(gainval);
         }
     }
 

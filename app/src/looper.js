@@ -435,6 +435,7 @@ class Loop extends React.Component {
                     value={this.state.gain} 
                     onChange={this.handleGain}
                     step="0.01"
+                    updateVal={f => this.audioLoop.updateGain = f}
                 />  
                 <Button name='mute' onClick={this.handleMute} 
                     toggled={this.state.muted} avail={this.state.hasBuffer}/>
