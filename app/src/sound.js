@@ -267,7 +267,8 @@ class AudioLoopBunch{
         reader.readAsArrayBuffer(f);
     }
 
-    loadLoopFromDynamoData = async (l, onLoad) => {  
+    loadLoopFromDynamoData = async (l, onLoad) => { 
+        console.log("building audio") 
         function b64toFloatArr(to_encode){
             let buf = Buffer.from(to_encode, 'base64');
             let f32a = new Float32Array(buf.buffer); 
@@ -284,6 +285,7 @@ class AudioLoopBunch{
             newbuff.copyToChannel(b64toFloatArr(audio.L), 0);
             newbuff.copyToChannel(b64toFloatArr(audio.R), 1);          
         }else if (audio.format === 'mp3'){
+            console.log("mp3 processing")
             let tmpbuf = Buffer.from(audio.data, 'base64'),
                 tmpAudioBuf = await this.getAudioContext().decodeAudioData(tmpbuf.buffer),
                 len_diff = tmpAudioBuf.length - newbuff.length;

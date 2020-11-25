@@ -66,6 +66,7 @@ class Looper extends React.Component {
     loadLoopFromDynamoData = (l) => {
         // toDo: make a "loading" light
         let onLoad = (loop) =>{
+            console.log("finished processing audio - onto the ui...")
             this.addNewLoop(
                 l.LoopID.S,
                 l.LoopID.S,
@@ -73,10 +74,12 @@ class Looper extends React.Component {
                 false,
                 loop,
                 () => null);
+            console.log("loops.length %s, counter %s", this.loops.length, this.counter)
             if (this.loops.length === this.counter){
                 this.setState({'processing': false});
             }
         };
+        console.log("loading loop....")
         if (l.LoopID.S === config.newLoopIdentifier){
             this.updateMetadata({
                 LoopID: l.LoopID.S,

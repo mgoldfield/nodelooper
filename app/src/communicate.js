@@ -155,6 +155,7 @@ class Communication {
             this.looper.setState({'processing': true});
             this.looper.loadLoopFromDynamoData(l); 
             console.log("received new loop");
+            console.log(l);
         }).catch((e) => {throw e});
     }
 
