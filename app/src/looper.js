@@ -75,7 +75,7 @@ class Looper extends React.Component {
                 loop,
                 () => null);
             console.log("loops.length %s, counter %s", this.loops.length, this.counter)
-            if (this.loops.length === this.counter){
+            if (this.loops.length <= this.counter){
                 this.setState({'processing': false});
             }
         };
