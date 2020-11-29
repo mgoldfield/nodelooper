@@ -73,10 +73,12 @@ class AudioLoopBunch{
                 deviceId: this.device, 
                 echoCancellation: false, 
                 noiseSuppression: false,
-                autoGainControl: false
-            } 
+                autoGainControl: false,
+            },
         };
-        return navigator.mediaDevices.getUserMedia(options);
+        let to_return = navigator.mediaDevices.getUserMedia(options);
+        this.refreshAvailableDevices();
+        return to_return;
     }
 
     toggleInputMonitoring(){

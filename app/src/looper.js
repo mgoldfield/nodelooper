@@ -121,11 +121,7 @@ class Looper extends React.Component {
                     this.handleStop(null, "earlyStop");
                 });
             }else{
-                if (this.loops.length > 0){
-                    this.loopBunch.playLoops(this.loopBunch.getOffset());
-                }else{
-                    this.handleStop();
-                }
+                this.loopBunch.playLoops(this.loopBunch.getOffset());
             }
         }
     };
@@ -304,7 +300,7 @@ class Looper extends React.Component {
                         <input type='text' className='bpmInput' value={this.loopBunch.clickTrack.bpm} size='2' maxsize='2' onChange={this.handleBpm}/>
                     </span>
                     <Slider 
-                        name='tempo' min='30' max='200' 
+                        name='tempo' min='30' max='250' 
                         value={this.state.tempo} 
                         onChange={this.handleTempo}
                         showVal={true}
@@ -312,14 +308,14 @@ class Looper extends React.Component {
                         broadcast={this.broadcastMetadata}
                     />
                     <Slider 
-                        name='master gain' min='0' max='10' 
+                        name='master gain' min='0' max='5' 
                         value='1' step='0.01'
                         onChange={this.handleMaster}
                     />
                 </div>
                 <div className='progressBar'>
                     <ProgressBar
-                        max={1}
+                        max={60}
                         updater = {(f) => this.loopBunch.updateProgressBar = f}
                         getVal = {(f) => this.loopBunch.getOffset = f}
                         onChange = {() => null}
