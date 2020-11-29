@@ -319,7 +319,7 @@ class Looper extends React.Component {
                 </div>
                 <div className='progressBar'>
                     <ProgressBar
-                        max={0}
+                        max={1}
                         updater = {(f) => this.loopBunch.updateProgressBar = f}
                         getVal = {(f) => this.loopBunch.getOffset = f}
                         onChange = {() => null}
