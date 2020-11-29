@@ -92,6 +92,7 @@ class Looper extends React.Component {
         if (err === 'earlyStop'){
             this.loopBunch.unprepareToRecord();
             this.loops.pop();
+            this.setState({'processing': false})
         }else{
             if (this.state.recording){
                 if (this.state.playing){
@@ -212,7 +213,7 @@ class Looper extends React.Component {
     }
 
     broadcastMetadata = () => {
-        let metadata = {M: {tempo: {N: this.state.tempo.toString()},}};
+        let metadata = {M: {tempo: {N: this.state.tempo.toString()}}};
         this.loopBunch.comms.broadcastMetadata(config.newLoopIdentifier, metadata);
     }    
 
@@ -456,7 +457,7 @@ class Loop extends React.Component {
                     toggled={this.state.looping} avail={this.state.hasBuffer && !this.state.playing}/>
 
                 <Button name='delete' onClick={this.deleteLoop} 
-                    toggled={false} avail={!this.state.recording}/>                    
+                    toggled={false} avail={!this.state.recording && !this.state.playing}/>                    
 
                 <Button name="down load" onClick={this.download}
                     toggled={false} avail={this.state.hasBuffer} />

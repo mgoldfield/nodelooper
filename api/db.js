@@ -243,7 +243,7 @@ class SocketHelpers {
                 },
                 UpdateExpression: "set metadata = :m",
                 ExpressionAttributeValues: {
-                    ":m": {M: data.metadata}
+                    ":m": data.metadata
                 }
             }
             console.log(params);
