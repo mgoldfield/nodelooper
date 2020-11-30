@@ -105,7 +105,6 @@ class AudioLoopBunch{
         }
     }
 
-
     prepareToRecord(){
         this.recordingLoop = new AudioLoop(this.getAudioContext, this.comms);
         return this.recordingLoop;
@@ -146,6 +145,7 @@ class AudioLoopBunch{
     };
 
     stop(toggledByPlay=false){
+        console.log("sound toggled by play: %s", toggledByPlay);
         if (this.recording){
             this.recorder.stop();
             this.recordingLoop.stop();
@@ -181,14 +181,13 @@ class AudioLoopBunch{
         }
     }
 
-
     startUpdatingProgressBar(playTime, offset){
         if (this.playing){
             let totalTime = (this.getAudioContext().currentTime + offset);
             totalTime -= playTime;
             if (totalTime > 0)
                 this.updateProgressBar(totalTime);                
-            setTimeout(()=>{this.startUpdatingProgressBar(playTime, offset)}, 500);
+            setTimeout(()=>{this.startUpdatingProgressBar(playTime, offset)}, 100);
         }        
     }
 
@@ -210,11 +209,11 @@ class AudioLoopBunch{
         return playTime;
     }
 
-    stopLoops(){
+    stopLoops(pause=false){
         this.clickTrack.stop();
 
         for (const l of this.audioLoops)
-            l.stop();
+            l.stop(pause);
     }
 
     setGain(g){
@@ -545,16 +544,11 @@ class AudioLoop {
             this.source.loopEnd = this.maxRepeats * this.length;
             setTimeout(() => this.stop(), (this.maxRepeats * this.length + this.delayedStart) * 1000);
         }
-
-        //toDo: is this the right thing to do with outputLatency?
-        let startTime = contextTime; // - this.getAudioContext().outputLatency;
         if (offset - this.delayedStart > 0){
             offset = offset - this.delayedStart;
-        }else if (offset !== this.delayedStart){
-            startTime += this.delayedStart - offset;
         }
-        this.source.start(startTime, offset);
-        this.startLoopProgressBar(startTime, offset);
+
+        this.source.start(contextTime, offset);
     }
 
     record(delay){
@@ -563,28 +557,11 @@ class AudioLoop {
         this.redraw({'recording': true});
     }
 
-    startLoopProgressBar(startTime, offset){
-        if (!this.playing){
-            this.onProgress(0);
-            return;
-        }
-
-        let currPlayTime = this.getAudioContext().currentTime - startTime + offset + 0.25;
-        if (currPlayTime > 0){
-            if (this.looping)
-                this.onProgress(currPlayTime % this.length / this.length);
-            else
-                this.onProgress(Math.min(currPlayTime / this.length, 1));
-        }
-        
-        setTimeout(() => {this.startLoopProgressBar(startTime, offset)}, 250);
-    }
-
     setProgress(totalTime){
         this.onProgress((totalTime - this.delayedStart) % this.length / this.length);
     }
 
-    stop(){
+    stop(pause=false){
         if (this.playing){
             this.source.stop();
             this.source.disconnect();

@@ -144,7 +144,10 @@ class ProgressBar extends React.Component {
             'max': this.props.max,
         };
         // make the bar as long as 4x the longest loop
-        this.props.updater((v) => this.setState({'value':v, 'max':Math.max(this.state.max, 4 * v)}));
+        this.props.updater((v) => {
+            this.setState({'value':v, 'max':Math.max(this.state.max, 4 * v)});
+            this.props.coordinateBars(v);
+        });
         this.props.getVal(() => parseFloat(this.state.value));
         this.props.setMax((v) => this.setState({'max':Math.max(this.state.max, 4 * v)}))
     }
@@ -162,7 +165,8 @@ class ProgressBar extends React.Component {
         if (this.props.quantize){
             v = Math.round(v / this.props.secondsPerBeat) * this.props.secondsPerBeat;
         }
-        this.setState({'value':v})
+        this.props.coordinateBars(v);
+        this.setState({'value':v});
     }
 
     render() {
@@ -178,7 +182,6 @@ class ProgressBar extends React.Component {
                     onChange={this.props.onChange}
                     onInput={(e) => {
                         this.setValue(e.target.value); 
-                        this.props.coordinateBars(e.target.value);
                     }}
                 />
                 <span className='progressBarVal'>
@@ -189,8 +192,6 @@ class ProgressBar extends React.Component {
         );
     }
 }
-
-
 
 class LoopProgress extends React.Component {
     constructor(props) {
