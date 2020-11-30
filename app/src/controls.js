@@ -176,7 +176,10 @@ class ProgressBar extends React.Component {
                     value={this.state.value}
                     step='.01'
                     onChange={this.props.onChange}
-                    onInput={(e) => this.setValue(e.target.value)}
+                    onInput={(e) => {
+                        this.setValue(e.target.value); 
+                        this.props.coordinateBars(e.target.value);
+                    }}
                 />
                 <span className='progressBarVal'>
                     {this.toMinutes(this.state.value) + '/' + this.toMinutes(this.state.max)}

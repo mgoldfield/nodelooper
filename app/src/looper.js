@@ -299,7 +299,7 @@ class Looper extends React.Component {
                         bpm
                         <input type='text' className='bpmInput' value={this.loopBunch.clickTrack.bpm} size='2' maxsize='2' onChange={this.handleBpm}/>
                     </span>
-                    <Slider 
+                    <Slider
                         name='tempo' min='30' max='250' 
                         value={this.state.tempo} 
                         onChange={this.handleTempo}
@@ -322,6 +322,7 @@ class Looper extends React.Component {
                         secondsPerBeat = {this.loopBunch.clickTrack.secondsPerBeat}
                         quantize = {this.state.quantize}
                         setMax = {(f) => this.setProgressBarMax = f}
+                        coordinateBars = {this.loopBunch.updateLoopsProgressBars}
                     />
                 </div>                        
             </div>

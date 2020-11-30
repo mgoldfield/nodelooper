@@ -145,7 +145,7 @@ class AudioLoopBunch{
         return;
     };
 
-    stop(){
+    stop(toggledByPlay=false){
         if (this.recording){
             this.recorder.stop();
             this.recordingLoop.stop();
@@ -153,7 +153,14 @@ class AudioLoopBunch{
         }
         this.stopLoops();
         this.playing = false;
-        this.updateProgressBar(0);
+        if (!toggledByPlay)
+            this.updateProgressBar(0);
+    }
+
+    updateLoopsProgressBars = (t) => {
+        for (const l of this.audioLoops){
+            l.setProgress(t);
+        }
     }
 
     refreshMergeNode(){
@@ -571,6 +578,10 @@ class AudioLoop {
         }
         
         setTimeout(() => {this.startLoopProgressBar(startTime, offset)}, 250);
+    }
+
+    setProgress(totalTime){
+        this.onProgress((totalTime - this.delayedStart) % this.length / this.length);
     }
 
     stop(){
