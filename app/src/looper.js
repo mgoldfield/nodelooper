@@ -87,8 +87,8 @@ class Looper extends React.Component {
         }
     };
 
-    handleStop = (event=null, err=false) => {
-        this.loopBunch.stop();
+    handleStop = (event=null, err=false, toggledByPlay=false) => {
+        this.loopBunch.stop(toggledByPlay);
         if (err === 'earlyStop'){
             this.loopBunch.unprepareToRecord();
             this.loops.pop();
@@ -113,7 +113,7 @@ class Looper extends React.Component {
 
     handlePlay = () => {
         if (this.state.playing){
-            this.handleStop();
+            this.handleStop(toggledByPlay=true);
         }else{
             this.setState({'playing': !this.state.playing});
             if (this.state.recording){
