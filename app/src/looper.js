@@ -88,7 +88,6 @@ class Looper extends React.Component {
     };
 
     handleStop = (err=false, toggledByPlay=false) => {
-        console.log("looper stop toggledByPlay: %s", toggledByPlay)
         this.loopBunch.stop(toggledByPlay);
         if (err === 'earlyStop'){
             this.loopBunch.unprepareToRecord();

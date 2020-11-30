@@ -145,7 +145,6 @@ class AudioLoopBunch{
     };
 
     stop(toggledByPlay=false){
-        console.log("sound toggled by play: %s", toggledByPlay);
         if (this.recording){
             this.recorder.stop();
             this.recordingLoop.stop();
