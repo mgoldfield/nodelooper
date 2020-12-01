@@ -122,7 +122,7 @@ class Communication {
                 }
             };
             let req = this.getHttp.request(options, res => {
-                if (res.statusCode != 200){
+                if (res.statusCode !== 200){
                     console.log("post data status code: %s", res.statusCode);
                     reject("bad status code from api");
                 }

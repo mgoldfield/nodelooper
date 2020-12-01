@@ -80,7 +80,7 @@ class Looper extends React.Component {
         if (l.LoopID.S === config.newLoopIdentifier){
             this.updateMetadata({
                 LoopID: l.LoopID.S,
-                metadata: l.metadata,
+                metadata: l.metadata.M,
             });
         }else{
             this.loopBunch.loadLoopFromDynamoData(l, onLoad);
@@ -197,8 +197,8 @@ class Looper extends React.Component {
 
     updateMetadata = (data) => {
         if (data.LoopID === config.newLoopIdentifier){
-            if (data.metadata.M.tempo){ // backwards compatability
-                let tempo = parseInt(data.metadata.M.tempo.N);
+            if (data.metadata.tempo){ // backwards compatability
+                let tempo = parseInt(data.metadata.tempo.N);
                 this.setState({'tempo': tempo});
                 this.loopBunch.clickTrack.setTempo(tempo);
                 this.updateTempoSlider(tempo);
@@ -209,7 +209,7 @@ class Looper extends React.Component {
     }
 
     broadcastMetadata = () => {
-        let metadata = {M: {tempo: {N: this.state.tempo.toString()}}};
+        let metadata = {tempo: {N: this.state.tempo.toString()}};
         this.loopBunch.comms.broadcastMetadata(config.newLoopIdentifier, metadata);
     }    
 

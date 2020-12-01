@@ -515,7 +515,6 @@ class AudioLoop {
 
     setName(name){
         this.name = name;
-        //toDo: transmit this to other users
     }
 
     setRedraw(f){
@@ -543,21 +542,35 @@ class AudioLoop {
             this.source.loopEnd = this.maxRepeats * this.length;
             setTimeout(() => this.stop(), (this.maxRepeats * this.length + this.delayedStart) * 1000);
         }
+
+        console.log("offset: %s", offset);
+
         if (offset - this.delayedStart > 0){
             offset = offset - this.delayedStart;
+            this.source.start(contextTime, offset);
+        }else{
+            this.source.start(contextTime + this.delayedStart - offset, 0);            
         }
-
-        this.source.start(contextTime, offset);
     }
 
     record(delay){
-        this.delayedStart = delay;
+        console.log("delay is %s", delay);
+        this.delayedStart = delay - this.getAudioContext().outputLatency;
         this.recording = true;
         this.redraw({'recording': true});
     }
 
     setProgress(totalTime){
-        this.onProgress((totalTime - this.delayedStart) % this.length / this.length);
+        if (totalTime <= this.delayedStart){
+            this.onProgress(0);
+            return;
+        }
+
+        if (this.maxRepeats === 0 || this.maxRepeats > ((totalTime - this.delayedStart) / this.length)){
+            this.onProgress((totalTime - this.delayedStart) % this.length / this.length);
+        }else{
+            this.onProgress(0);
+        }
     }
 
     stop(pause=false){

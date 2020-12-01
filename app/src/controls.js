@@ -99,7 +99,7 @@ class Slider extends React.Component {
 
     handleChange = (e) => {
         let onSliderEnd = () => { // this is so it doesn't fire a bazillion change events per slide
-            if (this.changingVal == this.state.value){
+            if (this.changingVal === this.state.value){
                 if (this.props.broadcast)
                     this.props.broadcast();
                 this.changingVal = null;
@@ -146,7 +146,7 @@ class ProgressBar extends React.Component {
         // make the bar as long as 4x the longest loop
         this.props.updater((v) => {
             this.setState({'value':v, 'max':Math.max(this.state.max, 4 * v)});
-            this.props.coordinateBars(v);
+            this.props.coordinateBars(v + ( (v > 0) ? 0.25 : 0));  // toDo: make this better - its not quite smooth when the loop goes from end -> beginning
         });
         this.props.getVal(() => parseFloat(this.state.value));
         this.props.setMax((v) => this.setState({'max':Math.max(this.state.max, 4 * v)}))
