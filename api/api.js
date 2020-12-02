@@ -13,6 +13,10 @@ const ws = new WebSocketServer();
 const da = new DataAccess();
 
 app.use(bodyParser.json({limit: '500mb'}));
+if (config.env === 'DEV'){
+    const cors = require('cors');
+    app.use(cors())     
+}
 app.listen(3001);
 
 

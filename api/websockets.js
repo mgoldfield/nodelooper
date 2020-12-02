@@ -5,7 +5,6 @@ import { SocketHelpers } from './db.js';
 const require = createRequire(import.meta.url);
 const express = require('express');
 const http = require('http'); 
-const cors = require('cors');
 const WebSocket = require('ws');
 
 
@@ -18,6 +17,10 @@ class WebSocketServer {
         this.populateProjects();
 
         this.app = express();
+        if (config.env === 'DEV'){
+            const cors = require('cors');
+            this.app.use(cors());
+        }
         this.server = this.app.listen(config.websockets.port); 
         this.wss = new WebSocket.Server({ noServer: true });
 
