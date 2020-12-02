@@ -7,6 +7,6 @@ RUN npm ci
 COPY . .
 
 EXPOSE 3001
-EXPOSE 8080
+EXPOSE 3002
 
 CMD ["node", "api.js"]

@@ -20,7 +20,7 @@ let config = {
 	},
 	websockets: {
 		url: 'loopmagic.live',
-		port: 8080,
+		port: 3002,
 		timeout: 900000, // 15 minutes in milliseconds
 	},
 }

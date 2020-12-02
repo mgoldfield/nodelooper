@@ -10,8 +10,8 @@ let config = {
 		role: 'arn:aws:iam::101444218054:instance-profile/loopmagic-server',
 	},
 	env: 'DEV',
-	base_loop_url: 'http://localhost/project',
-	base_api_url: 'http://localhost',
+	base_loop_url: 'http://localhost:3000/project',
+	base_api_url: 'http://localhost:3000',
 	newLoopIdentifier: 'xxxLOOPxxx',
 	project_persist: 432000,
 	s3: {
@@ -20,7 +20,7 @@ let config = {
 	},
 	websockets: {
 		url: 'localhost',
-		port: 8080,
+		port: 3002,
 		timeout: 900000, // 15 minutes in milliseconds
 	},
 }

@@ -7,11 +7,10 @@ services:
       - AWS_SECRET_ACCESS_KEY    
     expose:
       - "3001"
-      - "8080"
+      - "3002"
   app:
     build: ./app
     ports: 
-      - "80:80"  # change this to __port__:80 to change the port on local machine
-      - "443:443"
+      - "3000:3000"  # change this to __port__:80 to change the port on local machine
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
