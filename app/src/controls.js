@@ -59,7 +59,7 @@ class DropDown extends React.Component {
         for (let i =0; i < this.state.options.length; i++ ){
             options.push(
             <option key={this.state.options[i].deviceId} value={this.state.options[i].deviceId}>
-                {this.state.options[i].label}
+                {this.state.options[i].label || ("names are only available after the audio device is allowed by the user. id: " + this.state.options[i].deviceId)}
             </option>);
         }
         return options;
@@ -277,7 +277,7 @@ class Instructions extends React.Component {
     render(){
         return (
             <div className="instrucText">
-                <p><b>bpm</b>: beats per measure.  used with <i>click</i> and <i>quant</i></p> 
+                <p><b>beats</b>: beats per measure.  used with <i>click</i> and <i>quant</i></p> 
                 <p><b>click</b>: metronome. when toggled, emits a click track while playing and recording according to <i>tempo</i> and <i>bpm</i></p>  
                 <p><b>count in</b>: when recording, emit one measure of clicks before recording begins.</p>
                 <p><b>download</b>: download current mix or given loop as <i>.wav</i>. track will be the length of the longest loop. </p>

@@ -342,6 +342,7 @@ body {
 }
 
 .bpmInput {
+    margin-top: 3px;
     background-color: gainsboro;
 }
 

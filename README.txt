@@ -44,14 +44,12 @@ gain - logarithmic growth
 
 click starts incorrectly when starting off set from the beginning
 
-sound.js 422 - loading hang
-
 space bar play (other keyboard shortcuts?)
 
 length = longest loop or longest play
 
 delete right after create loop causes error
 
-fix file loader (allow mp3s?)
+- fix file loader (allow mp3s?)
 
-default device label or maybe device id when no device label
+- default device label or maybe device id when no device label

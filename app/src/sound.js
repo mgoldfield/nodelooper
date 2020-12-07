@@ -56,12 +56,10 @@ class AudioLoopBunch{
 
     refreshAvailableDevices = async function() {
         let devices = await navigator.mediaDevices.enumerateDevices();
-        this.availableDevices = devices.filter((d) => d.kind === 'audioinput');
+        this.availableDevices = devices.filter(d => d.kind === 'audioinput');
 
         //toDo: fail gracefully here... catch in looper and display a message
         this.device = this.availableDevices[0].deviceId;
-
-
 
         if (this.ondevicechange){
             this.ondevicechange(this.availableDevices);

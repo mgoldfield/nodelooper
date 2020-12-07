@@ -301,7 +301,7 @@ class Looper extends React.Component {
                         options={this.loopBunch.availableDevices} 
                         updateOptions={(f) => {this.loopBunch.ondevicechange = f; this.loopBunch.refreshAvailableDevices()}}/>                                
                     <span className='bpm'>
-                        bpm
+                        beats
                         <input type='text' className='bpmInput' value={this.loopBunch.clickTrack.bpm} size='2' maxsize='2' onChange={this.handleBpm}/>
                     </span>
                     <Slider
