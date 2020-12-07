@@ -332,17 +332,17 @@ body {
     margin:10px;
     padding: 10px;
     border-radius: 25%;
-    border: 2px solid black;
     display: inline-flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 43px;
+    font-size: 14px;
     
 }
 
 .bpmInput {
-    margin-top: 3px;
+    margin: 3px;
     background-color: gainsboro;
 }
 
