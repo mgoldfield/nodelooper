@@ -1,5 +1,5 @@
 import { Communication } from './communicate.js';
-import { bufferToWav, wavToBuffer, downloadBlob } from './format_tools.js';
+import { bufferToWav, downloadBlob } from './format_tools.js';
 import config from './config-app.js'
 
 // toDo: break up sound.js into more files
@@ -60,6 +60,8 @@ class AudioLoopBunch{
 
         //toDo: fail gracefully here... catch in looper and display a message
         this.device = this.availableDevices[0].deviceId;
+
+
 
         if (this.ondevicechange){
             this.ondevicechange(this.availableDevices);
@@ -246,30 +248,30 @@ class AudioLoopBunch{
         downloadBlob('loop_mix.wav', bufferToWav(mix));
     }
 
-    addBuff(buff, cb){
-        let loop = new AudioLoop(this.getAudioContext, this.comms);
-        loop.setBuffer(buff);
-        this.addLoop(loop);
-        cb(loop);
-    }
-
     addLoop(loop, sendLoop=true){
         this.audioLoops.push(loop);
         this.mergeOutOfDate = true;
-        if (sendLoop) this.comms.sendLoop(loop);
+        if (sendLoop) {
+            console.log("sending loop....");
+            this.comms.sendLoop(loop);
+        }
     }
 
-    loadLoopFromDisk = (f, audioloop_cb) => {
+    loadLoopFromDisk = (id, f, cb_success, cb_fail) => {
         let reader = new FileReader();
-        reader.onload = (event) => {
-            let buff;
-            try {
-                buff = wavToBuffer(event.target.result, this.getAudioContext());
-                this.addBuff(buff, audioloop_cb);
-            }catch (e){
-                alert(e.toString());
-                return;
-            }            
+        reader.onload = async (event) => {
+            this.getAudioContext().decodeAudioData(event.target.result)
+            .then(buff => {
+                let loop = new AudioLoop(this.getAudioContext, this.comms);
+                loop.id = id;
+                loop.name = f.name;
+                loop.delayedStart = this.getOffset();
+                loop.setBuffer(buff);
+                this.addLoop(loop);
+                cb_success(loop);                
+            }).catch(err => {
+                cb_fail(err)
+            });     
         }
         reader.readAsArrayBuffer(f);
     }

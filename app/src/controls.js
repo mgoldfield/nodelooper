@@ -283,8 +283,7 @@ class Instructions extends React.Component {
                 <p><b>download</b>: download current mix or given loop as <i>.wav</i>. track will be the length of the longest loop. </p>
                 <p><b>input</b>: choose audio input. default is internal mic </p>
                 <p><b>input mon</b>: when toggled, plays selected input through to output </p>
-                <p><b>load .wav</b>: load a <i>.wav</i> file as a loop.  if you have a sound file of another format,
-                    such as an <i>.mp3</i>, use a program like garageband to convert the file to <i>.wav</i>. </p>
+                <p><b>load file</b>: load an audio file file as a loop</p>
                 <p><b>loop</b>: when toggled, loop repeats.  when not toggled, loop plays just once. </p>                
                 <p><b>master gain</b>: gain/volume for entire project. </p>
                 <p><b>mute</b>: mute loop</p>            

@@ -223,7 +223,6 @@ class Looper extends React.Component {
         let uploader = document.createElement('input');
         uploader.type = 'file';
         uploader.style = 'display:none';
-        uploader.accept = "audio/wav";
 
         document.body.appendChild(uploader);
         uploader.addEventListener('change', (e) => {
@@ -239,7 +238,13 @@ class Looper extends React.Component {
                     () => null);
                 this.setState({'processing': false});
             };
-            this.loopBunch.loadLoopFromDisk(uploader.files[0], onLoad);
+            let onLoadFail = (err) => {
+                alert("error reading file - probably unsupported filetype");
+                console.log("error reading audio file: %s", err);
+                this.setState({'processing': false});
+            };
+
+            this.loopBunch.loadLoopFromDisk(lid, uploader.files[0], onLoad, onLoadFail);
         });
         uploader.click();
     };
@@ -270,7 +275,7 @@ class Looper extends React.Component {
                     toggled={this.state.quantize} avail={!this.state.playing}/>  
                 <Button name='input mon' onClick={this.handleInputMonit} 
                     toggled={this.state.inputMonitoring} avail={!this.state.playing}/>
-                <Button name="load .wav" onClick={this.loadLoop}
+                <Button name="load file" onClick={this.loadLoop}
                     toggled={false} avail={!this.state.playing && !this.state.recording}/>
                 <Button name='down load' onClick={this.loopBunch.download} 
                     toggled={false} avail={this.state.numLoops > 0}/>                              
