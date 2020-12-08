@@ -190,9 +190,12 @@ class AudioLoopBunch{
         }        
     }
 
-    playLoops(offset=0){
+    playLoops(){
+        let offset = this.getOffset();
         this.refreshMergeNode();
         this.playing = true;
+
+        console.log("play offset is %s", offset);
 
         let waitTime = 0.0001 + this.getAudioContext().baseLatency;
         let clickStartTime = this.getAudioContext().currentTime + waitTime;
@@ -200,7 +203,7 @@ class AudioLoopBunch{
         if (this.clickTrack.clicking && this.clickTrack.countIn && this.recording)
             playTime += this.clickTrack.oneMeasureInSeconds;
 
-        this.clickTrack.start(clickStartTime);
+        this.clickTrack.start(clickStartTime, offset);
         for (const l of this.audioLoops)
             l.play(playTime, offset);
 
@@ -364,7 +367,7 @@ class Recorder {
             this.mediaRecorder.addEventListener("dataavailable", dataAvailable);
             this.mediaRecorder.addEventListener("stop", onStop);
             this.mediaRecorder.addEventListener("start", () => {
-                playTime = this.bunch.playLoops(this.bunch.getOffset());                
+                playTime = this.bunch.playLoops();                
             });
             this.mediaRecorder.start();
         })
@@ -669,15 +672,23 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
         return this.bpm * this.secondsPerBeat;
     }
 
-    start(time){
+    start(time, offset){
         if (!this.clicking)
             return;
+
+        console.log("in click pre-adjust start time: %s", time)
+        if (offset > 0){
+            let clickOffset = offset % this.secondsPerBeat;
+            if (clickOffset > 0)
+                time += this.secondsPerBeat - clickOffset;
+        }
 
         this.source = this.getAudioContext().createBufferSource();
         this.source.buffer = this.buffer;
         this.source.loop = true;
         this.source.loopEnd = this.secondsPerBeat;
         this.source.connect(this.getAudioContext().destination);
+        console.log("in click final start time: %s", time);
         this.source.start(time); 
     }           
 

@@ -6,6 +6,7 @@ local:
 2. if running locally, drop these in your environment variables
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY    
+3.5 run tools/setConfig.sh <env> where <env> is in "prod", "dev", or "local" to put the configs in the right place
 3. run `docker-compose up --build`
 
 
@@ -28,15 +29,13 @@ input mon delay...
 
 inputs blank when audio not enabled
 
-faq: using w zoom, length of projects (future plans)
+faq: using w zoom, length of projects (future plans), editing tracks
 
 count-in but no click
 
-1:08 on molly - out of sync
+- if device has no label, fail over to device type or other message
 
-if device has no label, fail over to device type or other message
-
-bpm -> meter/beats?
+- bpm -> meter/beats?
 
 default tempo 100
 
@@ -47,9 +46,17 @@ click starts incorrectly when starting off set from the beginning
 space bar play (other keyboard shortcuts?)
 
 length = longest loop or longest play
+progress dot at end of progress bar when extendind max
 
 delete right after create loop causes error
 
 - fix file loader (allow mp3s?)
 
 - default device label or maybe device id when no device label
+
+drag progress bar while playing
+
+logging and aws alerts
+
+new names:
+tessiamo ("we weave" in italian)

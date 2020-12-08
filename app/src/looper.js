@@ -121,7 +121,7 @@ class Looper extends React.Component {
                     this.handleStop("earlyStop");
                 });
             }else{
-                this.loopBunch.playLoops(this.loopBunch.getOffset());
+                this.loopBunch.playLoops();
             }
         }
     };
