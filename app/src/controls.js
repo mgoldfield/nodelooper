@@ -198,6 +198,7 @@ class LoopProgress extends React.Component {
         super(props);
         this.state = {
             'progress': 0, // percent
+            'animate': true,
             'buffer': this.props.audioLoop.buffer,
         };
         this.canvasRef = React.createRef(null);
@@ -207,7 +208,11 @@ class LoopProgress extends React.Component {
         return (
             <div className="loopProgress">
                 <canvas className="loopProgressWaveform" ref={this.canvasRef}></canvas>
-                <span className="loopProgressBar" style={{width: 100*this.state.progress + '%'}} />
+                <span className="loopProgressBar"
+                    style={{
+                        width: 100*this.state.progress + '%',
+                        transitionDuration: this.state.animate ? '250ms' : '0s',
+                    }} />
             </div>
         );
     }
@@ -218,7 +223,16 @@ class LoopProgress extends React.Component {
         canvas.width = rect.width;
         canvas.height = rect.height;
         this.drawWaveform();
-        this.props.audioLoop.onProgress = p => this.setState({progress: p});
+        this.props.audioLoop.onProgress = p => {
+            this.setState((state, props) => {
+                if (p === state.progress) return null;
+                // console.log("p: " + p + " old progress: " + state.progress, "animate will be " + (p > state.progress));
+                return {
+                    'progress': p,
+                    'animate': p > state.progress,
+                };
+            });
+        };
         this.props.audioLoop.onNewBuffer = b => this.setState({buffer: b});
     }
 
