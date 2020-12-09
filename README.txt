@@ -16,6 +16,7 @@ open ports 80 and 443 in aws security
 copy in correct configs (will automate eventually)
 copy s3://looper-config/ssl to /etc/letsencrypt
 install docker and docker compose (use instructions on docker website)
+run tools/setConfig.sh <env> where <env> is in "prod",
 run `sudo docker-compose -f docker-compose.prod.yml up --build -d`
 
 
@@ -24,39 +25,6 @@ for updating certs:
     copy everything in /etc/letsencrypt to s3://looper-config/ssl/
 
 
-
-input mon delay...
-
-inputs blank when audio not enabled
-
-faq: using w zoom, length of projects (future plans), editing tracks
-
-count-in but no click
-
-- if device has no label, fail over to device type or other message
-
-- bpm -> meter/beats?
-
-default tempo 100
-
-gain - logarithmic growth
-
-click starts incorrectly when starting off set from the beginning
-
-space bar play (other keyboard shortcuts?)
-
-length = longest loop or longest play
-progress dot at end of progress bar when extendind max
-
-delete right after create loop causes error
-
-- fix file loader (allow mp3s)
-
-- default device label or maybe device id when no device label
-
-drag progress bar while playing
-
-logging and aws alerts
 
 new names:
 tessiamo ("we weave" in italian)
