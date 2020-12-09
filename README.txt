@@ -50,7 +50,7 @@ progress dot at end of progress bar when extendind max
 
 delete right after create loop causes error
 
-- fix file loader (allow mp3s?)
+- fix file loader (allow mp3s)
 
 - default device label or maybe device id when no device label
 

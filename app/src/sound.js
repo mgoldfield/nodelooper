@@ -197,7 +197,7 @@ class AudioLoopBunch{
 
         console.log("play offset is %s", offset);
 
-        let waitTime = 0.0001 + this.getAudioContext().baseLatency;
+        let waitTime = 0.00001 + this.getAudioContext().baseLatency;
         let clickStartTime = this.getAudioContext().currentTime + waitTime;
         let playTime = clickStartTime;
         if (this.clickTrack.clicking && this.clickTrack.countIn && this.recording)
@@ -550,6 +550,7 @@ class AudioLoop {
 
         if (offset - this.delayedStart > 0){
             offset = offset - this.delayedStart;
+            console.log("starting track at %s, with offset %s, delayedStart: %s", contextTime, offset, this.delayedStart);
             this.source.start(contextTime, offset);
         }else{
             this.source.start(contextTime + this.delayedStart - offset, 0);            
@@ -557,8 +558,7 @@ class AudioLoop {
     }
 
     record(delay){
-        console.log("delay is %s", delay);
-        this.delayedStart = delay - this.getAudioContext().outputLatency;
+        this.delayedStart = delay;
         this.recording = true;
         this.redraw({'recording': true});
     }
