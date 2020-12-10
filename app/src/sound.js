@@ -135,7 +135,6 @@ class AudioLoopBunch{
             (newBuff) => {
                 this.recordingLoop.setBuffer(newBuff);
                 this.addLoop(this.recordingLoop);
-                //console.log(newBuff);
             }
         );
     }
@@ -195,8 +194,6 @@ class AudioLoopBunch{
         this.refreshMergeNode();
         this.playing = true;
 
-        console.log("play offset is %s", offset);
-
         let waitTime = 0.0001 + this.getAudioContext().baseLatency;
         let clickStartTime = this.getAudioContext().currentTime + waitTime;
         let playTime = clickStartTime;
@@ -253,7 +250,6 @@ class AudioLoopBunch{
         this.audioLoops.push(loop);
         this.mergeOutOfDate = true;
         if (sendLoop) {
-            console.log("sending loop....");
             this.comms.sendLoop(loop);
         }
     }
@@ -548,7 +544,6 @@ class AudioLoop {
         if (offset - this.delayedStart > 0){
             offset = offset - this.delayedStart;     
             offset = offset % this.length;
-            console.log("starting track at %s, with offset %s, delayedStart: %s", contextTime, offset, this.delayedStart);
             this.source.start(contextTime, offset);
         }else{
             this.source.start(contextTime + this.delayedStart - offset, 0);            
@@ -674,7 +669,6 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
         if (!this.clicking)
             return;
 
-        console.log("in click pre-adjust start time: %s, offset: %s", time, offset)
         if (offset > 0){
             let clickOffset = offset % this.secondsPerBeat;
             if (clickOffset > 0)
@@ -686,7 +680,6 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
         this.source.loop = true;
         this.source.loopEnd = this.secondsPerBeat;
         this.source.connect(this.getAudioContext().destination);
-        console.log("in click final start time: %s", time);
         this.source.start(time); 
     }           
 
