@@ -197,7 +197,7 @@ class AudioLoopBunch{
 
         console.log("play offset is %s", offset);
 
-        let waitTime = 0.00001 + this.getAudioContext().baseLatency;
+        let waitTime = 0.0001 + this.getAudioContext().baseLatency;
         let clickStartTime = this.getAudioContext().currentTime + waitTime;
         let playTime = clickStartTime;
         if (this.clickTrack.clicking && this.clickTrack.countIn && this.recording)
@@ -542,14 +542,12 @@ class AudioLoop {
         this.source.loop = this.looping;
 
         if (this.looping && this.maxRepeats > 0){
-            this.source.loopEnd = this.maxRepeats * this.length;
-            setTimeout(() => this.stop(), (this.maxRepeats * this.length + this.delayedStart) * 1000);
+            setTimeout(() => this.stop(), (this.maxRepeats * this.length + this.delayedStart - offset) * 1000);
         }
 
-        console.log("offset: %s", offset);
-
         if (offset - this.delayedStart > 0){
-            offset = offset - this.delayedStart;
+            offset = offset - this.delayedStart;     
+            offset = offset % this.length;
             console.log("starting track at %s, with offset %s, delayedStart: %s", contextTime, offset, this.delayedStart);
             this.source.start(contextTime, offset);
         }else{
@@ -676,7 +674,7 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
         if (!this.clicking)
             return;
 
-        console.log("in click pre-adjust start time: %s", time)
+        console.log("in click pre-adjust start time: %s, offset: %s", time, offset)
         if (offset > 0){
             let clickOffset = offset % this.secondsPerBeat;
             if (clickOffset > 0)

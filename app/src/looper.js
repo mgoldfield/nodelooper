@@ -433,8 +433,12 @@ class Loop extends React.Component {
     }
 
     handleMaxRepeats = (e) => {
-        this.setState({'maxRepeats': e.target.value});
-        this.audioLoop.maxRepeats = e.target.value;
+        let v = e.target.value;
+        if (e.target.value === ''){
+            v = '0';
+        }
+        this.setState({'maxRepeats': ((v === '0') ? '' : v)});
+        this.audioLoop.maxRepeats = parseInt(v);
     }
 
     render() {
