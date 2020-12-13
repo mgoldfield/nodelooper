@@ -538,7 +538,7 @@ class AudioLoop {
         this.source.loop = this.looping;
 
         if (this.looping && this.maxRepeats > 0){
-            setTimeout(() => this.stop(), (this.maxRepeats * this.length + this.delayedStart - offset) * 1000);
+            this.stopTimeout = setTimeout(() => this.stop(), (this.maxRepeats * this.length + this.delayedStart - offset) * 1000);
         }
 
         if (offset - this.delayedStart > 0){
@@ -574,6 +574,9 @@ class AudioLoop {
             this.source.stop();
             this.source.disconnect();
             this.source = null;
+        }
+        if (this.stopTimeout) {
+            clearTimeout(this.stopTimeout);
         }
         this.playing = false;
         this.recording = false;
