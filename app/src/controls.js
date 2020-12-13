@@ -248,19 +248,47 @@ class LoopProgress extends React.Component {
     drawWaveform() {
         const buffer = this.state.buffer;
         if (!buffer) return;
-        if (buffer === this.renderedBuffer) return;
+        if (buffer === this.renderedBuffer &&
+            this.props.tempo === this.renderedTempo &&
+            this.props.bpm === this.renderedBPM) {
+            return;
+        }
 
         this.renderedBuffer = buffer;
+        this.renderedTempo = this.props.tempo;
+        this.renderedBPM = this.props.bpm;
 
         const canvas = this.canvasRef.current;
         const context = canvas.getContext('2d');
         const width = canvas.width;
         const height = canvas.height;
+        context.clearRect(0, 0, width, height);
+
+        // Draw beat and bar lines under the waveform
+        const secondsPerBeat = 60 / this.props.tempo;
+        let pixelsPerBeat = width * secondsPerBeat / buffer.duration;
+        let bpm = this.props.bpm;
+        if (pixelsPerBeat <= 3) {
+            // For longer loops, just draw barlines rather than beat lines
+            pixelsPerBeat = pixelsPerBeat * bpm;
+            bpm = 1;
+        }
+        if (pixelsPerBeat > 3) { // don't draw barlines if they'll be closer than 3px apart
+            const delayBeats = this.props.audioLoop.delayedStart / secondsPerBeat;
+            for (   let x = -pixelsPerBeat * (delayBeats % 1),
+                        beat = Math.ceil(delayBeats) % bpm;
+                    x < width;
+                    x += pixelsPerBeat, beat++) {
+                context.fillStyle = beat % bpm === 0 ? 'red' : 'yellow';
+                context.fillRect(Math.floor(x), 0, 0.5, height);
+            }
+        }
+
+        // Draw the waveform
         const mid = height / 2;
         const samples = buffer.getChannelData(0); // TODO stereo
         const framesPerPoint = Math.max(samples.length / width, 1);
         const pixelStride = Math.max(width / samples.length, 1);
-        context.clearRect(0, 0, width, height);
         context.beginPath();
         context.moveTo(0, mid);
         let prevY = 0;

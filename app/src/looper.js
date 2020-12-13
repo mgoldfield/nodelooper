@@ -19,7 +19,6 @@ class Looper extends React.Component {
         let qs = new URLSearchParams(window.location.search);
         this.project_id = qs.get('ProjectID');
         this.counter = 0;
-        this.loops = [];
         this.state = {
             'expanded': true,
             'recording': this.loopBunch.recording,
@@ -32,7 +31,7 @@ class Looper extends React.Component {
             'loopRecStatus': [],
             'gain': 1,
             'inputMonitoring': this.loopBunch.inputMonitoring,
-            'numLoops': this.loops.length,
+            'loops': [],
             'processing': true,
         }
         this.loopBunch.initComms(this.project_id, this)
@@ -49,18 +48,11 @@ class Looper extends React.Component {
         }       
     };
 
-    addNewLoop(key, id, name, recording, audioloop, handleToggleRecording){
-        let newloop = (<Loop
-            key={key}
-            id={id}
-            name={name}
-            recording={recording}
-            audioLoop={audioloop}
-            handleToggleRecording={handleToggleRecording}
-            handleDelete={this.deleteLoop}
-        />);
-        this.setProgressBarMax(audioloop.length);
-        this.loops.push(newloop);        
+    addNewLoop(key, id, name, recording, audioLoop, handleToggleRecording){
+        this.setState((state, props) => {
+            return {loops: state.loops.concat([{key, id, name, recording, audioLoop, handleToggleRecording}])};
+        });
+        this.setProgressBarMax(audioLoop.length);
     }
 
     loadLoopFromDynamoData = (l) => {
@@ -73,7 +65,7 @@ class Looper extends React.Component {
                 false,
                 loop,
                 () => null);
-            if (this.loops.length <= this.counter){
+            if (this.state.loops.length <= this.counter){
                 this.setState({'processing': false});
             }
         };
@@ -87,21 +79,26 @@ class Looper extends React.Component {
         }
     };
 
+    popLastLoop() {
+        this.setState((state, props) => {
+            return {'loops': state.loops.slice(0, state.loops.length - 1)};
+        });
+    }
+
     handleStop = (err=false, toggledByPlay=false) => {
         this.loopBunch.stop(toggledByPlay);
         if (err === 'earlyStop'){
             this.loopBunch.unprepareToRecord();
-            this.loops.pop();
-            this.setState({'processing': false})
+            this.popLastLoop();
+            this.setState({'processing': false});
         }else{
             if (this.state.recording){
                 if (this.state.playing){
                     this.setState({'processing': true});
                     this.finishRecording();
-                    this.setState({'numLoops': this.loops.length});
                 }else{
                     this.loopBunch.unprepareToRecord();
-                    this.loops.pop();
+                    this.popLastLoop();
                 }
             }
         }
@@ -132,7 +129,7 @@ class Looper extends React.Component {
                 this.pressStop(); 
             else{
                 this.loopBunch.unprepareToRecord();
-                this.loops.pop();
+                this.popLastLoop();
                 this.finishRecording = null;
             }
         }else{
@@ -250,8 +247,12 @@ class Looper extends React.Component {
     };
 
     deleteLoop = (id, broadcast=true) => {
-        this.setState({'processing': true});
-        this.loops = this.loops.filter(l => l.key !== id);
+        this.setState((state, props) => {
+            return {
+                processing: true,
+                loops: state.loops.filter(l => l.key !== id),
+            };
+        });
         this.loopBunch.deleteLoop(id, broadcast);
         this.setState({'processing': false});
     }
@@ -278,7 +279,7 @@ class Looper extends React.Component {
                 <Button name="load file" onClick={this.loadLoop}
                     toggled={false} avail={!this.state.playing && !this.state.recording}/>
                 <Button name='down load' onClick={this.loopBunch.download} 
-                    toggled={false} avail={this.state.numLoops > 0}/>                              
+                    toggled={false} avail={this.state.loops.length > 0}/>                              
                 <Button 
                     name={(this.state.expanded) ? 'collapse' : 'expand'}
                     onClick={() => this.setState({'expanded': !this.state.expanded})} 
@@ -334,6 +335,22 @@ class Looper extends React.Component {
         );
     }
 
+    renderLoops() {
+        return this.state.loops.map(loop =>
+            <Loop
+                key={loop.key}
+                id={loop.id}
+                name={loop.name}
+                recording={loop.recording}
+                tempo={this.state.tempo}
+                bpm={this.state.bpm}
+                audioLoop={loop.audioLoop}
+                handleToggleRecording={loop.handleToggleRecording}
+                handleDelete={this.deleteLoop}
+            />
+        );
+    }
+
     render() {
         return (
             <div className='pageContainer'>
@@ -356,7 +373,7 @@ class Looper extends React.Component {
                         </div>
 
                         <div className='loops'>
-                            <ul className='loopList'>{this.loops}</ul>
+                            <ul className='loopList'>{this.renderLoops()}</ul>
                         </div>
 
                         <div className="loadingBox">
@@ -475,7 +492,7 @@ class Loop extends React.Component {
                         onBlur={this.audioLoop.broadcastMetadata}/>
                 </span>
             </div>
-            <LoopProgress audioLoop={this.audioLoop}/>
+            <LoopProgress audioLoop={this.audioLoop} tempo={this.props.tempo} bpm={this.props.bpm}/>
             </li>
         );
     }
