@@ -28,3 +28,9 @@ for updating certs:
 
 new names:
 tessiamo ("we weave" in italian)
+tessere
+
+
+display beat markers on quantized loops 
+bug: loop progress continues if not looping 
+space barrr

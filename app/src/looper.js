@@ -224,7 +224,7 @@ class Looper extends React.Component {
         document.body.appendChild(uploader);
         uploader.addEventListener('change', (e) => {
             this.counter++;
-            let lid = uuidv4()
+            let lid = uuidv4();
             let onLoad = (loop) =>{
                 this.addNewLoop(
                     lid,
