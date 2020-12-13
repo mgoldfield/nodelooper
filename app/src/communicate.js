@@ -185,6 +185,8 @@ class Communication {
             };
         }
 
+        if (loop.deleted) return;
+
         postdata = JSON.stringify(postdata);
         this.postDataToApi(postdata, 'addTrack').catch((e) => {throw(e)});
     }
