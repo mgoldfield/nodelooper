@@ -55,8 +55,11 @@ class AudioLoopBunch{
     };
 
     refreshAvailableDevices = async function() {
-        await this.getUserAudio();
+        let tmpstream = await this.getUserAudio();
+        tmpstream.getTracks().forEach((track) => track.stop());
+        
         let devices = await navigator.mediaDevices.enumerateDevices();
+        console.log(devices);
         this.availableDevices = devices.filter(d => d.kind === 'audioinput');
 
         //toDo: fail gracefully here... catch in looper and display a message
@@ -346,6 +349,7 @@ class Recorder {
             }            
             let onStop = async () => {
                 try{
+                    console.log("in stop...")
                     let stopTime = this.bunch.getAudioContext().currentTime;
                     this.bunch.stop();
                     stream.getTracks().forEach((track) => track.stop());
@@ -365,6 +369,7 @@ class Recorder {
 
             stream.addEventListener('inactive', (e) => alert("lost audio stream"));
             this.mediaRecorder = new MediaRecorder(stream);
+            console.log("type: %s", this.mediaRecorder.mimeType);
             this.mediaRecorder.addEventListener("dataavailable", dataAvailable);
             this.mediaRecorder.addEventListener("stop", onStop);
             this.mediaRecorder.addEventListener("start", () => {
@@ -380,7 +385,9 @@ class Recorder {
 
     handleChunks = async function(audioChunks, targetLength, latency, quantUnit){
         const blob = new Blob(audioChunks, {'type' : 'audio/ogg; codecs=opus'});
-        let buffer = await this.bunch.getAudioContext().decodeAudioData(await blob.arrayBuffer());
+        let blobbuff = await blob.arrayBuffer();
+        console.log(blobbuff)
+        let buffer = await this.bunch.getAudioContext().decodeAudioData(blobbuff);
         if ((buffer.length / buffer.sampleRate) > config.limits.length){
             alert("You have exceeded the maximum length of " + config.limits.length + " seconds per buffer :(");
             throw Error("buffer too long");

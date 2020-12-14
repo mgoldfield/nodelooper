@@ -278,8 +278,6 @@ class Looper extends React.Component {
                     avail={(!this.state.playing || this.state.recording) && !this.state.processing}/>
                 <Button name='quant' onClick={this.handleQuant} 
                     toggled={this.state.quantize} avail={!this.state.playing}/>  
-                <Button name='input mon' onClick={this.handleInputMonit} 
-                    toggled={this.state.inputMonitoring} avail={!this.state.playing}/>
                 <Button name="load file" onClick={this.loadLoop}
                     toggled={false} avail={!this.state.playing && !this.state.recording}/>
                 <Button name='down load' onClick={this.loopBunch.download} 
