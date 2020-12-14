@@ -279,7 +279,7 @@ class LoopProgress extends React.Component {
                         beat = Math.ceil(delayBeats) % bpm;
                     x < width;
                     x += pixelsPerBeat, beat++) {
-                context.fillStyle = beat % bpm === 0 ? 'red' : 'yellow';
+                context.fillStyle = beat % bpm === 0 ? '#7d2401' : 'darkslategray';
                 context.fillRect(Math.floor(x), 0, 0.5, height);
             }
         }

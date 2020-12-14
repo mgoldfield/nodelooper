@@ -632,7 +632,7 @@ class AudioLoop {
 class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
     constructor(getAudioContext){
         this.getAudioContext = getAudioContext;
-        this.tempo = 60;
+        this.tempo = 80;
         this.bpm = 4;
         this.countIn = false;
         this.clicking = true;

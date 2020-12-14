@@ -38,6 +38,10 @@ class Looper extends React.Component {
         .then(this.handleInitLoops)
         .catch(e => {throw e});      
         this.finishRecording = () => null;  
+        document.body.onkeypress = e => { 
+            if (e.keyCode == 32)
+                this.handlePlay();
+        };
     }
 
     handleInitLoops = (loops) => {
