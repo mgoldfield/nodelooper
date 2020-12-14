@@ -59,7 +59,7 @@ class DropDown extends React.Component {
         for (let i =0; i < this.state.options.length; i++ ){
             options.push(
             <option key={this.state.options[i].deviceId} value={this.state.options[i].deviceId}>
-                {this.state.options[i].label || ("names are only available after the audio device is allowed by the user. id: " + this.state.options[i].deviceId)}
+                {this.state.options[i].label || ("to see names, refresh the page and select \"remember this decision\" when allowing microphone access. id: " + this.state.options[i].deviceId)}
             </option>);
         }
         return options;

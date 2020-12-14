@@ -55,6 +55,7 @@ class AudioLoopBunch{
     };
 
     refreshAvailableDevices = async function() {
+        await this.getUserAudio();
         let devices = await navigator.mediaDevices.enumerateDevices();
         this.availableDevices = devices.filter(d => d.kind === 'audioinput');
 
@@ -77,7 +78,6 @@ class AudioLoopBunch{
             },
         };
         let to_return = navigator.mediaDevices.getUserMedia(options);
-        this.refreshAvailableDevices();
         return to_return;
     }
 
