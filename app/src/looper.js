@@ -358,7 +358,7 @@ class Looper extends React.Component {
                     <span className='backHome'><a href={config.full_api_url}>home</a></span>
                     <div className='mainHeader'>
                         <span className='title'>loopmagic!</span>
-                        <span className='subtitle'>requires <a href="https://www.mozilla.org/firefox/download/thanks/">firefox v80+</a></span>
+                        <span className='subtitle'>requires <a href="https://www.mozilla.org/firefox/download/thanks/">firefox v83+</a></span>
                     </div>
                     <span className='support'><a href="https://www.patreon.com/mgoldfield">support this project</a></span>
                 </div>
