@@ -145,11 +145,11 @@ class ProgressBar extends React.Component {
         };
         // make the bar as long as 4x the longest loop
         this.props.updater((v) => {
-            this.setState({'value':v, 'max':Math.max(this.state.max, 4 * v)});
+            this.setState({'value':v, 'max':Math.max(this.state.max, v)});
             this.props.coordinateBars(v + ( (v > 0) ? 0.25 : 0));  // toDo: make this better - its not quite smooth when the loop goes from end -> beginning
         });
         this.props.getVal(() => parseFloat(this.state.value));
-        this.props.setMax((v) => this.setState({'max':Math.max(this.state.max, 4 * v)}))
+        this.props.setMax((v) => this.setState({'max':Math.max(this.state.max, v)}))
     }
 
     onChange(event){
@@ -330,7 +330,7 @@ class Instructions extends React.Component {
                 <p><b>master gain</b>: gain/volume for entire project. </p>
                 <p><b>mute</b>: mute loop</p>            
                 <p><b>quant</b>: quantizes loops to the nearest measure, as defined by <i>tempo</i> and <i>beats</i>. if quant is selected, main progress bar snaps to the beat</p>
-                <p><b>rec</b>: creates a new loop.  press <i>play</i> after pressing <i>rec</i> to start recording a</p>
+                <p><b>rec</b>: creates a new loop.  press <i>play</i> after pressing <i>rec</i> to start recording a track.</p>
                 <p><b>reps</b>: max repetitions of a loop. when blank, loop repeats infinitely. </p>
                 <p><b>tempo</b>: beats per minute. used with <i>click</i> and <i>quant</i></p>
             </div>
