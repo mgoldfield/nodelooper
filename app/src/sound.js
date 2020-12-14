@@ -216,7 +216,7 @@ class AudioLoopBunch{
     }
 
     setGain(g){
-        this.gainNode.setValueAtTime(g, this.getAudioContext().currentTime);
+        this.gainNode.setValueAtTime(2 ** g - 1, this.getAudioContext().currentTime);
     }
 
     download = () => {
@@ -612,7 +612,7 @@ class AudioLoop {
     }
 
     setGain(g){
-        this.gainNode.gain.setValueAtTime(g, this.getAudioContext().currentTime);
+        this.gainNode.gain.setValueAtTime(2**g - 1, this.getAudioContext().currentTime);
     }
 
     connect(dest, index){
