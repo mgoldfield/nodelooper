@@ -24,10 +24,3 @@ for updating certs:
     install nginx locally and run certbot steps
     copy everything in /etc/letsencrypt to s3://looper-config/ssl/
 
-
-
-new names:
-tessiamo ("we weave" in italian)
-tessere
-
-bug: loop progress continues if not looping 
