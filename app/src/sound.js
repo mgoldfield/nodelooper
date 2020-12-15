@@ -311,6 +311,7 @@ class AudioLoopBunch{
     deleteLoop(id, broadcast){
         this.audioLoops = this.audioLoops.filter(l => {
             if (l.id === id) {
+                l.stop();
                 l.deleted = true;
                 return false;
             } else return true;
