@@ -203,7 +203,7 @@ class AudioLoopBunch{
         if (this.clickTrack.countIn && this.recording)
             playTime += this.clickTrack.oneMeasureInSeconds;
 
-        this.clickTrack.start(clickStartTime, offset);
+        this.clickTrack.start(clickStartTime, offset, this.recording);
         for (const l of this.audioLoops)
             l.play(playTime, offset);
 
@@ -679,8 +679,8 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
         return this.bpm * this.secondsPerBeat;
     }
 
-    start(time, offset){
-        if (!this.clicking && !this.countIn)
+    start(time, offset, recording){
+        if (!this.clicking && !(this.countIn && recording))
             return;
 
         if (offset > 0){
@@ -695,7 +695,7 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
         this.source.loopEnd = this.secondsPerBeat;
         this.source.connect(this.getAudioContext().destination);
 
-        if (!this.clicking && this.countIn){
+        if (!this.clicking && this.countIn && recording){
             this.stopTimeout = setTimeout(
                 this.stop, 
                 // extra .01 to make sure we stop before the next beat
