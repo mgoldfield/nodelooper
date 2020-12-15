@@ -138,7 +138,7 @@ class Looper extends React.Component {
     handleRec = () => {
         if (this.state.recording){
             if (this.state.playing) 
-                this.pressStop(); 
+                this.handleStop(); 
             else{
                 this.loopBunch.unprepareToRecord();
                 this.popLastLoop();
@@ -371,10 +371,12 @@ class Looper extends React.Component {
             <div className='pageContainer'>
                 <div className='headerContainer'>
                     <span className='backHome'><a href={config.full_api_url}>home</a></span>
+                    <span className='backHome'><a href={config.full_api_url + 'faq'}>f.a.q.</a></span>
                     <div className='mainHeader'>
                         <span className='title'>loopmagic!</span>
                         <span className='subtitle'>in beta, requires <a href="https://www.mozilla.org/firefox/download/thanks/">firefox v83+</a></span>
                     </div>
+                    <span className='support'><a href="https://github.com/mgoldfield/nodelooper">github</a></span>                    
                     <span className='support'><a href="https://www.patreon.com/mgoldfield">support this project</a></span>
                 </div>
                 <div className='bodyContainer'>
