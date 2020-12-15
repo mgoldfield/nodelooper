@@ -118,7 +118,7 @@ class DataAccess {
                     'ProjectID': {S: ProjectID},
                     'LoopID': {S:config.newLoopIdentifier},
                     'expires': {N:expires},
-                    'metadata': {M: {tempo:{N:'60'}}}
+                    'metadata': {M: {tempo:{N:'80'}}}
                 },
             };
             this.ddb.putItem(params, (err, data) => {
