@@ -57,7 +57,7 @@ class AudioLoopBunch{
     refreshAvailableDevices = async function() {
         let tmpstream = await this.getUserAudio();
         tmpstream.getTracks().forEach((track) => track.stop());
-        
+
         let devices = await navigator.mediaDevices.enumerateDevices();
         console.log(devices);
         this.availableDevices = devices.filter(d => d.kind === 'audioinput');
@@ -416,9 +416,9 @@ class Recorder {
         if (this.quantize && (quantUnit > 0)){
             let remainder = targetLength % quantUnit;
 
-            // threshold of over 3/10 of a measure, assume user is intentonally 
+            // threshold of over 1/2ish of a measure, assume user is intentonally 
             // creating a new measure
-            if ((remainder / quantUnit) > .3){ 
+            if ((remainder / quantUnit) > 0.45){ 
                 let toAdd = Math.round((quantUnit - remainder) * buffer.sampleRate);
                 let quantizedAudio = new Float32Array(trimmedAudio.length + toAdd);
                 quantizedAudio.set(trimmedAudio);
