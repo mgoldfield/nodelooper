@@ -43,7 +43,7 @@ class Looper extends React.Component {
 
     addHotKeys = () => {
         document.body.onkeypress = e => { 
-            if (e.keyCode == 32)
+            if (e.keyCode === 32)
                 this.handlePlay();
         };
     };
@@ -481,8 +481,9 @@ class Loop extends React.Component {
             <div className="loopControls">
                 <div className={(this.state.recording) ? 'recordingDot' : 'dot'} />
                 <input type='text' className='inputFont loopName maxRepsInput'
-                    value={this.state.name} onChange={this.setName} onBlur={this.audioLoop.broadcastMetadata}
-                    onFocus={this.props.removeHotKeys} onBlur={this.props.addHotKeys}
+                    value={this.state.name} onChange={this.setName} 
+                    onBlur={() => {this.audioLoop.broadcastMetadata() && this.props.addHotKeys()}}
+                    onFocus={this.props.removeHotKeys}
                 />
                 <Slider 
                     name='gain' min='0' max='3' 

@@ -350,7 +350,6 @@ class Recorder {
             }            
             let onStop = async () => {
                 try{
-                    console.log("in stop...")
                     let stopTime = this.bunch.getAudioContext().currentTime;
                     this.bunch.stop();
                     stream.getTracks().forEach((track) => track.stop());
@@ -370,7 +369,6 @@ class Recorder {
 
             stream.addEventListener('inactive', (e) => alert("lost audio stream"));
             this.mediaRecorder = new MediaRecorder(stream);
-            console.log("type: %s", this.mediaRecorder.mimeType);
             this.mediaRecorder.addEventListener("dataavailable", dataAvailable);
             this.mediaRecorder.addEventListener("stop", onStop);
             this.mediaRecorder.addEventListener("start", () => {
