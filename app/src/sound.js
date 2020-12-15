@@ -200,7 +200,7 @@ class AudioLoopBunch{
         let waitTime = 0.0001 + this.getAudioContext().baseLatency;
         let clickStartTime = this.getAudioContext().currentTime + waitTime;
         let playTime = clickStartTime;
-        if (this.clickTrack.clicking && this.clickTrack.countIn && this.recording)
+        if (this.clickTrack.countIn && this.recording)
             playTime += this.clickTrack.oneMeasureInSeconds;
 
         this.clickTrack.start(clickStartTime, offset);
@@ -639,7 +639,7 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
     constructor(getAudioContext){
         this.getAudioContext = getAudioContext;
         this.tempo = 80;
-        this.bpm = 4;
+        this.bpm = 4; // beats per minute
         this.countIn = false;
         this.clicking = true;
 
@@ -680,7 +680,7 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
     }
 
     start(time, offset){
-        if (!this.clicking)
+        if (!this.clicking && !this.countIn)
             return;
 
         if (offset > 0){
@@ -694,14 +694,25 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
         this.source.loop = true;
         this.source.loopEnd = this.secondsPerBeat;
         this.source.connect(this.getAudioContext().destination);
-        this.source.start(time); 
+
+        if (!this.clicking && this.countIn){
+            this.stopTimeout = setTimeout(
+                this.stop, 
+                // extra .01 to make sure we stop before the next beat
+                1000 * (time - this.getAudioContext().currentTime + this.oneMeasureInSeconds - .01)); 
+        }
+
+        this.source.start(time);
     }           
 
-    stop(){
-        if (!this.clicking || !this.source)
+    stop = () => {
+        if (!this.source)
             return;
+
         this.source.stop();
         this.source.disconnect();
+        if (this.stopTimeout)
+            clearTimeout(this.stopTimeout);
     }
 }
 

@@ -309,8 +309,8 @@ class Looper extends React.Component {
                     <Button name='click' onClick={this.handleClick} 
                     toggled={this.state.clicking} avail={!this.state.playing} />
                     <Button name='count in' onClick={this.handleCountIn} 
-                        toggled={this.state.clicking && this.state.countIn} 
-                        avail={this.state.clicking && !this.state.playing}/>
+                        toggled={this.state.countIn} 
+                        avail={!this.state.playing}/>
                     <DropDown name="input" onChange={this.handleInputChange} 
                         options={this.loopBunch.availableDevices} 
                         updateOptions={(f) => {this.loopBunch.ondevicechange = f; this.loopBunch.refreshAvailableDevices()}}/>                                
