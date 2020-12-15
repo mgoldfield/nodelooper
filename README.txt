@@ -1,5 +1,7 @@
 Usage:
 
+currently hosted at: https://loopmagic.live
+
 local: 
 0. install aws cli and add creds
 1. install docker
