@@ -376,8 +376,8 @@ class Recorder {
                 playTime = this.bunch.playLoops();                
             });
             this.mediaRecorder.addEventListener("error", (e) => {
+                alert("incompatible device, check f.a.q. for support: " + e.error);
                 console.log(e);
-                console.log(e.error);
             })
             this.mediaRecorder.start();
         })
