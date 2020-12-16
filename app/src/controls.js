@@ -374,15 +374,13 @@ class ChatWindow extends React.Component {
                 <div className="chatname">
                     <input type='text' className='inputFont'
                         value={this.state.name} onChange={this.updateName}
-                        onFocus={this.props.removeHotKeys} onBlur={this.props.addHotKeys}
                     />
                 </div>
                 <div id="chat" className="chat inputFont">{this.state.chat}</div>
                 <div className="chatInput">
                     <input type='text' id='chatInput' className=''
                         value={this.state.value} onChange={this.typing} 
-                        onKeyDown={this.submitChat} size='25'
-                        onFocus={this.props.removeHotKeys} onBlur={this.props.addHotKeys}/>
+                        onKeyDown={this.submitChat} size='25' />
                 </div>
             </div>
         );

@@ -43,14 +43,12 @@ class Looper extends React.Component {
 
     addHotKeys = () => {
         document.body.onkeypress = e => { 
-            if (e.keyCode === 32)
+            if (e.keyCode === 32 && e.target.localName !== 'input' && e.target.localName !== 'textarea'){
+                e.preventDefault();
                 this.handlePlay();
+            }
         };
     };
-
-    removeHotKeys = () => {
-        document.body.onkeypress = e => {};
-    }
 
     handleInitLoops = (loops) => {
         this.counter += loops.length - 1;
@@ -235,7 +233,6 @@ class Looper extends React.Component {
 
         document.body.appendChild(uploader);
         uploader.addEventListener('change', (e) => {
-            this.removeHotKeys();
             this.counter++;
             let lid = uuidv4();
             let onLoad = (loop) =>{
@@ -246,13 +243,11 @@ class Looper extends React.Component {
                     false,
                     loop,
                     () => null);
-                this.addHotKeys();
                 this.setState({'processing': false});
             };
             let onLoadFail = (err) => {
                 alert("error reading file - probably unsupported filetype");
                 console.log("error reading audio file: %s", err);
-                this.addHotKeys();
                 this.setState({'processing': false});
             };
 
@@ -360,8 +355,6 @@ class Looper extends React.Component {
                 audioLoop={loop.audioLoop}
                 handleToggleRecording={loop.handleToggleRecording}
                 handleDelete={this.deleteLoop}
-                addHotKeys={this.addHotKeys}
-                removeHotKeys={this.removeHotKeys}
             />
         );
     }
@@ -406,9 +399,7 @@ class Looper extends React.Component {
                     <div className='userStatusBar'>
                         {/* toDo: add user indicators here */}
                         <ChatWindow sendChat={(line) => {this.loopBunch.comms.sendChat(line)}}
-                            exposeUpdateChat={(f => this.updateChat = f)}
-                            addHotKeys={this.addHotKeys}
-                            removeHotKeys={this.removeHotKeys}/>
+                            exposeUpdateChat={(f => this.updateChat = f)} />
                     </div>
                 </div>
             </div>
@@ -484,8 +475,7 @@ class Loop extends React.Component {
                 <div className={(this.state.recording) ? 'recordingDot' : 'dot'} />
                 <input type='text' className='inputFont loopName maxRepsInput'
                     value={this.state.name} onChange={this.setName} 
-                    onBlur={() => {this.audioLoop.broadcastMetadata() && this.props.addHotKeys()}}
-                    onFocus={this.props.removeHotKeys}
+                    onBlur={() => {this.audioLoop.broadcastMetadata()}}
                 />
                 <Slider 
                     name='gain' min='0' max='3' 

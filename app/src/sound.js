@@ -27,7 +27,7 @@ class AudioLoopBunch{
         this.refreshAvailableDevices();
 
         // toDo: is this working? 
-        navigator.mediaDevices.ondevicechange = this.refreshAvailableDevices;
+        navigator.mediaDevices.ondevicechange = this.refreshAvailableDevices.bind(this);
 
         this.recorder = new Recorder(this);
 
@@ -70,7 +70,7 @@ class AudioLoopBunch{
         }
     }
 
-    getUserAudio(){
+    getUserAudio = () => {
         let options = {
             video: false,
             audio: {
@@ -78,6 +78,7 @@ class AudioLoopBunch{
                 echoCancellation: false, 
                 noiseSuppression: false,
                 autoGainControl: false,
+                channelCount: 1,
             },
         };
         let to_return = navigator.mediaDevices.getUserMedia(options);
@@ -374,6 +375,10 @@ class Recorder {
             this.mediaRecorder.addEventListener("start", () => {
                 playTime = this.bunch.playLoops();                
             });
+            this.mediaRecorder.addEventListener("error", (e) => {
+                console.log(e);
+                console.log(e.error);
+            })
             this.mediaRecorder.start();
         })
         .catch((error) => {

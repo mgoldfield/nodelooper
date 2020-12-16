@@ -13,15 +13,23 @@ function downloadBlob(filename, blob){
 }
 
 function float32_to_int16(f32){
-    function convert(n) {
+    function convert(n, max) {
         let v = n < 0 ? n * 32768 : n * 32767;       // convert in range [-32768, 32767]
-        return Math.max(-28000, Math.min(28000, v)); // clamp
+        if (n > 1.0 || n < -1.0)
+            console.log(n)
+        return v / max; // clamp
     }
 
     let retArr = new Int16Array(f32.length);
 
+    let max = 1;
     for (let i=0; i < f32.length; i++)
-        retArr[i] = convert(f32[i]);
+        if (Math.abs(f32[i]) > max)
+            max = Math.abs(f32[i]);
+
+
+    for (let i=0; i < f32.length; i++)
+        retArr[i] = convert(f32[i], max);
     return retArr;
 }
 
