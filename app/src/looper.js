@@ -41,7 +41,7 @@ class Looper extends React.Component {
         this.addHotKeys();
     }
 
-    addHotKeys = () => {
+    addHotKeys() {
         document.body.onkeypress = e => { 
             if (e.keyCode === 32 && e.target.localName !== 'input' && e.target.localName !== 'textarea'){
                 e.preventDefault();
