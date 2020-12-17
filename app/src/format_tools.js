@@ -15,9 +15,7 @@ function downloadBlob(filename, blob){
 function float32_to_int16(f32){
     function convert(n, max) {
         let v = n < 0 ? n * 32768 : n * 32767;       // convert in range [-32768, 32767]
-        if (n > 1.0 || n < -1.0)
-            console.log(n)
-        return v / max; // clamp
+        return v / max; // scale
     }
 
     let retArr = new Int16Array(f32.length);
@@ -26,7 +24,6 @@ function float32_to_int16(f32){
     for (let i=0; i < f32.length; i++)
         if (Math.abs(f32[i]) > max)
             max = Math.abs(f32[i]);
-
 
     for (let i=0; i < f32.length; i++)
         retArr[i] = convert(f32[i], max);

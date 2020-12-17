@@ -48,13 +48,20 @@ class Looper extends React.Component {
                 this.handlePlay();
             }
         };
-    };
+    }
 
     handleInitLoops = (loops) => {
         this.counter += loops.length - 1;
         if (this.counter === 0) this.setState({'processing': false});
         for (const l of loops){
-            this.loadLoopFromDynamoData(l);
+            try{
+                if (l.audio) // catches issue from load loop
+                    this.loadLoopFromDynamoData(l);
+            }catch (e){
+                console.log("bad loop:");
+                console.log(l);
+                console.log(e);
+            }
         }       
     };
 

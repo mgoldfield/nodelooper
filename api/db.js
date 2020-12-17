@@ -49,7 +49,8 @@ class DataAccess {
                                 found = true;
                             }else{
                                 // toDo - make this parallel
-                                i.audio = await this.s3.retreiveAudio(i.s3loc.S);   
+                                if (i.s3loc) // deal with error if it wasn't stored 
+                                    i.audio = await this.s3.retreiveAudio(i.s3loc.S);   
                             }
                         }
                         let chat = await this.getChat(id);
