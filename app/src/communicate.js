@@ -190,6 +190,8 @@ class Communication {
     }
 
     broadcastMetadata(id, metadata){
+        console.log("broadcasting metadata")
+        console.log(metadata);
         let data = JSON.stringify({
             ProjectID: this.project_id,
             LoopID: id,

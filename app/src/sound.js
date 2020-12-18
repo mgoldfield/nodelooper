@@ -59,7 +59,6 @@ class AudioLoopBunch{
         tmpstream.getTracks().forEach((track) => track.stop());
 
         let devices = await navigator.mediaDevices.enumerateDevices();
-        console.log(devices);
         this.availableDevices = devices.filter(d => d.kind === 'audioinput');
 
         //toDo: fail gracefully here... catch in looper and display a message
@@ -242,7 +241,7 @@ class AudioLoopBunch{
             for (let sample = 0; sample < maxLength; sample++){
                 for (let l=0; l < this.audioLoops.length; l++){
                     if (!this.audioLoops[l].muted){
-                        outputChannel[sample] += this.audioLoops[l].gain * channelData[l][sample % this.audioLoops[l].buffer.length];
+                        outputChannel[sample] += (2**this.audioLoops[l].gain - 1) * channelData[l][sample % this.audioLoops[l].buffer.length];
                     }
                 }
             }
@@ -263,6 +262,16 @@ class AudioLoopBunch{
         reader.onload = async (event) => {
             this.getAudioContext().decodeAudioData(event.target.result)
             .then(buff => {
+                if (buff.numberOfChannels > 2)
+                    throw Error("Too many channels... only mono or stereo tracks are loadable");
+
+                if (buff.numberOfChannels < 2){
+                    let newbuff = this.getAudioContext().createBuffer(2, buff.length, buff.sampleRate);
+                    newbuff.copyToChannel(buff.getChannelData(0), 0);
+                    newbuff.copyToChannel(buff.getChannelData(0), 1);
+                    buff = newbuff;
+                }
+
                 let loop = new AudioLoop(this.getAudioContext, this.comms);
                 loop.id = id;
                 loop.name = f.name;
@@ -467,6 +476,7 @@ class AudioLoop {
         this.id = null;
 
         this.gainNode = this.getAudioContext().createGain();
+        this.gain = 1;
 
         this.onProgress = null;     // set by LoopProgress component
         this.onNewBuffer = null;    // ditto
@@ -482,13 +492,14 @@ class AudioLoop {
     }
 
     getMetadata() {
+        console.log("metadata gain: %s, gainval: %s", this.gain, this.gainNode.gain.value);
         return {
             maxRepeats: {N:this.maxRepeats.toString()},
             delayedStart: {N: this.delayedStart.toString()},
             muted: {BOOL:this.muted},
             looping: {BOOL: this.looping},
             name: {S: this.name},
-            gain: {N: (this.muted ? this.formerGain : this.gainNode.gain.value).toString()},
+            gain: {N: (this.muted ? this.formerGain : this.gain).toString()},
             length: {N: this.buffer.length.toString()},
             sampleRate: {N: this.buffer.sampleRate.toString()},
             numChannels: {N: this.buffer.numberOfChannels.toString()},            
@@ -599,10 +610,6 @@ class AudioLoop {
         this.redraw({'playing':false, 'recording': false});
     }
 
-    get gain(){
-        return this.gainNode.gain.value;
-    }
-
     toggleMute(){
         if (this.muted){
             this.setGain(this.formerGain);
@@ -624,6 +631,9 @@ class AudioLoop {
 
     setGain(g){
         this.gainNode.gain.setValueAtTime(2**g - 1, this.getAudioContext().currentTime);
+
+        if (!this.muted)
+            this.gain = g;
     }
 
     connect(dest, index){

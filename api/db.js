@@ -25,6 +25,8 @@ class DataAccess {
     ddb = new Dynamo();
     s3 = new S3();
 
+    current_projects = {}
+
     getProject = (id) => {
         // no need to sanitize because we're not parsing the data...
         return new Promise((resolve, reject) => {
@@ -42,6 +44,9 @@ class DataAccess {
                     reject(err);
                 }else{
                     try{
+                        if (!Object.keys(this.current_projects).includes(id))
+                            this.current_projects[id] = data.Items.length;
+
                         let found = false;
                         for (const i of data.Items){
                             console.log(i);
@@ -133,8 +138,53 @@ class DataAccess {
     };
 
     putTrack = (projectID, name, metadata, audio, expires) => {
+        function sanitizeData(metadata, audio, projectID, name){
+            return metadata;
+
+            //todo: test this and implement it:
+
+            if (audio.format === 'mp3'){
+                if (audio.data.length > 10000000){
+                    return false;
+                }
+            }else{
+                return false; // currently not allowing 'raw' files
+            }
+
+            if (projectID.length > 36 || name.length > 36){
+                return false;
+            }
+
+            let newmetadata = {};
+
+            newmetadata['maxRepeats'] = {N: metadata.maxRepeats.N.slice(0,4)};
+            newmetadata['delayedStart'] = {N: metadata.delayedStart.N.slice(0,4)}
+            newmetadata['muted'] = {BOOL: metadata.muted.BOOL.slice(0,5)}
+            newmetadata['looping'] = {BOOL: metadata.looping.BOOL.slice(0,5)}
+            newmetadata['name'] = {S: metadata.name.S.slice(0,200)}
+            newmetadata['gain'] = {N: metadata.gain.N.slice(0,4)}
+            newmetadata['length'] = {N: metadata.length.N.slice(0,20)}
+            newmetadata['sampleRate'] = {N: metadata.sampleRate.N.slice(0,10)}
+            newmetadata['numberOfChannels'] = {N: metadata.numChannels.N.slice(0,4)}
+            newmetadata['tempo'] = {N: metadata.tempo.N.slice(0,4)}
+
+            console.log(JSON.stringify(metadata));
+            console.log(JSON.stringify(newmetadata))
+
+            return newmetadata;
+        }
+
         // store track in s3
         return new Promise((resolve, reject) => {
+            let newmetadata = sanitizeData(metadata, audio, projectID, name);
+            if (!newmetadata)
+                reject("bad loop data");
+
+            if (this.current_projects[projectID] >= 50)
+                reject("too many tracks in project");
+            else
+                this.current_projects[projectID]++;
+
             let s3loc = uuidv4(); // toDo: change this
             let params = {
                 TableName: config.dynamodb.looper_table,            
@@ -146,7 +196,7 @@ class DataAccess {
                 },
             };
             if (Object.keys(metadata).length > 0){
-                params.Item['metadata'] = {M: metadata};
+                params.Item['metadata'] = {M: newmetadata};
             }
 
             this.ddb.putItem(params, async (err, data) => {
@@ -247,6 +297,7 @@ class SocketHelpers {
                     ":m": { M: data.metadata }
                 }
             }
+            console.log("updating metadata....")
             console.log(params);
             console.log(JSON.stringify(params));
             this.ddb.updateItem(params, (err, data) => {

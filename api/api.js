@@ -83,7 +83,7 @@ app.get('/loop', (req, res) => {
     let qs = url.parse(req.url,true).query;
     da.getProject(qs.ProjectID)
     .then((data) => {
-        let user_id = ws.register_user(qs.ProjectID)
+        let user_id = ws.register_user(qs.ProjectID);
         res.send({
             user: user_id,
             data: data,

@@ -55,8 +55,7 @@ class Looper extends React.Component {
         if (this.counter === 0) this.setState({'processing': false});
         for (const l of loops){
             try{
-                if (l.audio) // catches issue from load loop
-                    this.loadLoopFromDynamoData(l);
+                this.loadLoopFromDynamoData(l);
             }catch (e){
                 console.log("bad loop:");
                 console.log(l);
@@ -73,7 +72,6 @@ class Looper extends React.Component {
     }
 
     loadLoopFromDynamoData = (l) => {
-        // toDo: make a "loading" light
         let onLoad = (loop) =>{
             this.addNewLoop(
                 l.LoopID.S,
@@ -92,7 +90,8 @@ class Looper extends React.Component {
                 metadata: l.metadata.M,
             });
         }else{
-            this.loopBunch.loadLoopFromDynamoData(l, onLoad);
+            if (l.audio) // catches an issue where error on s3 put results in no audio
+                this.loopBunch.loadLoopFromDynamoData(l, onLoad);
         }
     };
 
@@ -422,7 +421,7 @@ class Loop extends React.Component {
         this.state = {
             'name': props.name,
             'muted': this.audioLoop.muted,
-            'gain': this.audioLoop.gainNode.gain.value,
+            'gain': (this.audioLoop.muted ? this.audioLoop.formerGain : this.audioLoop.gain),
             'looping': this.audioLoop.looping,
             'playing': this.audioLoop.playing,
             'recording': props.recording,
@@ -485,7 +484,7 @@ class Loop extends React.Component {
                     onBlur={() => {this.audioLoop.broadcastMetadata()}}
                 />
                 <Slider 
-                    name='gain' min='0' max='3' 
+                    name='gain' min='0' max='6' 
                     value={this.state.gain} 
                     onChange={this.handleGain}
                     step="0.01"

@@ -29,7 +29,8 @@ class WebSocketServer {
                 let parsed_msg = new Message(msg);
                 this.broadcast(client.project_id, client.user_id, parsed_msg);
                 if (parsed_msg.type === 'UM'){
-                    this.db.updateMetadata(JSON.parse(parsed_msg.msg));
+                    this.db.updateMetadata(JSON.parse(parsed_msg.msg))
+                    .catch(e => console.log("error updating metadata: %s", e));
                 }
             });
         });
