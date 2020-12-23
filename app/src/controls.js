@@ -338,12 +338,13 @@ class Instructions extends React.Component {
     }
 }
 
+const DEFAULT_NAME = 'anon' + Math.floor(1000*Math.random());
 
 class ChatWindow extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            'name':'your name',
+            'name': localStorage.getItem('name'),
             'value': '',
             'chat': [],
         };
@@ -357,7 +358,8 @@ class ChatWindow extends React.Component {
 
     submitChat = (event) => {
         if(event.keyCode === 13) {
-            let line = this.state.name + '::: ' + this.state.value;
+            const name = this.state.name || DEFAULT_NAME;
+            let line = name + '::: ' + this.state.value;
             this.updateChat(line);
             this.props.sendChat(line);
             this.setState({'value': ''});
@@ -365,7 +367,11 @@ class ChatWindow extends React.Component {
     };
 
     typing = (event) => {this.setState({'value': event.target.value});};
-    updateName = (event) => {this.setState({'name': event.target.value});};
+    updateName = (event) => {
+        const name = event.target.value.trim();
+        localStorage.setItem('name', name);
+        this.setState({'name': name});
+    };
 
     render() {
         return (
@@ -373,13 +379,14 @@ class ChatWindow extends React.Component {
                 <div className="chatTitle">-- chat --</div>
                 <div className="chatname">
                     <input type='text' className='inputFont'
+                        placeholder="your name"
                         value={this.state.name} onChange={this.updateName}
                     />
                 </div>
                 <div id="chat" className="chat inputFont">{this.state.chat}</div>
                 <div className="chatInput">
                     <input type='text' id='chatInput' className=''
-                        value={this.state.value} onChange={this.typing} 
+                        value={this.state.value} onChange={this.typing}
                         onKeyDown={this.submitChat} size='25' />
                 </div>
             </div>
