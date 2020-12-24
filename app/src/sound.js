@@ -164,7 +164,7 @@ class AudioLoopBunch{
         }
     }
 
-    refreshMergeNode(){
+    async refreshMergeNode(){
         if (this.mergeOutOfDate){
             // number of loops + click track 
             if (this.mergeNode)
@@ -173,8 +173,8 @@ class AudioLoopBunch{
                 this.mergeNode = this.getAudioContext().createChannelMerger(this.audioLoops.length * 2);
             for (let i = 0; i < this.audioLoops.length; i++){
                 this.audioLoops[i].disconnect();
-                this.audioLoops[i].connect(this.mergeNode, 0, 2 * i);
-                this.audioLoops[i].connect(this.mergeNode, 1, 2 * i + 1);
+                await this.audioLoops[i].connect(this.mergeNode, 0, 2 * i);
+                //this.audioLoops[i].connect(this.mergeNode, 1, 2 * i + 1);
             }
             if (this.mergeNode)
                 this.mergeNode.connect(this.gainNode);
@@ -192,9 +192,9 @@ class AudioLoopBunch{
         }        
     }
 
-    playLoops(){
+    async playLoops(){
         let offset = this.getOffset();
-        this.refreshMergeNode();
+        await this.refreshMergeNode();
         this.playing = true;
 
         let waitTime = 0.0001 + this.getAudioContext().baseLatency;
@@ -477,6 +477,25 @@ class AudioLoop {
 
         this.gainNode = this.getAudioContext().createGain();
         this.gain = 1;
+        this.jsEffectSrc = null;
+        // DEBUG
+        this.jsEffectSrc = `
+            class WhiteNoiseProcessor extends AudioWorkletProcessor {
+              process (inputs, outputs, parameters) {
+                console.log("in white noise processor")
+                const output = outputs[0]
+                output.forEach(channel => {
+                  for (let i = 0; i < channel.length; i++) {
+                    channel[i] = Math.random() * 2 - 1
+                  }
+                })
+                return true
+              }
+            }
+
+            registerProcessor('white-noise-processor', WhiteNoiseProcessor)
+        `
+        this.effectNodes = [this.gainNode];
 
         this.onProgress = null;     // set by LoopProgress component
         this.onNewBuffer = null;    // ditto
@@ -561,9 +580,8 @@ class AudioLoop {
 
         this.source = this.getAudioContext().createBufferSource();
         this.source.buffer = this.buffer;
-        this.source.connect(this.gainNode, 0);
+        this.source.connect(this.effectNodes[0]);
         this.source.loop = this.looping;
-
         if (this.looping && this.maxRepeats > 0){
             this.stopTimeout = setTimeout(() => this.stop(), (this.maxRepeats * this.length + this.delayedStart - offset) * 1000);
         }
@@ -575,6 +593,23 @@ class AudioLoop {
         }else{
             this.source.start(contextTime + this.delayedStart - offset, 0);            
         }
+    }
+
+    async updateEffectNodes() {
+        const nodes = [this.gainNode];
+        if (this.jsEffectSrc) {
+            const base64 = btoa(this.jsEffectSrc);
+            const url = 'data:text/javascript;base64,' + base64;
+            const ctx = this.getAudioContext();
+            await ctx.audioWorklet.addModule(url);
+            const jsNode = new AudioWorkletNode(ctx, 'white-noise-processor');
+            nodes.push(jsNode);
+        }
+        let prev = nodes[0];
+        for (let i = 1; i < nodes.length; i++) {
+            prev.connect(nodes[i]);
+        }
+        this.effectNodes = nodes;
     }
 
     record(delay){
@@ -636,12 +671,13 @@ class AudioLoop {
             this.gain = g;
     }
 
-    connect(dest, index){
-        this.gainNode.connect(dest, 0, index);
+    async connect(dest, index){
+        await this.updateEffectNodes();
+        this.effectNodes[this.effectNodes.length - 1].connect(dest, 0, index);
     }
 
     disconnect(){
-        this.gainNode.disconnect();
+        this.effectNodes[this.effectNodes.length - 1].disconnect();
     }
 
     download(){
