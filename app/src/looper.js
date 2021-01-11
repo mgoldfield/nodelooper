@@ -270,7 +270,17 @@ class Looper extends React.Component {
             };
         });
         this.loopBunch.deleteLoop(id, broadcast);
-        this.setState({'processing': false});
+        
+    }
+
+    handleDownload = () => {
+        console.log("here")
+        this.setState({'processing': true});
+        setTimeout(() => {
+            this.loopBunch.download();
+            this.setState({'processing': false});
+        }, 100);
+        console.log("there")
     }
 
     getLoadingClasses = () => {
@@ -292,7 +302,7 @@ class Looper extends React.Component {
                     toggled={this.state.quantize} avail={!this.state.playing}/>  
                 <Button name="load file" onClick={this.loadLoop}
                     toggled={false} avail={!this.state.playing && !this.state.recording}/>
-                <Button name='down load' onClick={this.loopBunch.download} 
+                <Button name='down load' onClick={this.handleDownload} 
                     toggled={false} avail={this.state.loops.length > 0}/>                              
                 <Button 
                     name={(this.state.expanded) ? 'collapse' : 'expand'}
