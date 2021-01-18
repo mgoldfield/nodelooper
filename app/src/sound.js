@@ -480,20 +480,41 @@ class AudioLoop {
         this.jsEffectSrc = null;
         // DEBUG
         this.jsEffectSrc = `
-            class WhiteNoiseProcessor extends AudioWorkletProcessor {
-              process (inputs, outputs, parameters) {
-                console.log("in white noise processor")
-                const output = outputs[0]
-                output.forEach(channel => {
-                  for (let i = 0; i < channel.length; i++) {
-                    channel[i] = Math.random() * 2 - 1
-                  }
-                })
-                return true
-              }
+            class DelayProcessor extends AudioWorkletProcessor {
+                constructor (options) {
+                    super();
+                    this.buffer = new Float32Array(11025); // 250ms @ 44.1kHz
+                    this.head = 0;
+                    this.wet = 0.3;
+                    this.feedback = 0.5;
+                }
+                process (inputs, outputs, parameters) {
+                    const input = inputs[0][0];
+                    if (!input) return false;
+
+                    const space = this.buffer.length - this.head;
+                    for (let i = 0; i < input.length; i++) {
+                        const j = (this.head + i) % this.buffer.length;
+                        this.buffer[j] = (
+                            this.feedback * this.buffer[j] +
+                            (1 - this.feedback) * input[i]
+                        );
+                    }
+                    this.head = (this.head + input.length) % this.buffer.length;
+
+                    outputs[0].forEach(output => {
+                        for (let i = 0; i < output.length; i++) {
+                            output[i] = (
+                                (1 - this.wet) * input[i] +
+                                this.wet * this.buffer[this.head + i]
+                            );
+                        }
+                    });
+                    return true;
+                }
             }
 
-            registerProcessor('white-noise-processor', WhiteNoiseProcessor)
+            registerProcessor('delay-processor', DelayProcessor)
         `
         this.effectNodes = [this.gainNode];
 
@@ -602,7 +623,7 @@ class AudioLoop {
             const url = 'data:text/javascript;base64,' + base64;
             const ctx = this.getAudioContext();
             await ctx.audioWorklet.addModule(url);
-            const jsNode = new AudioWorkletNode(ctx, 'white-noise-processor');
+            const jsNode = new AudioWorkletNode(ctx, 'delay-processor');
             nodes.push(jsNode);
         }
         let prev = nodes[0];
