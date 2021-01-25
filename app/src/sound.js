@@ -60,6 +60,7 @@ class AudioLoopBunch{
 
         let devices = await navigator.mediaDevices.enumerateDevices();
         this.availableDevices = devices.filter(d => d.kind === 'audioinput');
+        console.log(this.availableDevices);
 
         //toDo: fail gracefully here... catch in looper and display a message
         this.device = this.availableDevices[0].deviceId;
@@ -226,8 +227,8 @@ class AudioLoopBunch{
         // mix down all loops
         let maxLength = 0;
         for (const l of this.audioLoops){
-            if (l.buffer.length > maxLength){
-                maxLength = l.buffer.length;
+            if (l.buffer.length + (l.delayedStart * this.audioLoops[0].buffer.sampleRate) > maxLength){
+                maxLength = l.buffer.length + (l.delayedStart * this.audioLoops[0].buffer.sampleRate);
             }
         }
         //assumes everything is stereo
@@ -240,8 +241,8 @@ class AudioLoopBunch{
             }
             for (let sample = 0; sample < maxLength; sample++){
                 for (let l=0; l < this.audioLoops.length; l++){
-                    if (!this.audioLoops[l].muted){
-                        outputChannel[sample] += (2**this.audioLoops[l].gain - 1) * channelData[l][sample % this.audioLoops[l].buffer.length];
+                    if (!this.audioLoops[l].muted && this.audioLoops[l].delayedStart <= (sample / mix.sampleRate)){
+                        outputChannel[sample] += (2**this.audioLoops[l].gain - 1) * channelData[l][(sample - (this.audioLoops[l].delayedStart * this.audioLoops[0].buffer.sampleRate)) % this.audioLoops[l].buffer.length];
                     }
                 }
             }
