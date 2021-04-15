@@ -270,6 +270,7 @@ class Looper extends React.Component {
             };
         });
         this.loopBunch.deleteLoop(id, broadcast);
+        this.setState({processing: false})
         
     }
 

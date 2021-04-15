@@ -354,17 +354,22 @@ class Recorder {
 
     recordBuffer(mediaPromise, quantUnit, onFailure, onSuccess){
         mediaPromise.then((stream) => {
+            console.log(this.bunch.getAudioContext().outputLatency, 
+                this.bunch.getAudioContext().baseLatency)            
             let playTime = null; // audiocontext time when playing starts
             let audioChunks = [];
             let dataAvailable = (event) => {
+                console.log("pushing recorded data...")
                 audioChunks.push(event.data);
             }            
             let onStop = async () => {
                 try{
+                    console.log("stopping...")
                     let stopTime = this.bunch.getAudioContext().currentTime;
                     this.bunch.stop();
                     stream.getTracks().forEach((track) => track.stop());
-                    //console.log("stopTime: %s, playTime: %s, ol: %s, total: %s", stopTime, playTime, (this.bunch.getAudioContext().outputLatency), stopTime - playTime - (2 * this.bunch.getAudioContext().outputLatency))
+                    console.log(this.bunch.getAudioContext().outputLatency, 
+                        this.bunch.getAudioContext().baseLatency)
                     let newBuff = await this.handleChunks(audioChunks, 
                         // toDo: examine assumptions about outputLatency
                         stopTime - playTime,
@@ -388,8 +393,10 @@ class Recorder {
             this.mediaRecorder.addEventListener("error", (e) => {
                 alert("incompatible device, check f.a.q. for support: " + e.error);
                 console.log(e);
-            })
-            this.mediaRecorder.start();
+            });
+
+            console.log("recording...")
+            this.mediaRecorder.start(50);
         })
         .catch((error) => {
             console.log(error);
@@ -400,7 +407,7 @@ class Recorder {
     handleChunks = async function(audioChunks, targetLength, latency, quantUnit){
         const blob = new Blob(audioChunks, {'type' : 'audio/ogg; codecs=opus'});
         let blobbuff = await blob.arrayBuffer();
-        console.log(blobbuff)
+        console.log(blobbuff);
         let buffer = await this.bunch.getAudioContext().decodeAudioData(blobbuff);
         if ((buffer.length / buffer.sampleRate) > config.limits.length){
             alert("You have exceeded the maximum length of " + config.limits.length + " seconds per buffer :(");
@@ -412,6 +419,8 @@ class Recorder {
     trimAndQuantizeAudio(buffer, targetLength, latency, quantUnit){
         // first we trim to target length from the beginning
         // then we add or trim from the end to quantize if qantized is set to true
+
+        console.log("initial buffer length %s", buffer.length / buffer.sampleRate)
 
         targetLength = targetLength - (2 * latency);
         let samplesToTrim = buffer.length - Math.round(targetLength * buffer.sampleRate);
@@ -551,7 +560,8 @@ class AudioLoop {
     setBuffer(buff){
         this.buffer = buff;
         if (this.onNewBuffer) this.onNewBuffer(buff);
-        if (this.redraw) this.redraw({'hasBuffer': true});                
+        if (this.redraw) this.redraw({'hasBuffer': true}); 
+        console.log("buffer length %s seconds", this.length)               
     }
 
     play(contextTime, offset=0){
