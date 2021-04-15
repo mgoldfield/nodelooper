@@ -426,7 +426,7 @@ class Recorder {
         let samplesToTrim = buffer.length - Math.round(targetLength * buffer.sampleRate);
         let trimmedAudio = new Float32Array(buffer.length);
         let trimFromFront = 0;
-        trimFromFront = 2 * latency * buffer.sampleRate;
+        trimFromFront = 4 * latency * buffer.sampleRate;
         buffer.copyFromChannel(trimmedAudio, 0, trimFromFront);
         trimmedAudio = trimmedAudio.slice(samplesToTrim); // trim from back
 
