@@ -71,7 +71,7 @@ class Communication {
 
     async postDataToApi(data, endpoint){
         const protocol = (config.env==='PROD') ? 'https://' : 'http://'
-        const res = await fetch(`${protocol}${config.api.url}:${config.api.port}/${config.api.path}/${endpoint}`, {
+        const res = await fetch(`${protocol}${config.api.url}:${config.api.port}${config.api.path}/${endpoint}`, {
             method: 'POST',
             body: data,
             headers: {
@@ -79,7 +79,7 @@ class Communication {
                 'Content-Length': data.length
             }
         })
-        return await res.body()
+        return await res.text()
     }
 
     handleRcvdLoop(loop_id){  // get new loop received from other users

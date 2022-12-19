@@ -1,6 +1,6 @@
 import { Communication } from './communicate.js';
+import config from './config-app.js';
 import { bufferToWav, downloadBlob } from './format_tools.js';
-import config from './config-app.js'
 
 // toDo: break up sound.js into more files
 // toDo: make a parent class for loop and loop bunch which 
@@ -289,9 +289,7 @@ class AudioLoopBunch{
 
     loadLoopFromDynamoData = async (l, onLoad) => { 
         function b64toFloatArr(to_encode){
-            let buf = Buffer.from(to_encode, 'base64');
-            let f32a = new Float32Array(buf.buffer); 
-            return f32a;
+            return Float32Array.from(atob(to_encode), c => c.charCodeAt(0))
         }
         let audio = JSON.parse(l.audio),
             newloop = new AudioLoop(this.getAudioContext, this.comms),
@@ -304,8 +302,9 @@ class AudioLoopBunch{
             newbuff.copyToChannel(b64toFloatArr(audio.L), 0);
             newbuff.copyToChannel(b64toFloatArr(audio.R), 1);          
         }else if (audio.format === 'mp3'){
-            let tmpbuf = Buffer.from(audio.data, 'base64'),
-                tmpAudioBuf = await this.getAudioContext().decodeAudioData(tmpbuf.buffer),
+            let tmpbuf = Uint8Array.from(atob(audio.data), c => c.charCodeAt(0));
+            debugger
+            let tmpAudioBuf = await this.getAudioContext().decodeAudioData(tmpbuf.buffer),
                 len_diff = tmpAudioBuf.length - newbuff.length;
             newbuff.copyToChannel(tmpAudioBuf.getChannelData(0).slice(len_diff / 2), 0); // trims to correct length
             newbuff.copyToChannel(tmpAudioBuf.getChannelData(1).slice(len_diff / 2), 1);

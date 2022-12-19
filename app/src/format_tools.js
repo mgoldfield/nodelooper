@@ -54,12 +54,12 @@ let bufferToMp3 = (buff) => {
         }
 
         let blob = new Blob(mp3Data),
-            arrbuff = await blob.arrayBuffer(),
-            ret_buff = Buffer.from(arrbuff);
-
+            arrbuff = new Uint8Array(await blob.arrayBuffer());
+            
+        const base64 = arrbuff.map(byte => byte.toString(16)).join('')
        //downloadBlob('new.mp3', blob);
 
-        resolve(ret_buff.toString('base64'));
+        resolve(base64);
     });
 };
 
@@ -205,4 +205,4 @@ function bufferToWav(buff, debug=false) {
     return new Blob([newBuff], {type: "audio/wav"});
 }
 
-export {bufferToWav, bufferToMp3, wavToBuffer, downloadBlob}
+export { bufferToWav, bufferToMp3, wavToBuffer, downloadBlob };
