@@ -1,8 +1,5 @@
-import config from './config-app.js'
-import {bufferToMp3} from './format_tools.js'
-
-const http = require('http');
-const https = require('https');
+import config from './config-app.js';
+import { bufferToMp3 } from './format_tools.js';
 
 class Communication {
     msgDivider = '|||';
@@ -13,57 +10,20 @@ class Communication {
         this.project_id = project_id;
     }
 
-    get getHttp(){
-        if (config.env === 'PROD'){
-            return https;
-        }else{
-            return http;
+    async initProject() {
+        let url = ((config.env==='PROD') ? 'https://' : 'http://');
+        url += config.api.url + ':' + config.api.port + config.api.path;
+        url += '/loop?ProjectID=' + this.project_id
+        const res = await fetch(url)
+        const loop_response = await res.json()
+        this.user = loop_response.user;
+        this.socket = new WebSocket(config.ws_url, this.project_id + ":" + this.user);
+        this.socket.addEventListener('open', () => console.log("connection open"));
+        this.socket.addEventListener('message', this.handleMsg);
+        for (const c of loop_response.data.chat){ // toDo: make this less brittle
+            this.handleRcvdChat(c.msg.S.split(this.msgDivider)[1]);                        
         }
-    }
-
-    initProject() {
-        return new Promise((resolve, reject) => {
-            try{
-                let callback = (response) => {
-                    if (response.statusCode !== 200){
-                        reject(Error('Bad status code: ' + response.statusCode));
-                        return;
-                    }
-
-                    let json = '';
-
-                    //another chunk of data has been received, so append it to `str`
-                    response.on('data', (chunk) => {
-                        json += chunk;
-                    });
-
-                    //the whole response has been received, so we just print it out here
-                    response.on('end', () => {
-                        let loop_response = JSON.parse(json);
-                        // toDo: fail more gracefully here if the loop doesn't exist
-
-                        if (!loop_response) {
-                            reject(Error('loop does not exist'));
-                            return;
-                        }
-                        this.user = loop_response.user;
-                        this.socket = new WebSocket(config.ws_url, this.project_id + ":" + this.user);
-                        this.socket.addEventListener('open', () => console.log("connection open"));
-                        this.socket.addEventListener('message', this.handleMsg);
-                        for (const c of loop_response.data.chat){ // toDo: make this less brittle
-                            this.handleRcvdChat(c.msg.S.split(this.msgDivider)[1]);                        
-                        }
-                        resolve(loop_response.data.loopData);
-                    });
-                }
-                let url = ((config.env==='PROD') ? 'https://' : 'http://');
-                url += config.api.url + ':' + config.api.port + config.api.path;
-                url += '/loop?ProjectID=' + this.project_id
-                this.getHttp.get(url, callback).end();
-            }catch(e){
-                reject(e);
-            }
-        });
+        return loop_response.data.loopData
     }
 
     handlePing = () => {
@@ -109,38 +69,17 @@ class Communication {
         this.socket.send('C' + this.msgDivider + msg);
     }
 
-    postDataToApi(data, endpoint){
-        return new Promise((resolve, reject) => {
-            let options = {
-                hostname: config.api.url,
-                port: config.api.port,
-                path: config.api.path + '/' + endpoint,
-                method: 'POST',
-                headers: {
+    async postDataToApi(data, endpoint){
+        const protocol = (config.env==='PROD') ? 'https://' : 'http://'
+        const res = await fetch(`${protocol}${config.api.url}:${config.api.port}/${config.api.path}/${endpoint}`, {
+            method: 'POST',
+            body: data,
+            headers: {
                 'Content-Type': 'application/json',
                 'Content-Length': data.length
-                }
-            };
-            let req = this.getHttp.request(options, res => {
-                if (res.statusCode !== 200){
-                    console.log("post data status code: %s", res.statusCode);
-                    reject("bad status code from api");
-                }
-                let response_data = '';
-                res.on('data', d => {
-                    response_data += d;
-                });
-
-                res.on('end', () => resolve(response_data));
-            });
-
-            req.on('error', error => {
-                reject(error);
-            });
-
-            req.write(data);
-            req.end();
-        });
+            }
+        })
+        return await res.body()
     }
 
     handleRcvdLoop(loop_id){  // get new loop received from other users
