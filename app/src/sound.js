@@ -1,3 +1,4 @@
+import base64 from 'base64-js';
 import { Communication } from './communicate.js';
 import config from './config-app.js';
 import { bufferToWav, downloadBlob } from './format_tools.js';
@@ -302,8 +303,7 @@ class AudioLoopBunch{
             newbuff.copyToChannel(b64toFloatArr(audio.L), 0);
             newbuff.copyToChannel(b64toFloatArr(audio.R), 1);          
         }else if (audio.format === 'mp3'){
-            let tmpbuf = Uint8Array.from(atob(audio.data), c => c.charCodeAt(0));
-            debugger
+            const tmpbuf = base64.toByteArray(audio.data)
             let tmpAudioBuf = await this.getAudioContext().decodeAudioData(tmpbuf.buffer),
                 len_diff = tmpAudioBuf.length - newbuff.length;
             newbuff.copyToChannel(tmpAudioBuf.getChannelData(0).slice(len_diff / 2), 0); // trims to correct length

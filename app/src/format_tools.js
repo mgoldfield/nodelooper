@@ -1,4 +1,5 @@
 const lamejs = require("lamejs");
+const base64 = require("base64-js")
 
 function downloadBlob(filename, blob){
     let tmp = document.createElement('a');
@@ -30,37 +31,34 @@ function float32_to_int16(f32){
     return retArr;
 }
 
-let bufferToMp3 = (buff) => {
-    return new Promise(async (resolve, reject) => {
-        let mp3encoder = new lamejs.Mp3Encoder(2, 44100, 128);
-        let mp3Data = [];
+const bufferToMp3 = async (buff) => {
+    let mp3encoder = new lamejs.Mp3Encoder(2, 44100, 128);
+    let mp3Data = [];
 
-        let left = float32_to_int16(buff.getChannelData(0)); 
-        let right = float32_to_int16(buff.getChannelData(1));
-        let sampleBlockSize = 1152; //can be anything but make it a multiple of 576 to make encoders life easier
+    let left = float32_to_int16(buff.getChannelData(0)); 
+    let right = float32_to_int16(buff.getChannelData(1));
+    let sampleBlockSize = 1152; //can be anything but make it a multiple of 576 to make encoders life easier
 
-        for (let i = 0; i < buff.length; i += sampleBlockSize) {
-            let leftChunk = left.subarray(i, i + sampleBlockSize);
-            let rightChunk = right.subarray(i, i + sampleBlockSize);
-            let mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
-            if (mp3buf.length > 0) {
-                mp3Data.push(mp3buf);
-            }
-        }
-        let mp3buf = mp3encoder.flush();   //finish writing mp3
-
+    for (let i = 0; i < buff.length; i += sampleBlockSize) {
+        let leftChunk = left.subarray(i, i + sampleBlockSize);
+        let rightChunk = right.subarray(i, i + sampleBlockSize);
+        let mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
         if (mp3buf.length > 0) {
             mp3Data.push(mp3buf);
         }
+    }
+    let mp3buf = mp3encoder.flush();   //finish writing mp3
 
-        let blob = new Blob(mp3Data),
-            arrbuff = new Uint8Array(await blob.arrayBuffer());
-            
-        const base64 = arrbuff.map(byte => byte.toString(16)).join('')
-       //downloadBlob('new.mp3', blob);
+    if (mp3buf.length > 0) {
+        mp3Data.push(mp3buf);
+    }
 
-        resolve(base64);
-    });
+    let blob = new Blob(mp3Data),
+        arrbuff = new Uint8Array(await blob.arrayBuffer());
+    
+   //downloadBlob('new.mp3', blob);
+
+    return base64.fromByteArray(arrbuff)
 };
 
 function debugWav(view){
