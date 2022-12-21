@@ -1,10 +1,11 @@
-import { DataAccess } from './db.js';
+// import { DataAccess } from './db.js';
+import { jest } from '@jest/globals';
 
-
-jest.mock('uuid/v4');
+jest.mock('uuid');
 
 describe('mock uuid', () => {
-  it('should return testid }', () => {
+  it('should return testid }', async () => {
+    const uuid = (await import('uuid')).v4;
     uuid.mockImplementation(() => 'testid');
   });  
 });

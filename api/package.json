@@ -5,7 +5,8 @@
   "main": "api.js",
   "type": "module",
   "scripts": {
-    "test": "jest"
+    "start": "node api.js",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "author": "",
   "license": "ISC",
@@ -16,9 +17,11 @@
     "uuid": "^8.3.1",
     "ws": "^7.3.1"
   },
+  "devDependencies": {
+    "jest": "^29.3.1"
+  },
   "jest": {
     "verbose": true,
     "transform": {}
-  },
-  "devDependencies": {}
+  }
 }
