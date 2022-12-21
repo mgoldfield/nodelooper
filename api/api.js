@@ -1,20 +1,18 @@
-import { DataAccess } from './db.js';
+import bodyParser from 'body-parser';
+import express from 'express';
+import fs from 'fs';
+import url from 'url';
 import { config } from './config-api.js';
-import { WebSocketServer, Message } from './websockets.js'
-import { createRequire } from 'module';
+import { DataAccess } from './db.js';
+import { Message, WebSocketServer } from './websockets.js';
 
-const require = createRequire(import.meta.url);
-const url = require('url');
-const express = require('express');
-const bodyParser = require('body-parser');
-const fs = require('fs');
 const app = express();
 const ws = new WebSocketServer();
 const da = new DataAccess();
 
 app.use(bodyParser.json({limit: '500mb'}));
 if (config.env === 'DEV'){
-    const cors = require('cors');
+    const cors = (await import('cors')).default;
     app.use(cors())     
 }
 app.listen(3001);
