@@ -1,11 +1,7 @@
-import { createRequire } from 'module';
+import AWS from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
 import { config } from './config-api.js';
 
-const require = createRequire(import.meta.url);
-
-const { Readable } = require("stream")
-const AWS = require('aws-sdk');
 AWS.config.update({region: config.aws.region});
 AWS.config.getCredentials((err) => {
     if (err) console.log(err.stack);
@@ -400,4 +396,4 @@ class S3 {
 }
 
 
-export {DataAccess, SocketHelpers};
+export { DataAccess, SocketHelpers };
