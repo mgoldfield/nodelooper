@@ -35,9 +35,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Set config files
-        working-directory: /
-        run: ./tools/setConfig.sh prod
+      - name: Set config file
+        run: cp ../configs/config-app.prod.js src/config-app.js
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
