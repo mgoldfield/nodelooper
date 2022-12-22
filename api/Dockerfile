@@ -1,4 +1,4 @@
-FROM node:14.15.0-alpine as build
+FROM node:current-alpine as build
 
 # build module layer
 COPY ./package.json ./
