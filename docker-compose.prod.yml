@@ -1,16 +1,16 @@
 version: "3.8"
 services:
   api:
-    build: ./api 
+    build: ./api
     expose:
       - "3001"
       - "3002"
   app:
-    build: 
+    build:
       context: ./app
-      dockerfile: Dockerfile.prod      
-    ports: 
-      - "80:80"  # change this to __port__:80 to change the port on local machine
+      dockerfile: Dockerfile.prod
+    ports:
+      - "80:80" # change this to __port__:80 to change the port on local machine
       - "443:443"
     volumes:
-      - /etc/letsencrypt:/etc/letsencrypt
+      - /etc/letsencrypt:/etc/letsencrypt:rw
