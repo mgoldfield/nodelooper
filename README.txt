@@ -13,13 +13,13 @@ local:
 
 
 ec2:
-launch instance with correct ami role (currently using m5.large)
+launch instance with correct ami role (currently using t2.medium) running ubuntu 20
 open ports 80 and 443 in aws security
-copy in correct configs (will automate eventually)
-copy s3://looper-config/ssl to /etc/letsencrypt
-install docker and docker compose (use instructions on docker website)
+run ./tools/setConfig.sh
+copy s3://looper-config/ssl-latest to /etc/letsencrypt
+install docker with snap 
 run tools/setConfig.sh <env> where <env> is in "prod",
-run `sudo docker-compose -f docker-compose.prod.yml up --build -d`
+run `sudo docker compose -f docker-compose.prod.yml up --build -d`
 
 
 for updating certs:
