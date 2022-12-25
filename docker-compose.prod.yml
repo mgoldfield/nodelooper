@@ -5,6 +5,8 @@ services:
     expose:
       - "3001"
       - "3002"
+    volumes:
+      - /root/.aws:/root/.aws:ro
   app:
     build:
       context: ./app
