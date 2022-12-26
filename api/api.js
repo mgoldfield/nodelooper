@@ -28,7 +28,7 @@ function getStaticHtml(filename){
     })
 }
 
-app.use('/project', express.static('app/build'))
+// app.use('/project', express.static('app/build'))
 
 app.get('/test', (req, res) => {
     res.send("boop");
