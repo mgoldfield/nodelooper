@@ -6,7 +6,7 @@ let config = {
         path: ''
     },
     full_api_url:'http://localhost:3001/',
-    ws_url:'ws://localhost:3002/ws',
+    ws_url:'ws://localhost:3001/ws',
     newLoopIdentifier:'xxxLOOPxxx',
     msgDivider:'|||',
     audioBucket: 'loop-audio',
