@@ -2,7 +2,6 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import fs from 'fs';
 import url from 'url';
-import path from 'path';
 import { config } from './config-api.js';
 import { DataAccess } from './db.js';
 import { Message, WebSocketServer } from './websockets.js';

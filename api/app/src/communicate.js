@@ -18,7 +18,7 @@ class Communication {
         const loop_response = await res.json()
         this.user = loop_response.user;
         console.log('websockets', {url: config.ws_url, pjid: this.project_id, user: this.user})
-        this.socket = new WebSocket(config.ws_url, this.project_id + ":" + this.user);
+        this.socket = new WebSocket(config.ws_url, [this.project_id, this.user]);
         this.socket.addEventListener('open', () => console.log("connection open"));
         this.socket.addEventListener('message', this.handleMsg);
         for (const c of loop_response.data.chat){ // toDo: make this less brittle

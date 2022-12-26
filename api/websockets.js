@@ -2,6 +2,7 @@ import { config } from './config-api.js'
 import { createRequire } from 'module';
 import { v4 as uuidv4 } from 'uuid';
 import { SocketHelpers } from './db.js';
+
 const require = createRequire(import.meta.url);
 const WebSocket = require('ws');
 
@@ -29,7 +30,6 @@ class WebSocketServer {
         });
 
         this.server.on('upgrade', (request, socket, head) => {
-            // This function is not defined on purpose. Implement it with your own logic.
             this.authenticate(request, (err, client) => {
                 if (err || !client) {
                     socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
@@ -61,7 +61,12 @@ class WebSocketServer {
         let err = null,
             creds = request.headers['sec-websocket-protocol'];
 
-        creds = creds.split(':');
+        if (!creds) {
+            cont('no credentials: ' + creds.toString(), null);
+            return; 
+        }
+
+        creds = creds.split(',').map(s => s.trim());
         if (creds.length != 2) {
             cont('bad credentials: ' + creds.toString(), null);
             return;
