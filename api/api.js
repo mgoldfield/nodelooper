@@ -22,8 +22,8 @@ if (config.env === 'DEV') {
 } 
 if (config.env === 'PROD'){
     server = https.createServer({
-        key: config.ssl.key,
-        cert: config.ssl.cert
+        key: fs.readFileSync(config.ssl.key, 'utf-8'),
+        cert: fs.readFileSync(config.ssl.cert, 'utf-8')
     }, app).listen(443, () => console.log('listening at 443'));
 }
 
