@@ -13,7 +13,11 @@ let config = {
 	base_loop_url: 'https://loopmagic.live/project',
 	base_api_url: 'https://loopmagic.live',
 	newLoopIdentifier: 'xxxLOOPxxx',
-	project_persist: 432000,
+	project_persist: 43200000, // 500 days
+	ssl: {
+		key: '/etc/letsencrypt/live/loopmagic.live/privkey.pem',
+		cert: '/etc/letsencrypt/live/loopmagic.live/fullchain.pem'
+	},
 	s3: {
 		audioBucket: 'loop-audio',
 		backoff_tries: 5,

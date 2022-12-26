@@ -5,6 +5,7 @@ import url from 'url';
 import { config } from './config-api.js';
 import { DataAccess } from './db.js';
 import { Message, WebSocketServer } from './websockets.js';
+import * as https from 'https';
 
 const app = express();
 const da = new DataAccess();
@@ -14,7 +15,17 @@ if (config.env === 'DEV'){
     const cors = (await import('cors')).default;
     app.use(cors())     
 }
-const server = app.listen(3001);
+
+let server;
+if (config.env === 'DEV') {
+    server = app.listen(3001);
+} 
+if (config.env === 'PROD'){
+    server = https.createServer({
+        key: config.ssl.key,
+        cert: config.ssl.cert
+    }, app).listen(443, () => console.log('listening at 443'));
+}
 
 const ws = new WebSocketServer(server);
 
