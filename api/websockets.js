@@ -3,8 +3,6 @@ import { createRequire } from 'module';
 import { v4 as uuidv4 } from 'uuid';
 import { SocketHelpers } from './db.js';
 const require = createRequire(import.meta.url);
-const express = require('express');
-const http = require('http'); 
 const WebSocket = require('ws');
 
 
@@ -13,16 +11,11 @@ class WebSocketServer {
     projects = new Map();
     db = new SocketHelpers();
 
-    constructor() {
+    constructor(server) {
         this.populateProjects();
 
-        this.app = express();
-        if (config.env === 'DEV'){
-            const cors = require('cors');
-            this.app.use(cors());
-        }
-        this.server = this.app.listen(config.websockets.port); 
-        this.wss = new WebSocket.Server({ noServer: true });
+        this.server = server;
+        this.wss = new WebSocket.Server({ noServer: true, path: '/ws' });
 
         this.wss.on('connection', (ws, request, client) => {
             ws.on('message', (msg) => {

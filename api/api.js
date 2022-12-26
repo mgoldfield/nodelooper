@@ -7,7 +7,6 @@ import { DataAccess } from './db.js';
 import { Message, WebSocketServer } from './websockets.js';
 
 const app = express();
-const ws = new WebSocketServer();
 const da = new DataAccess();
 
 app.use(bodyParser.json({limit: '500mb'}));
@@ -15,8 +14,9 @@ if (config.env === 'DEV'){
     const cors = (await import('cors')).default;
     app.use(cors())     
 }
-app.listen(3001);
+const server = app.listen(3001);
 
+const ws = new WebSocketServer(server);
 
 function getStaticHtml(filename){
     return new Promise((resolve, reject) => {
@@ -127,3 +127,6 @@ app.post('/getTrack', (req, res) => {
     da.getTrack(req.body.ProjectID, req.body.LoopID)
     .then((data) => res.send(data));
 });
+
+
+
