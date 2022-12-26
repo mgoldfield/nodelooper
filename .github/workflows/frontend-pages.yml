@@ -7,7 +7,7 @@ name: Deploy React frontend to Pages
 defaults:
   run:
     shell: bash
-    working-directory: app
+    working-directory: api/app
 
 on:
   # Runs on pushes targeting the default branch
@@ -36,13 +36,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Copy config file
-        run: cp ../configs/config-app.prod.js src/config-app.js
+        run: cp ../../configs/config-app.prod.js src/config-app.js
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: "18"
           cache: "npm"
-          cache-dependency-path: app/package-lock.json
+          cache-dependency-path: api/app/package-lock.json
       - name: Setup Pages
         uses: actions/configure-pages@v2
       - name: Install dependencies
@@ -52,7 +52,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: ./app/build
+          path: ./api/app/build
 
   # Deployment job
   deploy:
