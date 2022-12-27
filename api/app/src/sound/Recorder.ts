@@ -1,6 +1,11 @@
+import { AudioLoopBunch } from '.';
 import config from '../config-app.js';
 
 export class Recorder {
+    private bunch: AudioLoopBunch;
+    quantize: boolean;
+    mediaRecorder?: MediaRecorder;
+    
     constructor(bunch){
         this.bunch = bunch;
         this.quantize = true;
@@ -16,12 +21,12 @@ export class Recorder {
             console.log(this.bunch.getAudioContext().outputLatency, 
                 this.bunch.getAudioContext().baseLatency)            
             let playTime = null; // audiocontext time when playing starts
-            let audioChunks = [];
-            let dataAvailable = (event) => {
+            const audioChunks = [];
+            const dataAvailable = (event) => {
                 console.log("pushing recorded data...")
                 audioChunks.push(event.data);
-            }            
-            let onStop = async () => {
+            };           
+            const onStop = async () => {
                 try{
                     console.log("stopping...")
                     let stopTime = this.bunch.getAudioContext().currentTime;
@@ -49,7 +54,7 @@ export class Recorder {
             this.mediaRecorder.addEventListener("start", () => {
                 playTime = this.bunch.playLoops();                
             });
-            this.mediaRecorder.addEventListener("error", (e) => {
+            this.mediaRecorder.addEventListener("error", (e: MediaRecorderErrorEvent) => {
                 alert("incompatible device, check f.a.q. for support: " + e.error);
                 console.log(e);
             });
