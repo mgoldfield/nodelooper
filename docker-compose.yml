@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  api:
+    build: ./api
+    network_mode: host
+    volumes:
+      - /root/.aws:/root/.aws:ro
+      - /etc/letsencrypt:/etc/letsencrypt:rw
