@@ -14,15 +14,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  steps:
-    - name: update api deploy via ssh
-      uses: appleboy/ssh-action@v0.1.6
-      with:
-        host: loopmagic.live
-        username: ubuntu
-        key: ${{ secrets.API_SSH_KEY }}
-        port: 22
-        script: |
-          cd nodelooper
-          git pull
-          sudo docker compose -f docker-compose.yml up --build -d
+  build:
+    name: update api deploy via ssh
+    runs-on: ubuntu-latest
+    steps:
+      - name: do it
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: loopmagic.live
+          username: ubuntu
+          key: ${{ secrets.API_SSH_KEY }}
+          port: 22
+          script: |
+            cd nodelooper
+            git pull
+            sudo docker compose -f docker-compose.yml up --build -d
