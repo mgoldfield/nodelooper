@@ -10,7 +10,7 @@ let config = {
 		role: 'arn:aws:iam::101444218054:instance-profile/loopmagic-server',
 	},
 	env: 'PROD',
-	base_loop_url: 'https://loopmagic.live/project',
+	base_loop_url: 'https://project.loopmagic.live',
 	base_api_url: 'https://loopmagic.live',
 	newLoopIdentifier: 'xxxLOOPxxx',
 	project_persist: 43200000, // 500 days
