@@ -1,11 +1,17 @@
 import config from './config-app.js';
 import { bufferToMp3 } from './format_tools.js';
+import type Looper from './looper';
 
 class Communication {
     msgDivider = '|||';
     LoopHeaderID = 'xxxLOOPxxx';
+    looper: Looper;
+    project_id: string;
+    private socket: WebSocket;
+    private user?: string;
+    private last_ping?: number;
 
-    constructor(project_id: string, looper) {
+    constructor(project_id: string, looper: Looper) {
         this.looper = looper;
         this.project_id = project_id;
     }
@@ -70,14 +76,14 @@ class Communication {
         this.socket.send('C' + this.msgDivider + msg);
     }
 
-    async postDataToApi(data, endpoint){
+    async postDataToApi(data: string, endpoint: string){
         const protocol = (config.env==='PROD') ? 'https://' : 'http://'
         const res = await fetch(`${protocol}${config.api.url}:${config.api.port}${config.api.path}/${endpoint}`, {
             method: 'POST',
             body: data,
             headers: {
                 'Content-Type': 'application/json',
-                'Content-Length': data.length
+                'Content-Length': data.length.toFixed()
             }
         })
         return await res.text()
@@ -107,6 +113,7 @@ class Communication {
             'userID': this.user,
             'name': loop.id,
             'metadata': loop.getMetadata(),
+            'audio': {}
         };
 
         if (config.lossyCompress) {
@@ -125,8 +132,8 @@ class Communication {
 
         if (loop.deleted) return;
 
-        postdata = JSON.stringify(postdata);
-        this.postDataToApi(postdata, 'addTrack').catch((e) => {throw(e)});
+        const json = JSON.stringify(postdata);
+        await this.postDataToApi(json, 'addTrack');
     }
 
     broadcastMetadata(id, metadata){
