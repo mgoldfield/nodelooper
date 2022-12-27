@@ -27,5 +27,5 @@ jobs:
           port: 22
           script: |
             cd nodelooper
-            git pull
+            git pull --verbose
             sudo docker compose -f docker-compose.yml up --build -d
