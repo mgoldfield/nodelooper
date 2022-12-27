@@ -39,6 +39,9 @@ function getStaticHtml(filename){
 }
 
 // app.use('/project', express.static('app/build'))
+app.get('/project', (req, res) => {
+    res.redirect(301, 'https://mgoldfield.github.io/nodelooper/')
+})
 
 app.get('/test', (req, res) => {
     res.send("boop");
