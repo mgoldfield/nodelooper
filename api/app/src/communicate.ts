@@ -5,7 +5,7 @@ class Communication {
     msgDivider = '|||';
     LoopHeaderID = 'xxxLOOPxxx';
 
-    constructor(project_id, looper) {
+    constructor(project_id: string, looper) {
         this.looper = looper;
         this.project_id = project_id;
     }
