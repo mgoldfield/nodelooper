@@ -28,4 +28,5 @@ jobs:
           script: |
             cd nodelooper
             git pull --verbose
+            cp configs/config-api.prod.js api/config-api.js
             sudo docker compose -f docker-compose.yml up --build -d
