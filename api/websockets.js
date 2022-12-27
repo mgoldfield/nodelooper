@@ -1,11 +1,7 @@
-import { config } from './config-api.js'
-import { createRequire } from 'module';
 import { v4 as uuidv4 } from 'uuid';
+import { WebSocketServer as Server } from 'ws';
+import { config } from './config-api.js';
 import { SocketHelpers } from './db.js';
-
-const require = createRequire(import.meta.url);
-const WebSocket = require('ws');
-
 
 class WebSocketServer {
 
@@ -16,7 +12,7 @@ class WebSocketServer {
         this.populateProjects();
 
         this.server = server;
-        this.wss = new WebSocket.Server({ noServer: true, path: '/ws' });
+        this.wss = new Server({ noServer: true, path: '/ws' });
 
         this.wss.on('connection', (ws, request, client) => {
             ws.on('message', (msg) => {

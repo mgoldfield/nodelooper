@@ -1,12 +1,12 @@
 import bodyParser from 'body-parser';
+import cors from 'cors';
 import express from 'express';
 import fs from 'fs';
+import * as https from 'https';
 import url from 'url';
 import { config } from './config-api.js';
 import { DataAccess } from './db.js';
 import { Message, WebSocketServer } from './websockets.js';
-import * as https from 'https';
-import cors from 'cors';
 
 const app = express();
 const da = new DataAccess();
@@ -69,82 +69,68 @@ app.get('/stats', (req, res) => {
     res.send(stats);
 })
 
-app.get('/', (req, res) =>{
-    getStaticHtml('html/front-page.html')
-    .then((page) => {
-        res.type('html');
-        res.send(page.replace(/APIURL/g, config.base_api_url));        
-    }).catch((e)=>{throw e});
+app.get('/', async (req, res) =>{
+    const page = await getStaticHtml('html/front-page.html');
+    res.type('html');
+    res.send(page.replace(/APIURL/g, config.base_api_url));
 });
 
-app.get('/faq', (req, res) =>{
-    getStaticHtml('html/faq.html')
-    .then((page) => {
-        res.type('html');
-        res.send(page.replace(/APIURL/g, config.base_api_url));        
-    }).catch((e)=>{throw e});
+app.get('/faq', async (req, res) =>{
+    const page = await getStaticHtml('html/faq.html');
+    res.type('html');
+    res.send(page.replace(/APIURL/g, config.base_api_url));
 });
 
 
-app.get('/newsesh', (req, res) => {
-    da.newProject()
-    .then((seshdata) => {
-        ws.register_project(seshdata.ProjectID, seshdata.expires);
-        res.redirect(config.base_loop_url + '?ProjectID=' + seshdata.ProjectID);
-    })
-    .catch((err) => {throw err});
+app.get('/newsesh', async (req, res) => {
+    const seshdata = await da.newProject();
+    ws.register_project(seshdata.ProjectID, seshdata.expires);
+    res.redirect(config.base_loop_url + '?ProjectID=' + seshdata.ProjectID);
 });
 
-app.get('/loop', (req, res) => {
-    let qs = url.parse(req.url,true).query;
-    da.getProject(qs.ProjectID)
-    .then((data) => {
-        let user_id = ws.register_user(qs.ProjectID);
+app.get('/loop', async (req, res) => {
+    try {
+        const qs = url.parse(req.url,true).query;
+        const data = await da.getProject(qs.ProjectID);
+        const user_id = ws.register_user(qs.ProjectID);
         res.send({
             user: user_id,
             data: data,
         });
-    })
-    .catch((err => {console.log(err); throw err}));
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
 });
 
-app.post('/addtrack', (req, res) => {
+app.post('/addtrack', async (req, res) => {
     if (req.body.name === config.newLoopIdentifier)
         throw Error('reserved name');
     let pdata = ws.projects.get(req.body.ProjectID);
     if (!pdata) {throw Error('project not found: ' + req.body.ProjectID)}
 
-    da.putTrack(req.body.ProjectID, 
+    await da.putTrack(req.body.ProjectID, 
         req.body.name, 
         req.body.metadata, 
         req.body.audio, 
-        pdata.expires)
-    .then(() => {
-        ws.broadcast(req.body.ProjectID, req.body.userID, new Message(req.body.name, 'newLoop'));
-    })
-    .catch((err) => {throw err});
+        pdata.expires);
+    ws.broadcast(req.body.ProjectID, req.body.userID, new Message(req.body.name, 'newLoop'));
     res.send('ok');
 });
 
-app.post('/deleteTrack', (req, res) => {
+app.post('/deleteTrack', async (req, res) => {
     if (req.body.name === config.newLoopIdentifier)
         throw Error('reserved name');
 
     let pdata = ws.projects.get(req.body.ProjectID);
     if (!pdata) {throw Error('project not found: ' + req.body.ProjectID)}
 
-    da.deleteTrack(req.body.ProjectID, req.body.LoopID)
-    .then((data) => {
-        ws.broadcast(req.body.ProjectID, req.body.userID, new Message(req.body.LoopID, 'deleteLoop'));
-    })
-    .catch((err) => {throw err});
+    const data = await da.deleteTrack(req.body.ProjectID, req.body.LoopID);
+    ws.broadcast(req.body.ProjectID, req.body.userID, new Message(req.body.LoopID, 'deleteLoop'));
     res.send('ok');
 });
 
-app.post('/getTrack', (req, res) => {
-    da.getTrack(req.body.ProjectID, req.body.LoopID)
-    .then((data) => res.send(data));
+app.post('/getTrack', async (req, res) => {
+    const data = await da.getTrack(req.body.ProjectID, req.body.LoopID);
+    res.send(data);
 });
-
-
-
