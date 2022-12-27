@@ -1,9 +1,9 @@
-const lamejs = require("lamejs");
-const base64 = require("base64-js")
+import base64 from "base64-js";
+import lamejs from "lamejs";
 
-function downloadBlob(filename, blob){
+export function downloadBlob(filename: string, blob: Blob){
     let tmp = document.createElement('a');
-    tmp.style = "display: none";
+    tmp.style.display = "none";
     document.body.appendChild(tmp);
     let url = window.URL.createObjectURL(blob);
     tmp.href = url;
@@ -13,8 +13,8 @@ function downloadBlob(filename, blob){
     //setTimeout(() => window.URL.revokeObjectURL(url), 1000);
 }
 
-function float32_to_int16(f32){
-    function convert(n, max) {
+function float32_to_int16(f32: Float32Array){
+    function convert(n: number, max: number) {
         let v = n < 0 ? n * 32768 : n * 32767;       // convert in range [-32768, 32767]
         return v / max; // scale
     }
@@ -31,7 +31,7 @@ function float32_to_int16(f32){
     return retArr;
 }
 
-const bufferToMp3 = async (buff) => {
+export async function bufferToMp3(buff: AudioBuffer) {
     let mp3encoder = new lamejs.Mp3Encoder(2, 44100, 128);
     let mp3Data = [];
 
@@ -77,7 +77,7 @@ function debugWav(view){
     console.log("data length - dec:%s, hex:%s", view.getUint32(40, true).toString(), view.getUint32(40, true).toString(16));
 }
 
-function wavToBuffer(arraybuff, ac, debug=false){
+export function wavToBuffer(arraybuff: ArrayBuffer, ac: AudioContext, debug=false){
     let view = new DataView(arraybuff),
         numChannels = view.getUint16(22, true),
         bytesPerSample = view.getUint16(34, true) / 8,
@@ -99,9 +99,9 @@ function wavToBuffer(arraybuff, ac, debug=false){
     if (![1,2,4].includes(bytesPerSample)) throw Error("unexpected byte rate: " + bytesPerSample.toString());
 
     let getters = {
-        1: (v) => view.getInt8(v, true),
-        2: (v) => view.getInt16(v, true),
-        4: (v) => view.getInt32(v, true)
+        1: (v: number) => view.getInt8(v),
+        2: (v: number) => view.getInt16(v, true),
+        4: (v: number) => view.getInt32(v, true)
     };
     
     let getSample = getters[bytesPerSample],
@@ -136,19 +136,19 @@ function wavToBuffer(arraybuff, ac, debug=false){
 
 // Convert a audio-buffer segment to a Blob using WAVE representation
 // with help from https://stackoverflow.com/questions/29584420/how-to-manipulate-the-contents-of-an-audio-tag-and-create-derivative-audio-tags/30045041#30045041
-function bufferToWav(buff, debug=false) {
+export function bufferToWav(buff: AudioBuffer, debug=false) {
 
-    function setUint16(data) {
+    function setUint16(data: number) {
         view.setUint16(pos, data, true);
         pos += 2;
     };
 
-    function setUint32(data) {
+    function setUint32(data: number) {
         view.setUint32(pos, data, true);
         pos += 4;
     };  
 
-    function setInt16(data ){
+    function setInt16(data: number){
         view.setInt16(pos, data, true);
         pos += 2;
     }
@@ -158,7 +158,8 @@ function bufferToWav(buff, debug=false) {
         length = buff.length * bytesPerSample * numOfChan + 44,
         newBuff = new ArrayBuffer(length),
         view = new DataView(newBuff),
-        channels = [], i,
+        channels = [],
+        i: number,
         offset = 0,
         pos = 0;
 
@@ -202,5 +203,3 @@ function bufferToWav(buff, debug=false) {
     // create Blob
     return new Blob([newBuff], {type: "audio/wav"});
 }
-
-export { bufferToWav, bufferToMp3, wavToBuffer, downloadBlob };

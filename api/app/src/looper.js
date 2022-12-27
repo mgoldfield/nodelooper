@@ -2,7 +2,7 @@ import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import config from './config-app.js';
 import { Button, ChatWindow, DropDown, Instructions, LoopProgress, ProgressBar, Slider } from './controls.js';
-import AudioLoopBunch from './sound.js';
+import { AudioLoopBunch } from './sound';
 
 
 class Looper extends React.Component {

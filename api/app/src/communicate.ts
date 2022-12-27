@@ -1,5 +1,6 @@
 import config from './config-app.js';
-import { bufferToMp3 } from './format_tools.js';
+// @ts-ignore TS6133
+import { bufferToMp3 } from './format_tools.ts';
 import type Looper from './looper';
 
 class Communication {
