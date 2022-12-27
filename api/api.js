@@ -6,14 +6,19 @@ import { config } from './config-api.js';
 import { DataAccess } from './db.js';
 import { Message, WebSocketServer } from './websockets.js';
 import * as https from 'https';
+import cors from 'cors';
 
 const app = express();
 const da = new DataAccess();
 
 app.use(bodyParser.json({limit: '500mb'}));
 if (config.env === 'DEV'){
-    const cors = (await import('cors')).default;
     app.use(cors())     
+}else{
+    app.use(cors({
+        origin: config.base_loop_url,
+        optionsSuccessStatus: 200
+    }))
 }
 
 let server;
