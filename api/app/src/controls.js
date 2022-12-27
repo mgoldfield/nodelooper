@@ -394,4 +394,4 @@ class ChatWindow extends React.Component {
     }
 }
 
-export {Button, DropDown, Slider, ProgressBar, LoopProgress, Instructions, ChatWindow};
+export { Button, DropDown, Slider, ProgressBar, LoopProgress, Instructions, ChatWindow };
