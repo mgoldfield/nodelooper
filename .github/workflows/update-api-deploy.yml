@@ -1,0 +1,28 @@
+name: Update
+
+defaults:
+  run:
+    shell: bash
+    working-directory: api/app
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  steps:
+    - name: update api deploy via ssh
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: loopmagic.live
+        username: ubuntu
+        key: ${{ secrets.API_SSH_KEY }}
+        port: 22
+        script: |
+          cd nodelooper
+          git pull
+          sudo docker compose -f docker-compose.yml up --build -d
