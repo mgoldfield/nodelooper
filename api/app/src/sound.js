@@ -8,6 +8,17 @@ import { bufferToWav, downloadBlob } from './format_tools.js';
 
 class AudioLoopBunch{
     constructor(){
+        this.getAudioContext = () => {
+            // we don't suspend audiocontext here because we're mostly using it in the app
+            if (!this._audioContext){
+                this._audioContext = new AudioContext({
+                    latencyHint: 'interactive', 
+                    sampleRate: 44100,
+                });
+            }
+            return this._audioContext;
+        };
+        
         this.audioLoops=[];
         this.recordingLoop = null;
 
@@ -44,18 +55,7 @@ class AudioLoopBunch{
         });
     }
 
-    // we don't suspend audiocontext here because we're mostly using it in the app
-    getAudioContext = () => {
-        if (!this._audioContext){
-            this._audioContext = new AudioContext({
-                latencyHint: 'interactive', 
-                sampleRate: 44100,
-            });
-        }
-        return this._audioContext;
-    };
-
-    refreshAvailableDevices = async function() {
+    async refreshAvailableDevices() {
         let tmpstream = await this.getUserAudio();
         tmpstream.getTracks().forEach((track) => track.stop());
 
@@ -71,7 +71,7 @@ class AudioLoopBunch{
         }
     }
 
-    getUserAudio = () => {
+    getUserAudio() {
         let options = {
             video: false,
             audio: {
@@ -144,7 +144,7 @@ class AudioLoopBunch{
         );
     }
 
-    handleChunk = (chunk) => {
+    handleChunk(chunk) {
         return;
     };
 
@@ -160,7 +160,7 @@ class AudioLoopBunch{
             this.updateProgressBar(0);
     }
 
-    updateLoopsProgressBars = (t) => {
+    updateLoopsProgressBars(t) {
         for (const l of this.audioLoops){
             l.setProgress(t);
         }
@@ -224,7 +224,7 @@ class AudioLoopBunch{
         this.gainNode.setValueAtTime(2 ** g - 1, this.getAudioContext().currentTime);
     }
 
-    download = () => {
+    download() {
         // mix down all loops
         let maxLength = 0;
         for (const l of this.audioLoops){
@@ -259,7 +259,7 @@ class AudioLoopBunch{
         }
     }
 
-    loadLoopFromDisk = (id, f, cb_success, cb_fail) => {
+    loadLoopFromDisk(id, f, cb_success, cb_fail) {
         let reader = new FileReader();
         reader.onload = async (event) => {
             this.getAudioContext().decodeAudioData(event.target.result)
@@ -288,7 +288,7 @@ class AudioLoopBunch{
         reader.readAsArrayBuffer(f);
     }
 
-    loadLoopFromDynamoData = async (l, onLoad) => { 
+    async loadLoopFromDynamoData(l, onLoad) {
         function b64toFloatArr(to_encode){
             return Float32Array.from(atob(to_encode), c => c.charCodeAt(0))
         }
@@ -403,7 +403,7 @@ class Recorder {
         });;
     }
 
-    handleChunks = async function(audioChunks, targetLength, latency, quantUnit){
+    async handleChunks(audioChunks, targetLength, latency, quantUnit){
         const blob = new Blob(audioChunks, {'type' : 'audio/ogg; codecs=opus'});
         let blobbuff = await blob.arrayBuffer();
         console.log(blobbuff);
@@ -515,7 +515,7 @@ class AudioLoop {
         };
     }
 
-    broadcastMetadata = () => {
+    broadcastMetadata() {
         if (this.buffer)
             this.comms.broadcastMetadata(this.id, this.getMetadata());
     }
@@ -730,7 +730,7 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
         this.source.start(time);
     }           
 
-    stop = () => {
+    stop() {
         if (!this.source)
             return;
 
@@ -743,7 +743,3 @@ class ClickTrack{ // metronome inspired by https://blog.paul.cx/post/metronome/
 
 
 export default AudioLoopBunch;
-
-
-
-

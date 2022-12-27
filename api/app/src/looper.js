@@ -1,14 +1,8 @@
 import React from 'react';
-import {Button, 
-    DropDown, 
-    Slider, 
-    ProgressBar, 
-    LoopProgress, 
-    Instructions, 
-    ChatWindow} from './controls.js';
-import AudioLoopBunch from './sound.js';
-import config from './config-app.js';
 import { v4 as uuidv4 } from 'uuid';
+import config from './config-app.js';
+import { Button, ChatWindow, DropDown, Instructions, LoopProgress, ProgressBar, Slider } from './controls.js';
+import AudioLoopBunch from './sound.js';
 
 
 class Looper extends React.Component {
@@ -353,7 +347,7 @@ class Looper extends React.Component {
                         secondsPerBeat = {this.loopBunch.clickTrack.secondsPerBeat}
                         quantize = {this.state.quantize}
                         setMax = {(f) => this.setProgressBarMax = f}
-                        coordinateBars = {this.loopBunch.updateLoopsProgressBars}
+                        coordinateBars = {(t) => this.loopBunch.updateLoopsProgressBars(t)}
                     />
                 </div>                        
             </div>
