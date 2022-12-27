@@ -1,3 +1,5 @@
+import config from '../config-app.js';
+
 export class Recorder {
     constructor(bunch){
         this.bunch = bunch;

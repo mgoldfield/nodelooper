@@ -1,3 +1,5 @@
+import { bufferToWav, downloadBlob } from '../format_tools.ts';
+
 export class AudioLoop {
     constructor(getAudioContext, comms){
         this.getAudioContext = getAudioContext;
