@@ -1,5 +1,5 @@
 import base64 from 'base64-js';
-import { Communication } from './communicate.js';
+import { Communication } from './communicate.ts';
 import config from './config-app.js';
 import { bufferToWav, downloadBlob } from './format_tools.js';
 
