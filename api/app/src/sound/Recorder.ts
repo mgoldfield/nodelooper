@@ -22,7 +22,7 @@ export class Recorder {
     }
     
     get outputLatency (): number {
-        return this.bunch.getAudioContext().outputLatency
+        return this.bunch.getAudioContext().outputLatency || this.bunch.getAudioContext().baseLatency;
     }
     get extraLatency (): number {
         return this._extraLatencyMS / 1000;
