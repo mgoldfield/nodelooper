@@ -1,5 +1,5 @@
 .DS_Store
-*config*
-node_modules*
+config-*.js
+node_modules
 .node_api_pid
 *.sublime-workspace
