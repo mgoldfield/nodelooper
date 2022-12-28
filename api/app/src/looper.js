@@ -27,6 +27,7 @@ class Looper extends React.Component {
             'inputMonitoring': this.loopBunch.inputMonitoring,
             'loops': [],
             'processing': true,
+            'extraLatency': this.loopBunch.recorder.extraLatency
         }
         this.loopBunch.initComms(this.project_id, this)
         .then(this.handleInitLoops)
@@ -187,6 +188,11 @@ class Looper extends React.Component {
         this.setState({'gain': v});
         this.loopBunch.gainNode.gain.setValueAtTime(v, this.loopBunch.getAudioContext().currentTime);
     };
+    
+    handleLatency = (v) => {
+        this.setState({'extraLatency': v / 1000});
+        this.loopBunch.recorder.extraLatency = v / 1000;
+    };
 
     handleBpm = (e) => {
         this.setState({'bpm': e.target.value});
@@ -336,6 +342,13 @@ class Looper extends React.Component {
                         name='master gain' min='0' max='5' 
                         value='1' step='0.01'
                         onChange={this.handleMaster}
+                    />
+                    <Slider
+                        name='latency (ms)'
+                        showVal={true}
+                        min='0' max='100'
+                        value={this.state.extraLatency * 1000} step='1'
+                        onChange={this.handleLatency}
                     />
                 </div>
                 <div className='progressBar'>

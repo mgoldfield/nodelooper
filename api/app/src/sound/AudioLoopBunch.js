@@ -119,31 +119,25 @@ export class AudioLoopBunch{
         this.recording = false;
     }
 
-    record(onEarlyStop){
+    async record(onEarlyStop){
         if (!this.recordingLoop) 
             throw Error("Record has not been prepped...something is wrong");
 
         this.recording = true;
         this.recordingLoop.record(this.getOffset());
 
-        // mediaPromise, quantUnit, onFailure, onSuccess
-        this.recorder.recordBuffer(
-            this.getUserAudio(),
-            this.clickTrack.oneMeasureInSeconds,
-            () => {
-                onEarlyStop();
-                this.unprepareToRecord();
-            },
-            (newBuff) => {
-                this.recordingLoop.setBuffer(newBuff);
-                this.addLoop(this.recordingLoop);
-            }
-        );
+        try {
+            const newBuff = await this.recorder.recordBuffer(
+                this.getUserAudio(),
+                this.clickTrack.oneMeasureInSeconds
+                );
+            this.recordingLoop.setBuffer(newBuff);
+            this.addLoop(this.recordingLoop);
+        } catch (e) {
+            onEarlyStop();
+            this.unprepareToRecord();
+        }
     }
-
-    handleChunk(chunk) {
-        return;
-    };
 
     stop(toggledByPlay=false){
         if (this.recording){
@@ -196,7 +190,7 @@ export class AudioLoopBunch{
         this.refreshMergeNode();
         this.playing = true;
 
-        let waitTime = 0.0001 + this.getAudioContext().baseLatency;
+        let waitTime = 0.5 + this.getAudioContext().baseLatency;
         let clickStartTime = this.getAudioContext().currentTime + waitTime;
         let playTime = clickStartTime;
         if (this.clickTrack.countIn && this.recording)
