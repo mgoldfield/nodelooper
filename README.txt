@@ -23,6 +23,5 @@ run `sudo docker compose -f docker-compose.prod.yml up --build -d`
 
 
 for updating certs:
-    install nginx locally and run certbot steps
-    copy everything in /etc/letsencrypt to s3://looper-config/ssl/
+    locally store certs in /etc/letsencrypt, and back up to s3://looper-config/ssl/
 
