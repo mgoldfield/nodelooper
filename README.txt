@@ -1,6 +1,6 @@
 Loopmagic is a web application for collaboratively recording and editing music with only a browser!  
 Relies on the somewhat newly supported AudioContext features supported across major browsers, which continues to change and evolve. 
-
+Previously hosted at loopmagic.live. 
 
 local: 
 0. install aws cli and add creds
